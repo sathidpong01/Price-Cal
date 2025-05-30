@@ -1,64 +1,94 @@
 <?php
-// เรียกใช้ไฟล์เชื่อมต่อฐานข้อมูล
-include 'includes/db_connect.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Include the autoloader
+require_once __DIR__ . '/../src/autoloader.php';
+
+use App\Core\DatabaseManager;
+use App\Managers\PriceRuleManager;
+use App\Managers\OptionManager;
+use App\Managers\MaterialManager;
+
+// Get the database connection
+$conn = DatabaseManager::getConnection(); // Autoloader should handle DatabaseManager class
 
 // --- ดึงข้อมูลพื้นฐาน (Price Rules) ---
-$price_rules = [];
-$sql_rules = "SELECT rule_name, rule_value FROM price_rules";
-$result_rules = $conn->query($sql_rules);
-if ($result_rules && $result_rules->num_rows > 0) {
-    while ($row_rule = $result_rules->fetch_assoc()) {
-        $price_rules[$row_rule['rule_name']] = $row_rule['rule_value'];
-    }
-}
+$priceRuleManager = new PriceRuleManager(); // Autoloader for PriceRuleManager
+$price_rules = $priceRuleManager->getAllPriceRules();
+
+// Old code for fetching price rules - to be removed
+// $price_rules = [];
+// $sql_rules = "SELECT rule_name, rule_value FROM price_rules";
+// $result_rules = $conn->query($sql_rules);
+// if ($result_rules && $result_rules->num_rows > 0) {
+//     while ($row_rule = $result_rules->fetch_assoc()) {
+//         $price_rules[$row_rule['rule_name']] = $row_rule['rule_value'];
+//     }
+// }
+
 $sticker_price_per_sqm = isset($price_rules['Sticker Price Per SQM']) ? $price_rules['Sticker Price Per SQM'] : 500;
 $travel_cost_per_km = isset($price_rules['Travel Cost Per KM']) ? $price_rules['Travel Cost Per KM'] : 10;
 $travel_cost_in_city = isset($price_rules['Travel Cost In City']) ? $price_rules['Travel Cost In City'] : 500;
 
 
 // --- ดึงข้อมูล Options และจัดกลุ่มตาม Category ---
-$options_by_category = [
-    'ทั่วไป' => [],
-    'สติ๊กเกอร์' => [],
-    'ผ้าไวนิล' => [],
-    'ตัวอักษรโลหะ' => [],
-    'กล่องไฟ' => []
-];
-$sql_options = "SELECT option_id, option_name, option_price, category FROM options";
-$result_options = $conn->query($sql_options);
-if ($result_options && $result_options->num_rows > 0) {
-    while ($row_opt = $result_options->fetch_assoc()) {
-        $category_key = $row_opt['category'] ?? 'ทั่วไป';
-        if (array_key_exists($category_key, $options_by_category)) {
-            $options_by_category[$category_key][] = $row_opt;
-        } else {
-            $options_by_category['ทั่วไป'][] = $row_opt;
-        }
-    }
-}
+$optionManager = new OptionManager(); // Autoloader for OptionManager
+$options_by_category = $optionManager->getOptionsGroupedByCategory();
+
+// Old code for fetching options - can be deleted later
+// $options_by_category = [
+//     'ทั่วไป' => [],
+//     'สติ๊กเกอร์' => [],
+//     'ผ้าไวนิล' => [],
+//     'ตัวอักษรโลหะ' => [],
+//     'กล่องไฟ' => []
+// ];
+// $sql_options = "SELECT option_id, option_name, option_price, category FROM options";
+// $result_options = $conn->query($sql_options);
+// if ($result_options && $result_options->num_rows > 0) {
+//     while ($row_opt = $result_options->fetch_assoc()) {
+//         $category_key = $row_opt['category'] ?? 'ทั่วไป';
+//         if (array_key_exists($category_key, $options_by_category)) {
+//             $options_by_category[$category_key][] = $row_opt;
+//         } else {
+//             $options_by_category['ทั่วไป'][] = $row_opt;
+//         }
+//     }
+// }
 
 // --- ดึงข้อมูล Materials ---
-$materials_list_for_letter = [];
-$lightbox_list_for_form = [];
-$sheet_list_for_sticker = [];
-$vinyl_materials_list = [];
+$materialManager = new MaterialManager(); // Autoloader for MaterialManager
+$all_materials = $materialManager->getAllMaterialsOrganized();
 
-$sql_materials_all = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials";
-$result_materials_all_query = $conn->query($sql_materials_all);
-if ($result_materials_all_query && $result_materials_all_query->num_rows > 0) {
-    while ($row_mat = $result_materials_all_query->fetch_assoc()) {
-        if ($row_mat['product_type'] == 'ตัวอักษรโลหะ') {
-            $materials_list_for_letter[] = $row_mat;
-        } elseif ($row_mat['product_type'] == 'กล่องไฟ') {
-            $lightbox_list_for_form[] = $row_mat;
-        } elseif ($row_mat['product_type'] == 'วัสดุแผ่น') {
-            $sheet_list_for_sticker[] = $row_mat;
-        } elseif ($row_mat['product_type'] == 'ผ้าไวนิล') {
-            $vinyl_materials_list[] = $row_mat;
-        }
-    }
-}
-$conn->close();
+$materials_list_for_letter = $all_materials['materials_list_for_letter'];
+$lightbox_list_for_form = $all_materials['lightbox_list_for_form'];
+$sheet_list_for_sticker = $all_materials['sheet_list_for_sticker'];
+$vinyl_materials_list = $all_materials['vinyl_materials_list'];
+
+// Old code for fetching materials - can be deleted later
+// $materials_list_for_letter = [];
+// $lightbox_list_for_form = [];
+// $sheet_list_for_sticker = [];
+// $vinyl_materials_list = [];
+// $sql_materials_all = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials";
+// $result_materials_all_query = $conn->query($sql_materials_all);
+// if ($result_materials_all_query && $result_materials_all_query->num_rows > 0) {
+//     while ($row_mat = $result_materials_all_query->fetch_assoc()) {
+//         if ($row_mat['product_type'] == 'ตัวอักษรโลหะ') {
+//             $materials_list_for_letter[] = $row_mat;
+//         } elseif ($row_mat['product_type'] == 'กล่องไฟ') {
+//             $lightbox_list_for_form[] = $row_mat;
+//         } elseif ($row_mat['product_type'] == 'วัสดุแผ่น') {
+//             $sheet_list_for_sticker[] = $row_mat;
+//         } elseif ($row_mat['product_type'] == 'ผ้าไวนิล') {
+//             $vinyl_materials_list[] = $row_mat;
+//         }
+//     }
+// }
+
+DatabaseManager::closeConnection(); // Close connection after all data is fetched
 
 
 // --- สร้างรายการออปชันสำหรับแต่ละหมวดหมู่ ---
@@ -98,8 +128,8 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                         <select id="st_sheet_material" name="st_sheet_material">
                             <option value="none">-- ไม่ใช้วัสดุแผ่น --</option>
                             <?php foreach ($sheet_list_for_sticker as $sh): ?>
-                            <option value="<?php echo $sh['material_id']; ?>">
-                                <?php echo htmlspecialchars($sh['material_name']) . " (" . number_format($sh['price_per_unit'], 2) . " บาท/ตร.ม.)"; ?>
+                            <option value="<?php echo $sh->material_id; ?>">
+                                <?php echo htmlspecialchars($sh->material_name) . " (" . number_format($sh->price_per_unit, 2) . " บาท/ตร.ม.)"; ?>
                             </option>
                             <?php endforeach; ?>
                         </select>
