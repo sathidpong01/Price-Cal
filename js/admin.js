@@ -223,7 +223,36 @@ function initPagination(tableId, rowsPerPage) { /* ... โค้ดเดิม 
 function showPage(tableId, page) { /* ... โค้ดเดิม ... */ }
 function updatePaginationControls(tableId) { /* ... โค้ดเดิม ... */ }
 function repaginate(tableId) { /* ... โค้ดเดิม ... */ }
-function filterTable(inputId, tableId, ...columnIndices) { /* ... โค้ดเดิม ... */ }
+function filterTable(inputId, tableId, ...columnIndices) {
+    const input = document.getElementById(inputId);
+    const table = document.getElementById(tableId);
+    const filter = input.value.toLowerCase();
+    const rows = table.getElementsByTagName('tr');
+
+    // Loop through all table rows except header
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        let found = false;
+
+        // Check each specified column
+        for (const colIndex of columnIndices) {
+            const cell = row.getElementsByTagName('td')[colIndex];
+            if (cell) {
+                const text = cell.textContent || cell.innerText;
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        // Show/hide row based on search result
+        row.style.display = found ? '' : 'none';
+    }
+
+    // Repaginate the table after filtering
+    repaginate(tableId);
+}
 
 // --- DOMContentLoaded ---
 document.addEventListener('DOMContentLoaded', function() {
