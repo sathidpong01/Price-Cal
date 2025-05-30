@@ -134,36 +134,6 @@ $conn->close();
         </div>
 
         <div class="admin-section" id="rules_section">
-            <h2>จัดการกฎราคา (Price Rules)</h2>
-            <form action="admin.php#rules_section" method="post"> <h3>เพิ่มกฎราคาใหม่</h3>
-                <div class="form-group"><label for="add_rule_name">ชื่อกฎราคา:</label><input type="text" id="add_rule_name" name="add_rule_name" class="form-control" required></div>
-                <div class="form-group"><label for="add_rule_value">ค่า:</label><input type="number" step="0.01" id="add_rule_value" name="add_rule_value" class="form-control" required></div>
-                <div class="form-group"><label for="add_rule_unit">หน่วย:</label><input type="text" id="add_rule_unit" name="add_rule_unit" class="form-control" required></div>
-                <div class="btn-group"><button type="submit" name="add_rule">เพิ่มกฎราคา</button></div>
-            </form>
-
-            <h3>รายการกฎราคาทั้งหมด</h3>
-            <div class="search-section"><input type="text" id="ruleSearch" class="search-box" placeholder="ค้นหากฎราคา..." onkeyup="filterTable('ruleSearch', 'rulesTable', 1)"></div>
-            <div class="table-responsive">
-                <table id="rulesTable">
-                    <thead><tr><th>ID</th><th>ชื่อกฎ</th><th>ค่า</th><th>หน่วย</th><th>จัดการ</th></tr></thead>
-                    <tbody>
-                    <?php if (empty($price_rules_list)): ?><tr><td colspan="5" style="text-align: center;">ยังไม่มีข้อมูลกฎราคา</td></tr>
-                    <?php else: ?><?php foreach ($price_rules_list as $rule): ?>
-                        <tr id="rule-row-<?php echo $rule['rule_id']; ?>">
-                            <td><?php echo htmlspecialchars($rule['rule_id']); ?></td>
-                            <td data-field="name"><?php echo htmlspecialchars($rule['rule_name']); ?></td>
-                            <td data-field="value" style="text-align: right;"><?php echo number_format($rule['rule_value'], 2); ?></td>
-                            <td data-field="unit"><?php echo htmlspecialchars($rule['rule_unit']); ?></td>
-                            <td class="table-actions">
-                                <button type="button" class="btn btn-edit" onclick="openEditModal('rule', <?php echo $rule['rule_id']; ?>)">แก้ไข</button>
-                                <button type="button" class="btn btn-delete" onclick="handleDeleteClick('rule', <?php echo $rule['rule_id']; ?>, '<?php echo htmlspecialchars(addslashes($rule['rule_name'])); ?>')">ลบ</button>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?><?php endif; ?>
-                    </tbody>
-                </table>
-                </div>
         </div>
 
         <div class="admin-section" id="materials_section">
