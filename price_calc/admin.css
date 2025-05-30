@@ -1,0 +1,303 @@
+body { font-family: 'Tahoma', sans-serif; margin: 0; background-color: #f4f4f4; }
+.container {
+    width: 80vw;
+    max-width: 900px;
+    min-width: 320px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+h1, h2, h3 { color: #333; }
+h1 { border-bottom: 2px solid #0056b3; padding-bottom: 10px; color: #0056b3; }
+.admin-section { border: 1px solid #ddd; padding: 20px; margin-bottom: 25px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+label { display: inline-block; width: 150px; margin-bottom: 12px; vertical-align: middle; font-weight: bold; }
+input[type="text"], select { padding: 9px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+input[type="text"] { text-align: right; width: 120px; }
+input[type="text"][style*="text-align: left"] { text-align: left; }
+select { width: 180px; }
+button, .btn { padding: 10px 20px; cursor: pointer; color: white; border: none; border-radius: 4px; margin-top: 10px; text-decoration: none; display: inline-block; text-align: center; transition: background-color 0.2s ease; font-size: 1em; }
+button[type="submit"] { background-color: #007bff; }
+button[type="submit"]:hover { background-color: #0056b3; }
+button[name="add_material"], button[name="add_option"], button[name="add_rule"] { background-color: #28a745; }
+button[name="add_material"]:hover, button[name="add_option"]:hover, button[name="add_rule"]:hover { background-color: #218838; }
+.btn-edit { background-color: #ffc107; color: black !important; padding: 5px 10px; margin-right: 5px; font-size: 0.9em; }
+.btn-delete { background-color: #dc3545; color: white !important; padding: 5px 10px; font-size: 0.9em; }
+
+.search-box {
+    margin-bottom: 15px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 200px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th {
+    background-color: #f8f9fa;
+    position: relative;
+    padding-right: 20px;
+}
+
+th:hover {
+    background-color: #e9ecef;
+}
+
+
+td, th {
+    border: 1px solid #dee2e6;
+    padding: 12px;
+    text-align: left;
+}
+
+tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+tr:hover {
+    background-color: #f2f2f2;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center; /* เพิ่ม: จัดให้อยู่กึ่งกลางแนวตั้ง */
+    gap: 5px;
+    margin: 20px 0;
+}
+
+.pagination button {
+    padding: 8px 15px; /* ปรับ Padding เล็กน้อย */
+    border: 1px solid #007bff; /* เปลี่ยนขอบเป็นสีน้ำเงิน */
+    background-color: white; /* พื้นหลังขาว */
+    color: #007bff; /* ตัวหนังสือสีน้ำเงิน */
+    cursor: pointer;
+    border-radius: 4px; /* เพิ่มความโค้งมน */
+    transition: background-color 0.2s, color 0.2s; /* เพิ่ม transition */
+    font-size: 0.9em; /* อาจปรับขนาดตัวอักษร */
+}
+
+.pagination button:hover:not(:disabled) {
+    background-color: #e0f7ff; /* เปลี่ยนสีพื้นหลังเมื่อชี้ (ฟ้าอ่อน) */
+    border-color: #0056b3;
+}
+
+.pagination button.active {
+    background-color: #007bff; /* สีพื้นหลังปุ่มที่เลือก (น้ำเงิน) */
+    color: white; /* ตัวหนังสือขาว */
+    border-color: #007bff;
+    font-weight: bold; /* เพิ่ม: ทำให้ตัวหนา */
+}
+
+.pagination button:disabled {
+    border-color: #ddd; /* ขอบสีเทา */
+    color: #aaa; /* ตัวหนังสือสีเทา */
+    background-color: #f9f9f9; /* พื้นหลังเทาอ่อน */
+    cursor: not-allowed;
+    opacity: 0.7; /* ปรับ opacity เล็กน้อย */
+}
+
+/* เพิ่ม: สไตล์สำหรับจุดไข่ปลา (...) */
+.pagination span {
+    padding: 8px 12px;
+    color: #6c757d;
+    font-size: 0.9em;
+    border-radius: 4px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 5px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #495057;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.btn-group {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.message { padding: 10px; margin: 10px 0; border-radius: 4px; }
+.message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+.table-responsive {
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
+
+.table-actions {
+    white-space: nowrap;
+}
+
+.search-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .admin-section {
+        padding: 10px;
+    }
+    
+    .search-box {
+        width: 100%;
+    }
+
+    .table-responsive {
+        margin: 0 -10px;
+    }
+
+    .btn-group {
+        flex-direction: column;
+    }
+}
+
+.admin-link {
+    margin-bottom: 20px;
+    text-align: left;
+}
+.admin-link .btn-back {
+    display: inline-block;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 1em;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+    transition: background 0.2s, color 0.2s;
+    border: none;
+}
+.admin-link .btn-back:hover {
+    background-color: #0056b3;
+    color: #fff;
+} 
+
+/* --- Modal Styles --- */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* 10% from the top and centered */
+    padding: 25px;
+    border: 1px solid #888;
+    width: 90%; /* Could be more or less, depending on screen size */
+    max-width: 600px; /* Maximum width */
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+/* Add Animation */
+@keyframes animatetop {
+    from {top: -300px; opacity: 0}
+    to {top: 0; opacity: 1}
+}
+
+.close-btn { /* เปลี่ยนจาก class "close" เป็น "close-btn" เพื่อไม่ให้ชนกับตัวแปร */
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+/* ปรับปรุงการจัดวาง label และ input ใน modal */
+.modal-content .form-group label {
+    width: 130px; 
+}
+.modal-content .form-group .form-control { /* ใช้ class form-control กับ input ใน modal */
+    width: calc(100% - 140px); 
+}
+.modal-content .btn-group {
+    justify-content: flex-end; /* จัดปุ่มไปทางขวา */
+}
+/* Style for highlighting updated rows */
+tr {
+    transition: background-color 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+
+tr.highlight-update {
+    background-color: #d4edda !important; /* Use important if needed to override other styles */
+}
