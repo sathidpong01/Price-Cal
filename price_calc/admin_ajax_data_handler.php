@@ -1,15 +1,13 @@
 <?php
-// --- เพิ่ม: สำหรับ Debug PHP Error (ควรลบออกเมื่อใช้งานจริง) ---
-//ini_set('display_errors', 1);
-//error_reporting(E_ALL);
-// --- จบ: Debug ---
+// ควรเปิด Error reporting สำหรับ Debug เท่านั้น
+// ini_set('display_errors', 1);
+// error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
 include 'includes/db_connect.php'; 
 
 $response = ['success' => false, 'data' => null, 'error' => 'Invalid request', 'message' => '']; 
 
-// --- จัดการ GET request (เหมือนเดิม) ---
 if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && isset($_GET['id'])) {
     $action = $_GET['action'];
     $id = intval($_GET['id']);
@@ -20,11 +18,11 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && isset($_GET
         $stmt = null;
 
         if ($action == 'get_rule_data') {
-            $sql = "SELECT * FROM price_rules WHERE rule_id = ?";
+            $sql = "SELECT rule_id, rule_name, rule_value, rule_unit FROM price_rules WHERE rule_id = ?";
         } elseif ($action == 'get_material_data') {
-            $sql = "SELECT * FROM materials WHERE material_id = ?";
+            $sql = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials WHERE material_id = ?";
         } elseif ($action == 'get_option_data') {
-            $sql = "SELECT * FROM options WHERE option_id = ?";
+            $sql = "SELECT option_id, option_name, option_price FROM options WHERE option_id = ?";
         }
 
         if (!empty($sql)) {
@@ -39,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && isset($_GET
                     $response['data'] = $itemData;
                     $response['error'] = '';
                 } else {
-                    $response['error'] = 'ไม่พบข้อมูลสำหรับ ' . $action;
+                    $response['error'] = 'ไม่พบข้อมูลสำหรับ ' . htmlspecialchars($action);
                 }
                 $stmt->close();
             } else {
@@ -52,11 +50,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && isset($_GET
         $response['error'] = 'ID ไม่ถูกต้อง';
     }
 
-// --- จัดการ POST request ---
 } elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
     $action = $_POST['action'];
 
-    // === ส่วนของการ Update ===
     if ($action == 'update_rule') {
         $rule_id = isset($_POST['rule_id']) ? intval($_POST['rule_id']) : 0;
         $rule_name = $_POST['rule_name'] ?? '';
@@ -116,9 +112,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && isset($_GET
                 $stmt_update->close();
             } else { $response['error'] = "ผิดพลาด SQL อัปเดตออปชัน: " . $conn->error; }
         } else { $response['error'] = "กรุณากรอกข้อมูลออปชันให้ครบถ้วนและถูกต้อง!"; }
-
-    // === ส่วนของการ Delete ===
-    } elseif (strpos($action, 'delete_') === 0) { // <-- แก้ไข: ใช้ elseif และเช็ค prefix
+    
+    } elseif (strpos($action, 'delete_') === 0) {
         $delete_id = isset($_POST['id']) ? intval($_POST['id']) : 0;
         $table_name = '';
         $id_column = '';
@@ -136,12 +131,16 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && isset($_GET
                 if ($stmt_delete->execute()) {
                     $response['success'] = true;
                     $response['message'] = "ลบ {$item_type} (ID: {$delete_id}) เรียบร้อย!";
-                } else { $response['error'] = "ผิดพลาดในการลบ {$item_type}: " . $stmt_delete->error; }
+                } else {
+                    $response['error'] = "ผิดพลาดในการลบ {$item_type}: " . $stmt_delete->error;
+                }
                 $stmt_delete->close();
-            } else { $response['error'] = "ผิดพลาด SQL ลบ {$item_type}: " . $conn->error; }
-        } else { $response['error'] = "Action (POST) ลบ ไม่ถูกต้อง หรือ ID ไม่ถูกต้อง"; }
-    
-    // === ถ้าไม่ตรงกับ Action ไหนเลย ===
+            } else {
+                $response['error'] = "ผิดพลาด SQL ลบ {$item_type}: " . $conn->error;
+            }
+        } else { 
+            $response['error'] = "Action (POST) ลบ ไม่ถูกต้อง หรือ ID ไม่ถูกต้อง";
+        }
     } else {
         $response['error'] = "Action (POST) ไม่รู้จัก: " . htmlspecialchars($action);
     }
