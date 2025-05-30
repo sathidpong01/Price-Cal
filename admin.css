@@ -301,3 +301,18 @@ tr {
 tr.highlight-update {
     background-color: #d4edda !important; /* Use important if needed to override other styles */
 }
+
+.calculators-grid {
+    display: grid;
+    /* สร้างคอลัมน์แบบปรับเปลี่ยนตามขนาดหน้าจอ
+      แต่ละคอลัมน์จะมีความกว้างอย่างน้อย 400px และจะขยายจนเต็มพื้นที่
+      หากพื้นที่ไม่พอสำหรับ 2 คอลัมน์ จะแสดงเป็น 1 คอลัมน์โดยอัตโนมัติ
+    */
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px; /* เพิ่มช่องว่างระหว่างเครื่องคำนวณ */
+}
+
+.calculator-wrapper h1 {
+    margin-top: 0; /* ลบระยะห่างด้านบนของ h1 ที่อยู่ใน grid */
+}
+
