@@ -264,24 +264,3 @@ hr {
     color: #007bff; /* เปลี่ยนเป็นสีน้ำเงินให้สอดคล้อง */
     font-weight: bold; /* เน้นตัวหนา */
 }
-
-/* --- Grid Layout for Calculators --- */
-.calculators-grid {
-  display: grid;
-  /* - สร้าง 2 คอลัมน์บนหน้าจอขนาดใหญ่ และปรับเป็น 1 คอลัมน์บนจอเล็กอัตโนมัติ
-    - minmax(420px, 1fr) หมายถึงแต่ละส่วนจะกว้างอย่างน้อย 420px
-  */
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  gap: 25px; /* ช่องว่างระหว่างเครื่องคำนวณ */
-}
-
-.calculator-section {
-  /* อาจเพิ่มเส้นขอบหรือพื้นหลังเพื่อความสวยงาม (ถ้าต้องการ) */
-  border: 1px solid #e0e0e0; 
-  padding: 15px; 
-  border-radius: 5px; 
-}
-
-.calculator-section h1 {
-  margin-top: 0;
-}
