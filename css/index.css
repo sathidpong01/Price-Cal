@@ -4,8 +4,7 @@ body {
   margin: 0;
 }
 .container {
-  width: 80vw;
-  max-width: 900px;
+  width: 70%;
   min-width: 320px;
   margin: 0 auto;
   padding: 20px 0;
@@ -284,4 +283,56 @@ hr {
 
 .calculator-section h1 {
   margin-top: 0;
+}
+
+/*=================================
+OPTIONS GRID STYLES
+(สำหรับจัดวาง Checkbox ออปชันเสริม)
+=================================*/
+
+.options-grid {
+    display: grid; /* ใช้ CSS Grid ในการจัดวาง */
+    /* - สร้างคอลัมน์อัตโนมัติ โดยแต่ละคอลัมน์กว้างอย่างน้อย 250px
+      - 1fr หมายถึงให้แบ่งพื้นที่ที่เหลือเท่าๆ กัน
+    */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 5px; /* ระยะห่างระหว่างออปชัน */
+    padding: 5px;
+    background-color: #fdfdfd;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.option-item {
+    display: flex;
+    align-items: center; /* จัดให้ checkbox และข้อความอยู่กลางแนวตั้ง */
+    background-color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+    transition: all 0.2s ease-in-out;
+}
+
+.option-item:hover {
+    border-color: #007bff; /* ไฮไลท์เมื่อเอาเมาส์ไปชี้ */
+    background-color: #f0f8ff;
+}
+
+.option-item input[type="checkbox"] {
+    margin-right: 10px; /* ระยะห่างระหว่าง checkbox กับข้อความ */
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.option-item label {
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    /* Override สไตล์เดิม */
+    width: auto;
+    margin-bottom: 0;
+    font-weight: normal;
 }

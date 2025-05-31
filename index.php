@@ -77,8 +77,8 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
     <title>โปรแกรมคำนวณราคาสินค้า</title>
     <link rel="stylesheet" href="css/index.css">
     <link rel="icon" type="image/png" href="/icon/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/icon/favicon.svg" />
-<link rel="shortcut icon" href="/icon/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/icon/favicon.svg" />
+    <link rel="shortcut icon" href="/icon/favicon.ico" />
 </head>
 
 <body>
@@ -88,7 +88,7 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
         <div class="calculators-grid">
 
             <div class="calculator-section">
-                <h1>คำนวณราคาสติ๊กเกอร์ (+ วัสดุแผ่นเสริม)</h1>
+                <h1>คำนวณราคาสติ๊กเกอร์</h1>
                 <p>(ราคาสติ๊กเกอร์พื้นฐานคือ <?php echo number_format($sticker_price_per_sqm, 2); ?> บาท/ตร.ม.)</p>
                 <form id="stickerForm">
                     <div><label for="st_width">ความกว้าง (ซม.):</label><input type="text" id="st_width" name="st_width"
@@ -107,19 +107,22 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="full-width-field"><label>ออปชันเสริม:</label>
-                        <div class="options-group options-container">
-                            <?php foreach ($sticker_options as $opt): ?>
-                            <span>
-                                <input type="checkbox" id="st_option_<?php echo $opt['option_id']; ?>"
-                                    name="st_options[]" value="<?php echo $opt['option_id']; ?>">
-                                <label
-                                    for="st_option_<?php echo $opt['option_id']; ?>"><?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?></label>
-                            </span>
+                    <div class="full-width-field">
+                        <label>ออปชันเสริม:</label>
+                        <div class="options-grid"> <?php foreach ($sticker_options as $opt): ?>
+                            <div class="option-item"> <input type="checkbox"
+                                    id="st_option_<?php echo $opt['option_id']; ?>" name="st_options[]"
+                                    value="<?php echo $opt['option_id']; ?>">
+                                <label for="st_option_<?php echo $opt['option_id']; ?>">
+                                    <?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?>
+                                </label>
+                            </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
-                    <div class="full-width-field"><label for="st_travel_type">ค่าเดินทาง:</label><select
+                    <div class="full-width-field">
+                        <label for="st_travel_type">ค่าเดินทาง:</label>
+                        <select
                             id="st_travel_type" name="st_travel_type">
                             <option value="none">ไม่รวมค่าเดินทาง</option>
                             <option value="in_city">ในเมือง (<?php echo number_format($travel_cost_in_city, 2); ?> บาท)
@@ -162,15 +165,16 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                     </div>
                     <?php endif; ?>
 
-                    <div class="full-width-field"><label>ออปชันเสริม:</label>
-                        <div class="options-group options-container">
-                            <?php foreach ($vinyl_options as $opt): ?>
-                            <span>
-                                <input type="checkbox" id="vn_option_<?php echo $opt['option_id']; ?>"
-                                    name="vn_options[]" value="<?php echo $opt['option_id']; ?>">
-                                <label
-                                    for="vn_option_<?php echo $opt['option_id']; ?>"><?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?></label>
-                            </span>
+                    <div class="full-width-field">
+                        <label>ออปชันเสริม:</label>
+                        <div class="options-grid"> <?php foreach ($sticker_options as $opt): ?>
+                            <div class="option-item"> <input type="checkbox"
+                                    id="st_option_<?php echo $opt['option_id']; ?>" name="st_options[]"
+                                    value="<?php echo $opt['option_id']; ?>">
+                                <label for="st_option_<?php echo $opt['option_id']; ?>">
+                                    <?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?>
+                                </label>
+                            </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -213,15 +217,15 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="full-width-field"><label>ออปชันเสริม:</label>
-                        <div class="options-group options-container">
-                            <?php foreach ($letter_options as $opt): ?>
-                            <span>
-                                <input type="checkbox" id="lt_option_<?php echo $opt['option_id']; ?>" name="options[]"
-                                    value="<?php echo $opt['option_id']; ?>">
-                                <label
-                                    for="lt_option_<?php echo $opt['option_id']; ?>"><?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?></label>
-                            </span>
+                    <div class="full-width-field">
+                        <label>ออปชันเสริม:</label>
+                        <div class="options-grid">  <?php foreach ($sticker_options as $opt): ?>
+                            <div class="option-item"> <input type="checkbox" id="st_option_<?php echo $opt['option_id']; ?>"
+                                    name="st_options[]" value="<?php echo $opt['option_id']; ?>">
+                                <label for="st_option_<?php echo $opt['option_id']; ?>">
+                                    <?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?>
+                                </label>
+                            </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -262,15 +266,15 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                             value=""><small>(วงกลม: ใส่เส้นผ่านศูนย์กลาง)</small></div>
                     <div><label for="lb_height">ความยาว/สูง (ซม.):</label><input type="text" id="lb_height"
                             name="lb_height" value=""><small>(วงกลม: ใส่เส้นผ่านศูนย์กลาง)</small></div>
-                    <div class="full-width-field"><label>ออปชันเสริม:</label>
-                        <div class="options-group options-container">
-                            <?php foreach ($lightbox_options as $opt): ?>
-                            <span>
-                                <input type="checkbox" id="lb_option_<?php echo $opt['option_id']; ?>"
-                                    name="lb_options[]" value="<?php echo $opt['option_id']; ?>">
-                                <label
-                                    for="lb_option_<?php echo $opt['option_id']; ?>"><?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?></label>
-                            </span>
+                            <div class="full-width-field">
+                        <label>ออปชันเสริม:</label>
+                        <div class="options-grid">  <?php foreach ($sticker_options as $opt): ?>
+                            <div class="option-item"> <input type="checkbox" id="st_option_<?php echo $opt['option_id']; ?>"
+                                    name="st_options[]" value="<?php echo $opt['option_id']; ?>">
+                                <label for="st_option_<?php echo $opt['option_id']; ?>">
+                                    <?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?>
+                                </label>
+                            </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
