@@ -43,6 +43,31 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && isset($_GET
 elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
     $action = $_POST['action'];
 
+    // --- update_stock handler ---
+    if ($action == 'update_stock') {
+        $stock_id = isset($_POST['stock_id']) ? intval($_POST['stock_id']) : 0;
+        $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
+
+        if ($stock_id > 0 && $quantity >= 0) {
+            $sql_update_stock = "UPDATE stock SET quantity = ? WHERE stock_id = ?";
+            $stmt = $conn->prepare($sql_update_stock);
+            if ($stmt) {
+                $stmt->bind_param("ii", $quantity, $stock_id);
+                if ($stmt->execute()) {
+                    $response['success'] = true;
+                    $response['message'] = "อัปเดตสต็อกเรียบร้อย!";
+                } else {
+                    $response['error'] = "ผิดพลาด: " . $stmt->error;
+                }
+                $stmt->close();
+            } else {
+                $response['error'] = "ผิดพลาด SQL: " . $conn->error;
+            }
+        } else {
+            $response['error'] = "ข้อมูลไม่ถูกต้องสำหรับอัปเดตสต็อก";
+        }
+    }
+
     // --- update_rule handler ---
     if ($action == 'update_rule') {
         $rule_id = isset($_POST['rule_id']) ? intval($_POST['rule_id']) : 0;

@@ -11,9 +11,9 @@ if ($result_rules && $result_rules->num_rows > 0) {
         $price_rules[$row_rule['rule_name']] = $row_rule['rule_value'];
     }
 }
-$sticker_price_per_sqm = isset($price_rules['Sticker Price Per SQM']) ? $price_rules['Sticker Price Per SQM'] : 500;
+$sticker_price_per_sqm = isset($price_rules['Sticker Price Per SQM']) ? $price_rules['Sticker Price Per SQM'] : 450;
 $travel_cost_per_km = isset($price_rules['Travel Cost Per KM']) ? $price_rules['Travel Cost Per KM'] : 10;
-$travel_cost_in_city = isset($price_rules['Travel Cost In City']) ? $price_rules['Travel Cost In City'] : 500;
+$travel_cost_in_city = isset($price_rules['Travel Cost In City']) ? $price_rules['Travel Cost In City'] : 300;
 
 
 // --- ดึงข้อมูล Options และจัดกลุ่มตาม Category ---
@@ -58,6 +58,17 @@ if ($result_materials_all_query && $result_materials_all_query->num_rows > 0) {
         }
     }
 }
+
+// --- ดึงข้อมูลสต็อกสำหรับแสดงผล ---
+$stock_list_display = [];
+$sql_stock_display = "SELECT product_name, product_type, quantity, unit FROM stock WHERE quantity > 0 ORDER BY product_type, product_name";
+$result_stock_display = $conn->query($sql_stock_display);
+if ($result_stock_display) {
+    while ($row_stock = $result_stock_display->fetch_assoc()) {
+        $stock_list_display[] = $row_stock;
+    }
+}
+
 $conn->close();
 
 
@@ -84,6 +95,39 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
 <body>
     <div class="container">
         <div class="admin-link"><a href="admin.php" class="btn-admin">ไปหน้าจัดการ (Admin)</a></div>
+
+        <div class="stock-display-section">
+            <h1>สต็อกสินค้า</h1>
+            <div class="table-responsive">
+                <table id="stockDisplayTable">
+                    <thead>
+                        <tr>
+                            <th>ประเภทสินค้า</th>
+                            <th>ชื่อสินค้า</th>
+                            <th>จำนวน</th>
+                            <th>หน่วย</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($stock_list_display)): ?>
+                        <tr>
+                            <td colspan="3">ไม่มีข้อมูลสินค้าในสต็อก</td>
+                        </tr>
+                        <?php else: ?>
+                        <?php foreach ($stock_list_display as $item): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($item['product_type']); ?></td>
+                            <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                            <td><?php echo htmlspecialchars($item['quantity']); ?></td>
+                            <td><?php echo htmlspecialchars($item['unit']); ?></td>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
         <div class="calculators-grid">
 
@@ -122,14 +166,14 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                     </div>
                     <div class="full-width-field">
                         <label for="st_travel_type">ค่าเดินทาง:</label>
-                        <select
-                            id="st_travel_type" name="st_travel_type">
+                        <select id="st_travel_type" name="st_travel_type">
                             <option value="none">ไม่รวมค่าเดินทาง</option>
                             <option value="in_city">ในเมือง (<?php echo number_format($travel_cost_in_city, 2); ?> บาท)
                             </option>
                             <option value="out_city">นอกเมือง (<?php echo number_format($travel_cost_per_km, 2); ?>
                                 บาท/กม.)</option>
-                        </select></div>
+                        </select>
+                    </div>
                     <div id="st_distance_section" style="display: none;" class="full-width-field"><label
                             for="st_distance_km">ระยะทาง (กม.):</label><input type="text" id="st_distance_km"
                             name="st_distance_km" value=""></div>
@@ -219,9 +263,10 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                     </div>
                     <div class="full-width-field">
                         <label>ออปชันเสริม:</label>
-                        <div class="options-grid">  <?php foreach ($sticker_options as $opt): ?>
-                            <div class="option-item"> <input type="checkbox" id="st_option_<?php echo $opt['option_id']; ?>"
-                                    name="st_options[]" value="<?php echo $opt['option_id']; ?>">
+                        <div class="options-grid"> <?php foreach ($sticker_options as $opt): ?>
+                            <div class="option-item"> <input type="checkbox"
+                                    id="st_option_<?php echo $opt['option_id']; ?>" name="st_options[]"
+                                    value="<?php echo $opt['option_id']; ?>">
                                 <label for="st_option_<?php echo $opt['option_id']; ?>">
                                     <?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?>
                                 </label>
@@ -266,11 +311,12 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                             value=""><small>(วงกลม: ใส่เส้นผ่านศูนย์กลาง)</small></div>
                     <div><label for="lb_height">ความยาว/สูง (ซม.):</label><input type="text" id="lb_height"
                             name="lb_height" value=""><small>(วงกลม: ใส่เส้นผ่านศูนย์กลาง)</small></div>
-                            <div class="full-width-field">
+                    <div class="full-width-field">
                         <label>ออปชันเสริม:</label>
-                        <div class="options-grid">  <?php foreach ($sticker_options as $opt): ?>
-                            <div class="option-item"> <input type="checkbox" id="st_option_<?php echo $opt['option_id']; ?>"
-                                    name="st_options[]" value="<?php echo $opt['option_id']; ?>">
+                        <div class="options-grid"> <?php foreach ($sticker_options as $opt): ?>
+                            <div class="option-item"> <input type="checkbox"
+                                    id="st_option_<?php echo $opt['option_id']; ?>" name="st_options[]"
+                                    value="<?php echo $opt['option_id']; ?>">
                                 <label for="st_option_<?php echo $opt['option_id']; ?>">
                                     <?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?>
                                 </label>
@@ -298,7 +344,8 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                 <div id="lightbox_result"></div>
             </div>
         </div>
-        <script src="js/index.js" defer></script>
+    </div>
+    <script src="js/index.js" defer></script>
     </div>
 </body>
 

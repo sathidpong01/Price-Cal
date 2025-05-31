@@ -178,6 +178,17 @@ if(isset($_GET['msg'])) {
     if($_GET['msg'] == 'rule_deleted') $message .= "ลบกฎราคาเรียบร้อยแล้ว!<br>";
     if($_GET['msg'] == 'updated') $message .= "อัปเดตข้อมูลเรียบร้อยแล้ว!<br>";
 }
+
+// ใน admin.php (ส่วนบน)
+// ... ต่อจากโค้ด $options_list_admin[] = $row_opt; ...
+$stock_list = [];
+$sql_stock = "SELECT stock_id, product_name, product_type, quantity, unit FROM stock ORDER BY product_type, product_name";
+$result_stock = $conn->query($sql_stock);
+if ($result_stock) {
+    while ($row_stock = $result_stock->fetch_assoc()) {
+        $stock_list[] = $row_stock;
+    }
+}
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -210,6 +221,43 @@ $conn->close();
             <?php if (!empty($error)): ?>
             <div class="message error"><?php echo rtrim($error, "<br>"); ?></div>
             <?php endif; ?>
+        </div>
+        <!-- Stock Section -->
+        <div class="admin-section" id="stock_section">
+            <h2>จัดการสต็อกสินค้า</h2>
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table id="stockManagementTable">
+                        <thead>
+                            <tr>
+                                <th>ประเภท</th>
+                                <th>ชื่อสินค้า</th>
+                                <th>จำนวน</th>
+                                <th>หน่วย</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($stock_list as $item): ?>
+                            <tr id="stock-row-<?php echo $item['stock_id']; ?>">
+                                <td><?php echo htmlspecialchars($item['product_type']); ?></td>
+                                <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                <td>
+                                    <input type="number" class="stock-quantity-input form-control"
+                                        style="width: 80px; text-align: right;" value="<?php echo $item['quantity']; ?>"
+                                        data-initial-value="<?php echo $item['quantity']; ?>">
+                                </td>
+                                <td><?php echo htmlspecialchars($item['unit']); ?></td>
+                                <td class="table-actions">
+                                    <button type="button" class="btn-stock-save"
+                                        onclick="handleStockUpdate(<?php echo $item['stock_id']; ?>, this)">บันทึก</button>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- Rules Section -->
@@ -445,13 +493,12 @@ $conn->close();
                     </div>
                 </div>
             </div>
-
-            <!-- Existing modals -->
-            <?php include 'includes/modals.php'; ?>
-
-            <script src="js/admin.js" defer></script>
-
         </div>
+    </div>
+    <!-- Existing modals -->
+    <?php include 'includes/modals.php'; ?>
+
+    <script src="js/admin.js" defer></script>
     </div>
 </body>
 

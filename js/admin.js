@@ -340,3 +340,57 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('materialSearch')?.addEventListener('keyup', () => filterTable('materialSearch', 'materialsTable', 1, 2));
     document.getElementById('optionSearch')?.addEventListener('keyup', () => filterTable('optionSearch', 'optionsTable', 1, 3));
 });
+
+// ฟังก์ชันสำหรับจัดการการอัปเดตสต็อก
+function handleStockUpdate(stockId, buttonElement) {
+    const row = buttonElement.closest('tr');
+    const input = row.querySelector('.stock-quantity-input');
+    const newQuantity = input.value;
+
+    const formData = new FormData();
+    formData.append('action', 'update_stock');
+    formData.append('stock_id', stockId);
+    formData.append('quantity', newQuantity);
+
+    fetch('admin_ajax_data_handler.php', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                input.setAttribute('data-initial-value', newQuantity);
+                row.classList.remove('changed');
+                displayGlobalMessage('success', data.message);
+            } else {
+                displayGlobalMessage('error', data.error || 'เกิดข้อผิดพลาดในการอัปเดตสต็อก');
+            }
+        })
+        .catch(error => console.error('Error updating stock:', error));
+}
+
+// ฟังก์ชันสำหรับตั้งค่าการตรวจจับการเปลี่ยนแปลงในตารางสต็อก
+function setupStockControls() {
+    const stockTable = document.getElementById('stockManagementTable');
+    if (!stockTable) return;
+
+    stockTable.querySelectorAll('tbody tr').forEach(row => {
+        const input = row.querySelector('.stock-quantity-input');
+        if (input) {
+            input.addEventListener('input', () => {
+                if (input.value !== input.getAttribute('data-initial-value')) {
+                    row.classList.add('changed');
+                } else {
+                    row.classList.remove('changed');
+                }
+            });
+        }
+    });
+}
+
+// เรียกใช้ฟังก์ชัน setup ต่างๆ เมื่อหน้าเว็บโหลดเสร็จ
+document.addEventListener('DOMContentLoaded', function() {
+    // โค้ดเดิมใน DOMContentLoaded...
+    initPagination('rulesTable', 5);
+    initPagination('materialsTable', 5);
+    initPagination('optionsTable', 5);
+    // เพิ่มการเรียกใช้สำหรับตารางสต็อก
+    setupStockControls(); 
+});

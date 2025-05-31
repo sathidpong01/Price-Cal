@@ -216,26 +216,34 @@ table th {
     text-align: center;
 }
 
-table td:nth-child(1) {
-    text-align: right;
-}
-
 tr:nth-child(even) {
     background-color: #f8f9fa;
 }
 
+table td:nth-child(1) {
+    text-align: right;
+}
+
+
 /* จัดคอลัมน์ ค่า (คอลัมน์ที่ 3) ให้ชิดขวา เพราะเป็นตัวเลข */
+table td:nth-child(2) {
+    text-align: right;
+}
 table td:nth-child(3) {
+    text-align: right;
+}
+table td:nth-child(4) {
+    text-align: right;
+}
+table td:nth-child(5) {
+    text-align: right;
+}
+table td:nth-child(6) {
     text-align: right;
 }
 
 tr:hover {
     background-color: #e9ecef;
-}
-
-/* จัดคอลัมน์ จัดการ (คอลัมน์ที่ 5) ที่มีปุ่ม ให้อยู่กึ่งกลาง */
-table td:nth-child(5) {
-    text-align: right;
 }
 
 .close-btn {
@@ -341,4 +349,22 @@ table td:nth-child(5) {
 /* ปรับการจัดวางปุ่มเพิ่มข้อมูลในฟอร์ม */
 .form-container .btn-group {
     text-align: right; /* จัดปุ่มไปทางขวา */
+}
+
+/* --- Stock Management Table Styles --- */
+#stockManagementTable .table-actions {
+    text-align: center;
+}
+
+#stockManagementTable .btn-stock-save {
+    background-color: #28a745;
+    color: white;
+    visibility: hidden; /* ซ่อนปุ่มไว้ก่อน */
+    opacity: 0;
+    transition: all 0.2s ease-in-out;
+}
+
+#stockManagementTable tr.changed .btn-stock-save {
+    visibility: visible; /* แสดงปุ่มเมื่อมีการเปลี่ยนแปลง */
+    opacity: 1;
 }
