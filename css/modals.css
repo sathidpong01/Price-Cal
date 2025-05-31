@@ -1,0 +1,99 @@
+/* admin.css */
+
+/* --- IMPROVED MODAL STYLES --- */
+/* ใช้โค้ดส่วนนี้แทนของเดิมทั้งหมดที่เกี่ยวกับ Modal */
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.5); /* Black w/ opacity and a little more dim */
+    animation-name: fadeIn; /* Custom fade in animation */
+    animation-duration: 0.3s;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 10% auto; /* 10% from the top and centered */
+    padding: 25px 30px;
+    border: none; /* Remove border, shadow is enough */
+    width: 90%; 
+    max-width: 550px; /* A bit smaller for a cleaner look */
+    border-radius: 12px; /* Smoother radius */
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    animation-name: slideIn; /* Custom slide in animation */
+    animation-duration: 0.4s;
+}
+
+/* Close button - makes it more prominent */
+.close-btn {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.close-btn:hover {
+    color: #ff0000;
+}
+
+/* === Title inside Modal === */
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 25px; /* More space below title */
+    font-size: 1.4rem;
+    color: #333;
+    text-align: left;
+}
+
+/* === Form alignment using Flexbox (The most important part) === */
+.modal-content .form-group {
+    display: flex; /* Use Flexbox for alignment */
+    align-items: center; /* Vertically center label and input */
+    margin-bottom: 15px; /* Consistent spacing */
+    gap: 15px; /* Space between label and input */
+}
+
+.modal-content .form-group label {
+    flex: 0 0 120px; /* Label will not grow or shrink, fixed base width */
+    font-weight: 600; /* Make label bolder */
+    text-align: right; /* Align text to the right for a clean line */
+    margin-bottom: 0; /* Remove default margin */
+    color: #444;
+}
+
+.modal-content .form-group .form-control {
+    flex: 1; /* Input will grow to fill the remaining space */
+    width: auto; /* Override any fixed width */
+}
+
+/* === Button alignment inside Modal === */
+.modal-content .btn-group {
+    display: flex;
+    justify-content: flex-end; /* Align button to the right */
+    margin-top: 25px; /* More space above the button */
+    padding-top: 15px;
+    border-top: 1px solid #eee; /* A subtle separator line */
+}
+
+/* === Keyframe Animations for a nice effect === */
+@keyframes fadeIn {
+    from {opacity: 0} 
+    to {opacity: 1}
+}
+
+@keyframes slideIn {
+    from {transform: translateY(-50px); opacity: 0}
+    to {transform: translateY(0); opacity: 1}
+}

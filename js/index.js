@@ -238,7 +238,6 @@ function displayResults(calculatorType, data, error) {
 }
 
 function handleFormCalculation(formId, calculatorType) {
-    console.log('handleFormCalculation called', formId, calculatorType);
     const form = document.getElementById(formId);
     if (!form) return;
     const formData = new FormData(form);
@@ -272,7 +271,6 @@ function handleFormCalculation(formId, calculatorType) {
         resultDiv.innerHTML = '<div class="spinner-container"><div class="spinner"></div><p>กำลังคำนวณ...</p></div>';
         resultDiv.className = 'result-details';
     }
-    console.log('fetching calculate_ajax.php', Object.fromEntries(formData.entries()));
     fetch('calculate_ajax.php', { method: 'POST', body: formData })
     .then(response => { if (!response.ok) { throw new Error('Network error: ' + response.statusText + ' - ' + response.url); } return response.json(); })
     .then(data => { displayResults(calculatorType, data, null); })
@@ -329,6 +327,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-
-    document.getElementById('stickerForm');
 });

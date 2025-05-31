@@ -1,0 +1,344 @@
+
+
+/* Admin Page Styles */
+body {
+    background: #f4f6fa;
+    font-family: 'Sarabun', 'Tahoma', Arial, sans-serif;
+    min-height: 100vh;
+}
+
+/*
+=================================
+NAVBAR STYLES
+=================================
+*/
+
+.navbar {
+    background-color: #ffffff; /* สีพื้นหลังของ Navbar */
+    padding: 12px 0; /* ระยะห่างภายในแนวตั้ง */
+    border-bottom: 1px solid #e3e7ed; /* เส้นขอบล่าง */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* เพิ่มเงาเล็กน้อย */
+}
+
+.navbar-container {
+    max-width: 80%;
+    margin: 0 auto; /* จัดให้อยู่กึ่งกลาง */
+    padding: 0 24px; /* ระยะห่างซ้าย-ขวา */
+    display: flex;
+    justify-content: space-between; /* จัดให้ brand อยู่ซ้าย และปุ่มอยู่ขวา */
+    align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+}
+
+.navbar-brand {
+    font-size: 1.5rem; /* ขนาดฟอนต์สำหรับชื่อเว็บ */
+    font-weight: 600;
+    color: #333;
+    text-decoration: none; /* เอาเส้นใต้ลิงก์ออก */
+}
+
+.navbar-button {
+    background-color: #28a745; /* สีเดียวกับปุ่ม Add */
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    margin-left: 10px;
+}
+
+.navbar-button:hover {
+    background-color: #218838; /* สีเข้มขึ้นเมื่อ hover */
+}
+
+.container-body {
+    max-width: 70%;
+    margin: 40px auto 40px auto;
+    gap: 32px;
+    display: grid;
+    gap: 16px; 
+}
+
+.container {
+    max-width: 80%;
+    min-width: 320px;
+    margin: auto;
+    padding: 32px 24px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* Message Styles */
+#globalMessages {
+    grid-column: 1 / -1;
+}
+
+.message {
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.message.success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Card Styles */
+.admin-section {
+    background: #f9fafb;
+    border: 1px solid #e3e7ed;
+    border-radius: 12px;
+    padding: 24px 18px 18px 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 0;
+}
+
+.admin-section h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.form-control {
+    width: auto;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Button Styles */
+.btn-group {
+    margin-top: 10px;
+}
+
+button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+button[type="submit"] {
+    background-color: #28a745;
+    color: white;
+}
+
+button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+.btn-edit {
+    background-color: #0cb143;
+    color: white;
+    margin-right: 5px;
+}
+
+.btn-edit:hover {
+    background-color: #048b21;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+    margin-left: 8px;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+/* Table Styles */
+.search-section {
+    margin-bottom: 10px;
+}
+
+.search-box {
+    width: auto;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.table-responsive {
+    margin-top: 10px;
+    overflow-x: auto;
+    text-align: right;
+}
+
+table {
+    width: 100%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    font-size: 1rem;
+}
+
+table th, table td {
+    padding: 12px 15px;             /* เพิ่มระยะห่าง บน-ล่าง 12px, ซ้าย-ขวา 15px */
+    border: 1px solid #dee2e6;      /* กำหนดเส้นขอบให้เหมือนกันทุกเซลล์ */
+    vertical-align: middle;         /* จัดให้เนื้อหาอยู่ตรงกลางแนวตั้ง */
+}
+
+table th {
+    text-align: center;
+}
+
+table td:nth-child(1) {
+    text-align: right;
+}
+
+tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* จัดคอลัมน์ ค่า (คอลัมน์ที่ 3) ให้ชิดขวา เพราะเป็นตัวเลข */
+table td:nth-child(3) {
+    text-align: right;
+}
+
+tr:hover {
+    background-color: #e9ecef;
+}
+
+/* จัดคอลัมน์ จัดการ (คอลัมน์ที่ 5) ที่มีปุ่ม ให้อยู่กึ่งกลาง */
+table td:nth-child(5) {
+    text-align: right;
+}
+
+.close-btn {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-btn:hover {
+    color: #000;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .container {
+        grid-template-columns: 1fr;
+        max-width: 98vw;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
+    
+    .header-section {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+}
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin: 12px 0 0 0;
+    flex-wrap: wrap;
+}
+.pagination-btn {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.pagination-btn:hover {
+    background-color: #17a2b8;
+    color: #fff;
+    border-color: #17a2b8;
+}
+.pagination-btn.active {
+    background-color: #28a745;
+    color: #fff;
+    border-color: #28a745;
+    font-weight: bold;
+    pointer-events: none;
+} 
+
+/* --- CSS สำหรับจัด Layout ฟอร์มและตาราง --- */
+
+/* ใช้ Flexbox จัดการการวางตำแหน่ง */
+.content-wrapper {
+    display: flex;
+    flex-wrap: wrap; /* ทำให้ขึ้นบรรทัดใหม่ได้เมื่อหน้าจอแคบ */
+    gap: 24px;      /* สร้างระยะห่างระหว่างฟอร์มกับตาราง */
+}
+
+/* กำหนดขนาดให้ฟอร์ม */
+.form-container {
+    flex: 1;                 /* ให้ฟอร์มยืดหยุ่นได้ */
+    min-width: 280px;        /* กำหนดความกว้างขั้นต่ำของฟอร์ม */
+}
+
+/* กำหนดขนาดให้ตาราง */
+.table-container {
+    flex: 3;                 /* ให้ตารางมีพื้นที่ประมาณ 2 เท่าของฟอร์ม */
+    min-width: 400px;        /* กำหนดความกว้างขั้นต่ำของตาราง */
+}
+
+/* ปรับปรุงสไตล์ฟอร์มเล็กน้อยเพื่อให้ดูดีขึ้นใน layout ใหม่ */
+.form-container form {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e3e7ed;
+}
+
+/* ปรับการจัดวางปุ่มเพิ่มข้อมูลในฟอร์ม */
+.form-container .btn-group {
+    text-align: right; /* จัดปุ่มไปทางขวา */
+}
