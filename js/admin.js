@@ -232,7 +232,6 @@ function displayGlobalMessage(type, text, modalIdToKeepOpen = null) {
 }
 
 let paginatedTables = {};
-<<<<<<< HEAD
 function initPagination(tableId, rowsPerPage) { /* ... โค้ดเดิม ... */ }
 function showPage(tableId, page) { /* ... โค้ดเดิม ... */ }
 function updatePaginationControls(tableId) { /* ... โค้ดเดิม ... */ }
@@ -267,8 +266,6 @@ function filterTable(inputId, tableId, ...columnIndices) {
     // Repaginate the table after filtering
     repaginate(tableId);
 }
-=======
->>>>>>> parent of 9c2f45d (เพิ่มหมวดหมู่ออฟชั่น)
 
 function initPagination(tableId, rowsPerPage) {
     // console.log(`[DEBUG] Initializing pagination for ${tableId}`);
