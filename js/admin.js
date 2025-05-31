@@ -339,6 +339,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('ruleSearch')?.addEventListener('keyup', () => filterTable('ruleSearch', 'rulesTable', 1));
     document.getElementById('materialSearch')?.addEventListener('keyup', () => filterTable('materialSearch', 'materialsTable', 1, 2));
     document.getElementById('optionSearch')?.addEventListener('keyup', () => filterTable('optionSearch', 'optionsTable', 1, 3));
+    // เพิ่มการเรียกใช้สำหรับตารางสต็อก
+    setupStockControls();
+
 });
 
 // ฟังก์ชันสำหรับจัดการการอัปเดตสต็อก
@@ -384,13 +387,3 @@ function setupStockControls() {
         }
     });
 }
-
-// เรียกใช้ฟังก์ชัน setup ต่างๆ เมื่อหน้าเว็บโหลดเสร็จ
-document.addEventListener('DOMContentLoaded', function() {
-    // โค้ดเดิมใน DOMContentLoaded...
-    initPagination('rulesTable', 5);
-    initPagination('materialsTable', 5);
-    initPagination('optionsTable', 5);
-    // เพิ่มการเรียกใช้สำหรับตารางสต็อก
-    setupStockControls(); 
-});

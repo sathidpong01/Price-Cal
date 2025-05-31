@@ -97,3 +97,15 @@
     from {transform: translateY(-50px); opacity: 0}
     to {transform: translateY(0); opacity: 1}
 }
+
+.btn-group button {
+    background-color: #0cb143;
+    border: 2px solid #0cb143;
+    color: white;
+    margin-right: 5px;
+}
+
+.btn-group button:hover {
+    background-color: transparent;
+    color: #0cb143;
+}

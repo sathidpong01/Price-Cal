@@ -1,10 +1,16 @@
 body {
   font-family: sans-serif;
-  padding: 20px;
+  padding: 10px;
   margin: 0;
 }
+.main-layout-grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr; /* แบ่งพื้นที่เป็น 2 ส่วน (เครื่องคำนวณได้ 2 ส่วน, สต็อกได้ 1 ส่วน) */
+  gap: 30px; /* ระยะห่างระหว่าง 2 ฝั่ง */
+  align-items: start; /* จัดให้เนื้อหาทั้งสองฝั่งเริ่มจากด้านบน */
+}
 .container {
-  width: 70%;
+  width: 80%;
   min-width: 320px;
   margin: auto;
   padding: 20px;
@@ -338,14 +344,19 @@ OPTIONS GRID STYLES
 }
 
 /* --- Stock Display Section Styles --- */
+/* สไตล์สำหรับกล่องสต็อกสินค้าฝั่งขวา */
 .stock-display-section {
-  margin-top: 40px;
-  margin-bottom: 40px;
   background-color: #f9f9f9;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+  /* --- ส่วนสำคัญที่ทำให้ Scroll ได้ --- */
+  position: sticky; /* ทำให้ยึดอยู่กับที่เมื่อ scroll หน้าหลัก */
+  top: 20px; /* ระยะห่างจากด้านบน */
+  max-height: 90vh; /* กำหนดความสูงสูงสุดไม่เกิน 90% ของความสูงจอ */
+  overflow-y: auto; /* ถ้าเนื้อหาเกินความสูงสูงสุด ให้แสดง scrollbar แนวตั้ง */
 }
 
 .stock-display-section h1 {
@@ -353,39 +364,51 @@ OPTIONS GRID STYLES
   color: #007bff;
   border-bottom: 2px solid #007bff;
   margin-top: 0;
+  padding-bottom: 10px;
+}
+
+/* ทำให้ตารางสต็อกใช้พื้นที่ได้เต็มที่ */
+.stock-display-section .table-responsive {
+  width: 100%;
 }
 
 #stockDisplayTable {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+width: 100%;
+border-collapse: collapse;
+margin-top: 15px;
+}
+
+#stockDisplayTable th,
+#stockDisplayTable td {
+border: 1px solid #e0e0e0;
+padding: 10px 12px;
+text-align: left;
+font-size: 0.9rem; /* ปรับขนาดฟอนต์ให้เล็กลงเล็กน้อย */
 }
 
 #stockDisplayTable th {
-  border: 1px solid #e0e0e0;
-  padding: 10px 12px;
-  text-align: center;
-}
-#stockDisplayTable td {
-  border: 1px solid #e0e0e0;
-  padding: 10px 12px;
-  text-align: left;
-}
-
-#stockDisplayTable th {
-  background-color: #f8f9fa;
+background-color: #f0f3f5;
+position: sticky; /* ทำให้หัวตารางติดหนึบอยู่ด้านบนเมื่อ scroll */
+top: -1px; /* แก้ปัญหาเห็นเส้นขอบเมื่อ scroll */
 }
 
 #stockDisplayTable td {
-  background-color: #fff;
+background-color: #fff;
 }
 
-/* จัดคอลัมน์ "จำนวน" ในตารางสต็อกให้ชิดขวา */
 #stockDisplayTable td:nth-child(3) {
-  text-align: right;
-  padding-right: 20px; /* เพิ่มระยะห่างด้านขวาเล็กน้อย */
+text-align: right;
 }
-#stockDisplayTable td:nth-child(4) {
-  text-align: center;
-  padding-right: 20px; /* เพิ่มระยะห่างด้านขวาเล็กน้อย */
+
+/* --- Responsive for smaller screens --- */
+@media (max-width: 1024px) {
+.main-layout-grid {
+  grid-template-columns: 1fr; /* บนจอเล็กให้เรียงเป็น 1 คอลัมน์ */
+}
+
+.stock-display-section {
+  position: static; /* ยกเลิกการ sticky บนจอเล็ก */
+  max-height: none; /* ไม่จำกัดความสูง */
+  margin-top: 40px;
+}
 }

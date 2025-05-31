@@ -222,283 +222,297 @@ $conn->close();
             <div class="message error"><?php echo rtrim($error, "<br>"); ?></div>
             <?php endif; ?>
         </div>
-        <!-- Stock Section -->
-        <div class="admin-section" id="stock_section">
-            <h2>จัดการสต็อกสินค้า</h2>
-            <div class="table-container">
-                <div class="table-responsive">
-                    <table id="stockManagementTable">
-                        <thead>
-                            <tr>
-                                <th>ประเภท</th>
-                                <th>ชื่อสินค้า</th>
-                                <th>จำนวน</th>
-                                <th>หน่วย</th>
-                                <th>จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($stock_list as $item): ?>
-                            <tr id="stock-row-<?php echo $item['stock_id']; ?>">
-                                <td><?php echo htmlspecialchars($item['product_type']); ?></td>
-                                <td><?php echo htmlspecialchars($item['product_name']); ?></td>
-                                <td>
-                                    <input type="number" class="stock-quantity-input form-control"
-                                        style="width: 80px; text-align: right;" value="<?php echo $item['quantity']; ?>"
-                                        data-initial-value="<?php echo $item['quantity']; ?>">
-                                </td>
-                                <td><?php echo htmlspecialchars($item['unit']); ?></td>
-                                <td class="table-actions">
-                                    <button type="button" class="btn-stock-save"
-                                        onclick="handleStockUpdate(<?php echo $item['stock_id']; ?>, this)">บันทึก</button>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+        <div class="main-layout-grid">
+
+            <div class="main-admin-content">
+                <!-- Rules Section -->
+                <div class="admin-section">
+                    <h2>จัดการกฎราคา</h2>
+
+                    <div class="content-wrapper">
+                        <div class="form-container">
+
+                            <form action="admin.php" method="post">
+                                <div class="form-group">
+                                    <label for="add_rule_name">ชื่อกฎราคา:</label>
+                                    <input type="text" id="add_rule_name" name="add_rule_name" class="form-control"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_rule_value">ราคา:</label>
+                                    <input type="number" step="0.01" id="add_rule_value" name="add_rule_value"
+                                        class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_rule_unit">หน่วย:</label>
+                                    <input type="text" id="add_rule_unit" name="add_rule_unit" class="form-control"
+                                        required>
+                                </div>
+                                <div class="btn-group">
+                                    <button type="submit" name="add_rule">เพิ่มกฎราคา</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="table-container">
+                            <div class="search-section">
+                            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path></g></svg>
+                                <input type="text" id="ruleSearch" class="search-box" placeholder="ค้นหากฎราคา..."
+                                    onkeyup="filterTable('ruleSearch', 'rulesTable', 1)">
+                            </div>
+                            <div class="table-responsive">
+                                <table id="rulesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>ชื่อกฎ</th>
+                                            <th>ค่า</th>
+                                            <th>หน่วย</th>
+                                            <th>จัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (empty($price_rules_list)): ?>
+                                        <tr>
+                                            <td colspan="5" style="text-align: center;">ยังไม่มีข้อมูลกฎราคา</td>
+                                        </tr>
+                                        <?php else: ?>
+                                        <?php foreach ($price_rules_list as $rule): ?>
+                                        <tr id="rule-row-<?php echo $rule['rule_id']; ?>">
+                                            <td><?php echo htmlspecialchars($rule['rule_id']); ?></td>
+                                            <td data-field="name"><?php echo htmlspecialchars($rule['rule_name']); ?>
+                                            </td>
+                                            <td data-field="value" style="text-align: right;">
+                                                <?php echo number_format($rule['rule_value'], 2); ?></td>
+                                            <td data-field="unit"><?php echo htmlspecialchars($rule['rule_unit']); ?>
+                                            </td>
+                                            <td class="table-actions">
+                                                <button type="button" class="btn-edit"
+                                                    onclick="openEditModal('rule', <?php echo $rule['rule_id']; ?>)">แก้ไข</button>
+                                                <button type="button" class="btn-delete"
+                                                    onclick="handleDeleteClick('rule', <?php echo $rule['rule_id']; ?>, '<?php echo htmlspecialchars(addslashes($rule['rule_name'])); ?>')">ลบ</button>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Materials Section -->
+                <div class="admin-section">
+                    <h2>จัดการวัสดุ</h2>
+                    <div class="content-wrapper">
+                        <div class="form-container">
+                            <form action="admin.php" method="post">
+                                <div class="form-group">
+                                    <label for="add_material_type">ประเภทวัสดุ:</label>
+                                    <select id="add_material_type" name="add_material_type" class="form-control"
+                                        required>
+                                        <?php foreach (array_unique($existing_product_types) as $type): ?>
+                                        <option value="<?php echo htmlspecialchars($type); ?>">
+                                            <?php echo htmlspecialchars($type); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_material_name">ชื่อวัสดุ:</label>
+                                    <input type="text" id="add_material_name" name="add_material_name"
+                                        class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_material_price">ราคาต่อหน่วย:</label>
+                                    <input type="number" step="0.01" id="add_material_price" name="add_material_price"
+                                        class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_material_unit">หน่วย:</label>
+                                    <input type="text" id="add_material_unit" name="add_material_unit"
+                                        class="form-control" required>
+                                </div>
+                                <div class="btn-group">
+                                    <button type="submit" name="add_material">เพิ่มวัสดุ</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="table-container">
+                            <div class="search-section">
+                            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path></g></svg>
+                                <input type="text" id="materialSearch" class="search-box"
+                                    placeholder="ค้นหาด้วยชื่อ หรือ ประเภท..."
+                                    onkeyup="filterTable('materialSearch', 'materialsTable', 1, 2)">
+                            </div>
+                            <div class="table-responsive">
+                                <table id="materialsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>ประเภท</th>
+                                            <th>ชื่อวัสดุ</th>
+                                            <th>ราคา/หน่วย</th>
+                                            <th>หน่วย</th>
+                                            <th>จัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (empty($materials_list_admin)): ?>
+                                        <tr>
+                                            <td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลวัสดุ</td>
+                                        </tr>
+                                        <?php else: ?>
+                                        <?php foreach ($materials_list_admin as $mat): ?>
+                                        <tr id="material-row-<?php echo $mat['material_id']; ?>">
+                                            <td><?php echo htmlspecialchars($mat['material_id']); ?></td>
+                                            <td data-field="type"><?php echo htmlspecialchars($mat['product_type']); ?>
+                                            </td>
+                                            <td data-field="name"><?php echo htmlspecialchars($mat['material_name']); ?>
+                                            </td>
+                                            <td data-field="price" style="text-align:right;">
+                                                <?php echo number_format($mat['price_per_unit'], 2); ?></td>
+                                            <td data-field="unit"><?php echo htmlspecialchars($mat['unit']); ?></td>
+                                            <td class="table-actions">
+                                                <button type="button" class="btn-edit"
+                                                    onclick="openEditModal('material', <?php echo $mat['material_id']; ?>)">แก้ไข</button>
+                                                <button type="button" class="btn-delete"
+                                                    onclick="handleDeleteClick('material', <?php echo $mat['material_id']; ?>, '<?php echo htmlspecialchars(addslashes($mat['material_name'])); ?>')">ลบ</button>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Options Section -->
+                <div class="admin-section">
+                    <h2>จัดการออปชันเสริม</h2>
+                    <div class="content-wrapper">
+                        <div class="form-container">
+                            <form action="admin.php" method="post">
+                                <div class="form-group">
+                                    <label for="add_option_name">ชื่อออปชัน:</label>
+                                    <input type="text" id="add_option_name" name="add_option_name" class="form-control"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_option_price">ราคา (บาท):</label>
+                                    <input type="number" step="0.01" id="add_option_price" name="add_option_price"
+                                        class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_option_category">หมวดหมู่:</label>
+                                    <select id="add_option_category" name="add_option_category" class="form-control"
+                                        required>
+                                        <?php foreach ($option_categories as $cat): ?>
+                                        <option value="<?php echo htmlspecialchars($cat); ?>">
+                                            <?php echo htmlspecialchars($cat); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="btn-group">
+                                    <button type="submit" name="add_option">เพิ่มออปชัน</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="table-container">
+                            <div class="search-section">
+                            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path></g></svg>
+                                <input type="text" id="optionSearch" class="search-box"
+                                    placeholder="ค้นหาด้วยชื่อหรือหมวดหมู่..."
+                                    onkeyup="filterTable('optionSearch', 'optionsTable', 1, 3)">
+                            </div>
+
+                            <div class="table-responsive">
+                                <table id="optionsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>ชื่อออปชัน</th>
+                                            <th>ราคา</th>
+                                            <th>หมวดหมู่</th>
+                                            <th>จัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (empty($options_list_admin)): ?>
+                                        <tr>
+                                            <td colspan="5" style="text-align: center;">ยังไม่มีข้อมูลออปชัน</td>
+                                        </tr>
+                                        <?php else: ?>
+                                        <?php foreach ($options_list_admin as $opt): ?>
+                                        <tr id="option-row-<?php echo $opt['option_id']; ?>">
+                                            <td><?php echo htmlspecialchars($opt['option_id']); ?></td>
+                                            <td data-field="name"><?php echo htmlspecialchars($opt['option_name']); ?>
+                                            </td>
+                                            <td data-field="price" style="text-align:right;">
+                                                <?php echo number_format($opt['option_price'], 2); ?></td>
+                                            <td data-field="category">
+                                                <?php echo htmlspecialchars($opt['category'] ?? 'ทั่วไป'); ?></td>
+                                            <td class="table-actions">
+                                                <button type="button" class="btn-edit"
+                                                    onclick="openEditModal('option', <?php echo $opt['option_id']; ?>)">แก้ไข</button>
+                                                <button type="button" class="btn-delete"
+                                                    onclick="handleDeleteClick('option', <?php echo $opt['option_id']; ?>, '<?php echo htmlspecialchars(addslashes($opt['option_name'])); ?>')">ลบ</button>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Rules Section -->
-        <div class="admin-section">
-            <h2>จัดการกฎราคา</h2>
-
-            <div class="content-wrapper">
-                <div class="form-container">
-
-                    <form action="admin.php" method="post">
-                        <div class="form-group">
-                            <label for="add_rule_name">ชื่อกฎราคา:</label>
-                            <input type="text" id="add_rule_name" name="add_rule_name" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_rule_value">ราคา:</label>
-                            <input type="number" step="0.01" id="add_rule_value" name="add_rule_value"
-                                class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_rule_unit">หน่วย:</label>
-                            <input type="text" id="add_rule_unit" name="add_rule_unit" class="form-control" required>
-                        </div>
-                        <div class="btn-group">
-                            <button type="submit" name="add_rule">เพิ่มกฎราคา</button>
-                        </div>
-                    </form>
-                </div>
-
+            <!-- Stock Section -->
+            <div class="admin-section" id="stock_section">
+                <h2>จัดการสต็อกสินค้า</h2>
                 <div class="table-container">
-                    <div class="search-section">
-                        <input type="text" id="ruleSearch" class="search-box" placeholder="ค้นหากฎราคา..."
-                            onkeyup="filterTable('ruleSearch', 'rulesTable', 1)">
-                    </div>
                     <div class="table-responsive">
-                        <table id="rulesTable">
+                        <table id="stockManagementTable">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>ชื่อกฎ</th>
-                                    <th>ค่า</th>
-                                    <th>หน่วย</th>
-                                    <th>จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($price_rules_list)): ?>
-                                <tr>
-                                    <td colspan="5" style="text-align: center;">ยังไม่มีข้อมูลกฎราคา</td>
-                                </tr>
-                                <?php else: ?>
-                                <?php foreach ($price_rules_list as $rule): ?>
-                                <tr id="rule-row-<?php echo $rule['rule_id']; ?>">
-                                    <td><?php echo htmlspecialchars($rule['rule_id']); ?></td>
-                                    <td data-field="name"><?php echo htmlspecialchars($rule['rule_name']); ?></td>
-                                    <td data-field="value" style="text-align: right;">
-                                        <?php echo number_format($rule['rule_value'], 2); ?></td>
-                                    <td data-field="unit"><?php echo htmlspecialchars($rule['rule_unit']); ?></td>
-                                    <td class="table-actions">
-                                        <button type="button" class="btn-edit"
-                                            onclick="openEditModal('rule', <?php echo $rule['rule_id']; ?>)">แก้ไข</button>
-                                        <button type="button" class="btn-delete"
-                                            onclick="handleDeleteClick('rule', <?php echo $rule['rule_id']; ?>, '<?php echo htmlspecialchars(addslashes($rule['rule_name'])); ?>')">ลบ</button>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Materials Section -->
-        <div class="admin-section">
-            <h2>จัดการวัสดุ</h2>
-            <div class="content-wrapper">
-                <div class="form-container">
-                    <form action="admin.php" method="post">
-                        <div class="form-group">
-                            <label for="add_material_type">ประเภทวัสดุ:</label>
-                            <select id="add_material_type" name="add_material_type" class="form-control" required>
-                                <?php foreach (array_unique($existing_product_types) as $type): ?>
-                                <option value="<?php echo htmlspecialchars($type); ?>">
-                                    <?php echo htmlspecialchars($type); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_material_name">ชื่อวัสดุ:</label>
-                            <input type="text" id="add_material_name" name="add_material_name" class="form-control"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_material_price">ราคาต่อหน่วย:</label>
-                            <input type="number" step="0.01" id="add_material_price" name="add_material_price"
-                                class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_material_unit">หน่วย:</label>
-                            <input type="text" id="add_material_unit" name="add_material_unit" class="form-control"
-                                required>
-                        </div>
-                        <div class="btn-group">
-                            <button type="submit" name="add_material">เพิ่มวัสดุ</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="table-container">
-                    <div class="search-section">
-                        <input type="text" id="materialSearch" class="search-box"
-                            placeholder="ค้นหาด้วยชื่อ หรือ ประเภท..."
-                            onkeyup="filterTable('materialSearch', 'materialsTable', 1, 2)">
-                    </div>
-                    <div class="table-responsive">
-                        <table id="materialsTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
                                     <th>ประเภท</th>
-                                    <th>ชื่อวัสดุ</th>
-                                    <th>ราคา/หน่วย</th>
+                                    <th>ชื่อสินค้า</th>
+                                    <th>จำนวน</th>
                                     <th>หน่วย</th>
                                     <th>จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($materials_list_admin)): ?>
-                                <tr>
-                                    <td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลวัสดุ</td>
-                                </tr>
-                                <?php else: ?>
-                                <?php foreach ($materials_list_admin as $mat): ?>
-                                <tr id="material-row-<?php echo $mat['material_id']; ?>">
-                                    <td><?php echo htmlspecialchars($mat['material_id']); ?></td>
-                                    <td data-field="type"><?php echo htmlspecialchars($mat['product_type']); ?></td>
-                                    <td data-field="name"><?php echo htmlspecialchars($mat['material_name']); ?>
+                                <?php foreach ($stock_list as $item): ?>
+                                <tr id="stock-row-<?php echo $item['stock_id']; ?>">
+                                    <td><?php echo htmlspecialchars($item['product_type']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                    <td>
+                                        <input type="number" class="stock-quantity-input form-control"
+                                            style="width: 80px; text-align: right;"
+                                            value="<?php echo $item['quantity']; ?>"
+                                            data-initial-value="<?php echo $item['quantity']; ?>">
                                     </td>
-                                    <td data-field="price" style="text-align:right;">
-                                        <?php echo number_format($mat['price_per_unit'], 2); ?></td>
-                                    <td data-field="unit"><?php echo htmlspecialchars($mat['unit']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['unit']); ?></td>
                                     <td class="table-actions">
-                                        <button type="button" class="btn-edit"
-                                            onclick="openEditModal('material', <?php echo $mat['material_id']; ?>)">แก้ไข</button>
-                                        <button type="button" class="btn-delete"
-                                            onclick="handleDeleteClick('material', <?php echo $mat['material_id']; ?>, '<?php echo htmlspecialchars(addslashes($mat['material_name'])); ?>')">ลบ</button>
+                                        <button type="button" class="btn-stock-save"
+                                            onclick="handleStockUpdate(<?php echo $item['stock_id']; ?>, this)">บันทึก</button>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
-                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Options Section -->
-        <div class="admin-section">
-            <h2>จัดการออปชันเสริม</h2>
-            <div class="content-wrapper">
-                <div class="form-container">
-                    <form action="admin.php" method="post">
-                        <div class="form-group">
-                            <label for="add_option_name">ชื่อออปชัน:</label>
-                            <input type="text" id="add_option_name" name="add_option_name" class="form-control"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_option_price">ราคา (บาท):</label>
-                            <input type="number" step="0.01" id="add_option_price" name="add_option_price"
-                                class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_option_category">หมวดหมู่:</label>
-                            <select id="add_option_category" name="add_option_category" class="form-control" required>
-                                <?php foreach ($option_categories as $cat): ?>
-                                <option value="<?php echo htmlspecialchars($cat); ?>">
-                                    <?php echo htmlspecialchars($cat); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="btn-group">
-                            <button type="submit" name="add_option">เพิ่มออปชัน</button>
-                        </div>
-                    </form>
-                </div>
+        <!-- Existing modals -->
+        <?php include 'includes/modals.php'; ?>
 
-                <div class="table-container">
-                    <div class="search-section">
-                        <input type="text" id="optionSearch" class="search-box"
-                            placeholder="ค้นหาด้วยชื่อหรือหมวดหมู่..."
-                            onkeyup="filterTable('optionSearch', 'optionsTable', 1, 3)">
-                    </div>
-
-                    <div class="table-responsive">
-                        <table id="optionsTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>ชื่อออปชัน</th>
-                                    <th>ราคา</th>
-                                    <th>หมวดหมู่</th>
-                                    <th>จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($options_list_admin)): ?>
-                                <tr>
-                                    <td colspan="5" style="text-align: center;">ยังไม่มีข้อมูลออปชัน</td>
-                                </tr>
-                                <?php else: ?>
-                                <?php foreach ($options_list_admin as $opt): ?>
-                                <tr id="option-row-<?php echo $opt['option_id']; ?>">
-                                    <td><?php echo htmlspecialchars($opt['option_id']); ?></td>
-                                    <td data-field="name"><?php echo htmlspecialchars($opt['option_name']); ?>
-                                    </td>
-                                    <td data-field="price" style="text-align:right;">
-                                        <?php echo number_format($opt['option_price'], 2); ?></td>
-                                    <td data-field="category">
-                                        <?php echo htmlspecialchars($opt['category'] ?? 'ทั่วไป'); ?></td>
-                                    <td class="table-actions">
-                                        <button type="button" class="btn-edit"
-                                            onclick="openEditModal('option', <?php echo $opt['option_id']; ?>)">แก้ไข</button>
-                                        <button type="button" class="btn-delete"
-                                            onclick="handleDeleteClick('option', <?php echo $opt['option_id']; ?>, '<?php echo htmlspecialchars(addslashes($opt['option_name'])); ?>')">ลบ</button>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Existing modals -->
-    <?php include 'includes/modals.php'; ?>
-
-    <script src="js/admin.js" defer></script>
+        <script src="js/admin.js" defer></script>
     </div>
 </body>
 

@@ -2,9 +2,9 @@
 
 // --- ตัวแปรสำหรับเก็บผลลัพธ์ล่าสุด ---
 let currentResults = {
-    sticker: null,
-    letter: null,
-    lightbox: null,
+    sticker: null, // เพิ่มสำหรับสติ๊กเกอร์
+    letter: null, // เพิ่มสำหรับตัวอักษร
+    lightbox: null, // เพิ่มสำหรับกล่องไฟ
     vinyl: null // เพิ่มสำหรับผ้าไวนิล
 };
 

@@ -51,7 +51,7 @@ NAVBAR STYLES
 }
 
 .container-body {
-    max-width: 70%;
+    max-width: 80%;
     margin: 40px auto 40px auto;
     gap: 32px;
     display: grid;
@@ -59,7 +59,7 @@ NAVBAR STYLES
 }
 
 .container {
-    max-width: 80%;
+    max-width: 85%;
     min-width: 320px;
     margin: auto;
     padding: 32px 24px;
@@ -69,6 +69,18 @@ NAVBAR STYLES
     display: flex;
     flex-direction: column;
     gap: 32px;
+}
+
+.main-layout-grid {
+    display: grid;
+    grid-template-columns: 3.5fr 2fr; /* แบ่งพื้นที่เป็น 2 ส่วน (ส่วนจัดการหลักได้ 2, สต็อกได้ 1) */
+    gap: 24px;
+    align-items: start;
+}
+
+.main-admin-content {
+    display: grid;
+    gap: 16px; /* ระยะห่างระหว่าง Section จัดการแต่ละอัน */
 }
 
 /* Message Styles */
@@ -162,35 +174,69 @@ button[type="submit"]:hover {
 
 .btn-edit {
     background-color: #0cb143;
+    border: 2px solid #0cb143;
     color: white;
     margin-right: 5px;
 }
 
 .btn-edit:hover {
-    background-color: #048b21;
+    background-color: transparent;
+    color: #0cb143;
 }
 
 .btn-delete {
     background-color: #dc3545;
+    border: 2px solid #dc3545;
     color: white;
     margin-left: 8px;
 }
 
 .btn-delete:hover {
-    background-color: #c82333;
+    background: transparent;
+    color: #dc3545;
 }
 
 /* Table Styles */
 .search-section {
-    margin-bottom: 10px;
-}
+    display: flex;
+    line-height: 28px;
+    align-items: center;
+    position: relative;
+    max-width: 190px;
+   }
 
+.icon {
+    position: absolute;
+    left: 1rem;
+    fill: #9e9ea7;
+    width: 1rem;
+    height: 1rem;
+   }
+   
 .search-box {
     width: auto;
-    padding: 6px 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.9rem;
+    height: 40px;
+    line-height: 28px;
+    padding: 0 1rem;
+    padding-left: 2.5rem;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    outline: none;
+    background-color: #f3f3f4;
+    color: #0d0c22;
+    transition: .3s ease;
+   }
+
+.search-box::placeholder {
+    color: #9e9ea7;
+}
+
+.search-box:focus,
+.search-box:hover {
+    outline: none;
+    color: #9e9ea7;
+    border-color: rgba(0, 184, 24, 0.4);
+    background-color: #fff;
 }
 
 .table-responsive {
@@ -321,8 +367,8 @@ tr:hover {
 
 /* ใช้ Flexbox จัดการการวางตำแหน่ง */
 .content-wrapper {
-    display: flex;
-    flex-wrap: wrap; /* ทำให้ขึ้นบรรทัดใหม่ได้เมื่อหน้าจอแคบ */
+    display: grid;
+    grid-template-columns: 1fr 3fr; /* ทำให้ขึ้นบรรทัดใหม่ได้เมื่อหน้าจอแคบ */
     gap: 24px;      /* สร้างระยะห่างระหว่างฟอร์มกับตาราง */
 }
 
@@ -357,14 +403,54 @@ tr:hover {
 }
 
 #stockManagementTable .btn-stock-save {
-    background-color: #28a745;
+    background-color: #0cb143;
+    border: 2px solid #0cb143;
     color: white;
+    margin-right: 5px;
     visibility: hidden; /* ซ่อนปุ่มไว้ก่อน */
     opacity: 0;
     transition: all 0.2s ease-in-out;
 }
 
+#stockManagementTable .btn-stock-save:hover {
+    background-color: transparent;
+    color: #0cb143;
+}
+
 #stockManagementTable tr.changed .btn-stock-save {
     visibility: visible; /* แสดงปุ่มเมื่อมีการเปลี่ยนแปลง */
     opacity: 1;
+}
+
+/* ทำให้คอลัมน์ Stock สามารถ scroll ได้ */
+#stock_section {
+    position: sticky;
+    top: 20px;
+    max-height: 90vh; /* ความสูงสูงสุดไม่เกิน 90% ของหน้าจอ */
+    overflow-y: auto; /* ถ้าเนื้อหายาวเกิน ให้มี scrollbar */
+}
+
+#stock_section .table-container {
+    flex: none; /* ยกเลิก flex-grow ที่อาจติดมา */
+}
+
+/* ทำให้หัวตารางสต็อกติดหนึบเมื่อ scroll */
+#stockManagementTable th {
+    position: sticky;
+    top: -1px; /* จัดตำแหน่งให้สวยงามเมื่อ scroll */
+    background-color: #f8f9fa; /* ต้องกำหนดสีพื้นหลัง */
+    z-index: 1;
+}
+
+/* --- Responsive for Admin Layout --- */
+@media (max-width: 1200px) {
+    .main-layout-grid {
+        grid-template-columns: 1fr; /* บนจอเล็กให้เรียงเป็น 1 คอลัมน์ */
+    }
+    #stock_section {
+        position: static; /* ยกเลิกการ sticky */
+        max-height: none; /* ไม่จำกัดความสูง */
+        order: -1; /* ย้าย section สต็อกไปไว้บนสุด */
+        margin-bottom: 16px;
+    }
 }

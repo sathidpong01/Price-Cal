@@ -5,7 +5,7 @@
 <div id="editRuleModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('editRuleModal')">&times;</span>
-        <h2>แก้ไขกฎราคา</h2>
+        <h2>แก้ไขกฎราคา:</h2>
         <form id="editRuleForm" method="post" action="admin_ajax_data_handler.php">
             <input type="hidden" name="action" value="update_rule">
             <input type="hidden" id="edit_rule_id" name="rule_id">
@@ -31,7 +31,7 @@
 <div id="editMaterialModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('editMaterialModal')">&times;</span>
-        <h2>แก้ไขวัสดุ</h2>
+        <h2>แก้ไขวัสดุ:</h2>
         <form id="editMaterialForm" method="post" action="admin_ajax_data_handler.php">
             <input type="hidden" name="action" value="update_material">
             <input type="hidden" id="edit_material_id" name="material_id">
@@ -65,7 +65,7 @@
 <div id="editOptionModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('editOptionModal')">&times;</span>
-        <h2>แก้ไขออปชันเสริม</h2>
+        <h2>แก้ไขออปชันเสริม:</h2>
         <form id="editOptionForm" method="post" action="admin_ajax_data_handler.php">
             <input type="hidden" name="action" value="update_option">
             <input type="hidden" id="edit_option_id" name="option_id">
