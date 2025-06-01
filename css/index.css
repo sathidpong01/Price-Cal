@@ -412,3 +412,50 @@ text-align: right;
   margin-top: 40px;
 }
 }
+
+/* ใน css/index.css (เพิ่มต่อท้าย) */
+
+.input-method-options {
+  margin-bottom: 10px; /* เพิ่มระยะห่างด้านล่างของกลุ่ม radio */
+}
+
+.input-method-options span {
+  margin-right: 15px;
+}
+
+.input-method-options input[type="radio"] {
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.input-method-options label { /* สไตล์สำหรับ label ของ radio */
+  width: auto;
+  margin-bottom: 0;
+  vertical-align: middle;
+  font-weight: normal; /* ทำให้ไม่หนาเหมือน label หลัก */
+}
+
+#letter_text_input_group {
+  margin-bottom: 10px; /* เพิ่มระยะห่างให้กลุ่ม textarea */
+}
+
+#letter_text_input_group label { /* สไตล์สำหรับ label "ข้อความ:" */
+  display: inline-block; /* หรือ block ตามต้องการ */
+  width: 150px; /* ปรับให้เท่ากับ label อื่นๆ */
+  vertical-align: top;
+}
+
+#letter_text_input_group textarea {
+  width: calc(100% - 170px); /* คำนวณความกว้างที่เหลือหลังจาก label */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-height: 60px;
+  vertical-align: top;
+  box-sizing: border-box; /* เพิ่มเพื่อให้ padding และ border ไม่ทำให้เกินความกว้าง */
+}
+
+/* ปรับ label ของจำนวนตัวอักษร เมื่อมี textarea อยู่ด้านบน */
+#letterForm div:has(> #letter_quantity) > label {
+  margin-top: 5px; /* อาจจะไม่จำเป็นถ้า layout พอดีแล้ว */
+}

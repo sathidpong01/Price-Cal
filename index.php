@@ -217,10 +217,32 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                 <div class="calculator-section">
                     <h1>คำนวณราคาตัวอักษร</h1>
                     <form id="letterForm">
+
+                        <div>
+                            <label>วิธีระบุจำนวน:</label>
+                            <div class="input-method-options">
+                                <span>
+                                    <input type="radio" id="letter_input_type_text" name="letter_input_type"
+                                        value="text" checked>
+                                    <label for="letter_input_type_text">กรอกข้อความ</label>
+                                </span>
+                                <span>
+                                    <input type="radio" id="letter_input_type_count" name="letter_input_type"
+                                        value="count">
+                                    <label for="letter_input_type_count">กรอกจำนวนเอง</label>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="letter_text_input_group">
+                            <label for="letter_text">ข้อความ:</label>
+                            <textarea id="letter_text" name="letter_text" rows="3"
+                                placeholder="ป้อนข้อความที่นี่เพื่อนับจำนวนตัวอักษร..."></textarea>
+                        </div>
                         <div><label for="letter_height">ความสูง (นิ้ว):</label><input type="text" id="letter_height"
-                                name="letter_height" placeholder="กรอกความสูง" value=""></div>
+                                name="letter_height" value=""></div>
                         <div><label for="letter_quantity">จำนวนตัวอักษร:</label><input type="text" id="letter_quantity"
-                                name="letter_quantity" placeholder="กรอกจำนวน" value=""></div>
+                                name="letter_quantity" value="" readonly> </div>
                         <div><label for="material">เลือกวัสดุ:</label>
                             <select id="material" name="material">
                                 <option value="">-- กรุณาเลือก --</option>
@@ -237,8 +259,8 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                                 <?php foreach ($letter_options as $opt): ?>
                                 <div class="option-item">
                                     <input type="checkbox" id="lt_opt_<?php echo $opt['option_id']; ?>"
-                                        name="lt_options[]" value="<?php echo $opt['option_id']; ?>">
-                                    <label for="lt_opt_<?php echo $opt['option_id']; ?>">
+                                        name="lt_options[]" value="<?php echo $opt['option_id']; ?>"> <label
+                                        for="lt_opt_<?php echo $opt['option_id']; ?>">
                                         <?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?>
                                     </label>
                                 </div>
@@ -279,37 +301,39 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div><label for="lb_width">ความกว้าง (ซม.):</label><input type="text" id="lb_width" name="lb_width" placeholder="กรอกความกว้าง" value=""></div>
-                        <div><label for="lb_height">ความยาว/สูง (ซม.):</label><input type="text" id="lb_height" name="lb_height" placeholder="กรอกความยาว/สูง" value=""></div>
+                        <div><label for="lb_width">ความกว้าง (ซม.):</label><input type="text" id="lb_width"
+                                name="lb_width" placeholder="กรอกความกว้าง" value=""></div>
+                        <div><label for="lb_height">ความยาว/สูง (ซม.):</label><input type="text" id="lb_height"
+                                name="lb_height" placeholder="กรอกความยาว/สูง" value=""></div>
                         <div class="full-width-field">
-                                    <label>ออปชันเสริม:</label>
-                                    <div class="options-grid">
-                                        <?php foreach ($lightbox_options as $opt): ?>
-                                        <div class="option-item">
-                                            <input type="checkbox" id="lb_opt_<?php echo $opt['option_id']; ?>"
-                                                name="lb_options[]" value="<?php echo $opt['option_id']; ?>">
-                                            <label for="lb_opt_<?php echo $opt['option_id']; ?>">
-                                                <?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?>
-                                            </label>
-                                        </div>
-                                        <?php endforeach; ?>
-                                    </div>
+                            <label>ออปชันเสริม:</label>
+                            <div class="options-grid">
+                                <?php foreach ($lightbox_options as $opt): ?>
+                                <div class="option-item">
+                                    <input type="checkbox" id="lb_opt_<?php echo $opt['option_id']; ?>"
+                                        name="lb_options[]" value="<?php echo $opt['option_id']; ?>">
+                                    <label for="lb_opt_<?php echo $opt['option_id']; ?>">
+                                        <?php echo htmlspecialchars($opt['option_name']) . " (" . number_format($opt['option_price'], 2) . " บาท)"; ?>
+                                    </label>
                                 </div>
-                                <div class="full-width-field"><label for="lb_travel_type">ค่าเดินทาง:</label>
-                                    <select id="lb_travel_type" name="lb_travel_type">
-                                        <option value="none">ไม่รวมค่าเดินทาง</option>
-                                        <option value="in_city">ในเมือง
-                                            (<?php echo number_format($travel_cost_in_city, 2); ?>
-                                            บาท)
-                                        </option>
-                                        <option value="out_city">นอกเมือง
-                                            (<?php echo number_format($travel_cost_per_km, 2); ?>
-                                            บาท/กม.)</option>
-                                    </select>
-                                </div>
-                                <div id="lb_distance_section" style="display: none;" class="full-width-field"><label
-                                        for="lb_distance_km">ระยะทาง (กม.):</label><input type="text"
-                                        id="lb_distance_km" name="lb_distance_km" value=""></div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <div class="full-width-field"><label for="lb_travel_type">ค่าเดินทาง:</label>
+                            <select id="lb_travel_type" name="lb_travel_type">
+                                <option value="none">ไม่รวมค่าเดินทาง</option>
+                                <option value="in_city">ในเมือง
+                                    (<?php echo number_format($travel_cost_in_city, 2); ?>
+                                    บาท)
+                                </option>
+                                <option value="out_city">นอกเมือง
+                                    (<?php echo number_format($travel_cost_per_km, 2); ?>
+                                    บาท/กม.)</option>
+                            </select>
+                        </div>
+                        <div id="lb_distance_section" style="display: none;" class="full-width-field"><label
+                                for="lb_distance_km">ระยะทาง (กม.):</label><input type="text" id="lb_distance_km"
+                                name="lb_distance_km" value=""></div>
                     </form>
                     <div class="form-actions">
                         <button type="button" class="btn-action btn-clear"
@@ -321,8 +345,8 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
 
             <div class="stock-display-section">
                 <h1>สต็อกสินค้า</h1>
-                    <div class="table-responsive">
-                        <table id="stockDisplayTable">
+                <div class="table-responsive">
+                    <table id="stockDisplayTable">
                         <thead>
                             <tr>
                                 <th>ประเภทสินค้า</th>
@@ -331,25 +355,25 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                                 <th>หน่วย</th>
                             </tr>
                         </thead>
-                            <tbody>
+                        <tbody>
                             <?php if (empty($stock_list_display)): ?>
-                                <tr>
+                            <tr>
                                 <td colspan="3">ไม่มีข้อมูลสินค้าในสต็อก</td>
-                                </tr>
-                                <?php else: ?>
-                                <?php foreach ($stock_list_display as $item): ?>
-                                 <tr>
-                                    <td><?php echo htmlspecialchars($item['product_type']); ?></td>
-                                    <td><?php echo htmlspecialchars($item['product_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($item['quantity']); ?></td>
-                                    <td><?php echo htmlspecialchars($item['unit']); ?></td>
-                                </tr>
-                                <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                            </tr>
+                            <?php else: ?>
+                            <?php foreach ($stock_list_display as $item): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($item['product_type']); ?></td>
+                                <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                <td><?php echo htmlspecialchars($item['quantity']); ?></td>
+                                <td><?php echo htmlspecialchars($item['unit']); ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
+            </div>
 
         </div>
     </div>

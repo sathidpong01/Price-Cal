@@ -1,5 +1,84 @@
 // js/index.js (เวอร์ชันล่าสุด)
 
+// ฟังก์ชันสำหรับนับจำนวนตัวอักษรและสระภาษาไทยตามเงื่อนไข
+function countCharacters(text) {
+    if (!text) return 0;
+    const cleanedText = text.trim().replace(/\s+/g, ' ');
+    if (!cleanedText) return 0;
+
+    const thaiVowelsAndTones = "่้๊๋ัิีึืุู็์ะ"; // ปรับปรุงรายการสระ/วรรณยุกต์ตามต้องการ
+    let totalCount = 0;
+
+    for (let i = 0; i < cleanedText.length; i++) {
+        const char = cleanedText[i];
+        if (char === ' ') {
+            continue;
+        }
+        if (thaiVowelsAndTones.includes(char)) {
+            totalCount += 0.5;
+        } else {
+            totalCount += 1;
+        }
+    }
+    return totalCount;
+}
+
+function setupLetterInputMethod() {
+    const letterForm = document.getElementById('letterForm');
+    if (!letterForm) return;
+
+    const inputTypeText = document.getElementById('letter_input_type_text');
+    const inputTypeCount = document.getElementById('letter_input_type_count');
+    const letterTextInputGroup = document.getElementById('letter_text_input_group');
+    const letterTextTextarea = document.getElementById('letter_text');
+    const letterQuantityInput = document.getElementById('letter_quantity');
+
+    function updateQuantityBasedOnMethod() {
+        if (inputTypeText.checked) {
+            letterTextInputGroup.style.display = '';
+            letterQuantityInput.readOnly = true;
+            const charCount = countCharacters(letterTextTextarea.value);
+            letterQuantityInput.value = charCount;
+        } else { // inputTypeCount.checked
+            letterTextInputGroup.style.display = 'none';
+            letterQuantityInput.readOnly = false;
+        }
+        // *** เรียก handleFormCalculation เพื่ออัปเดตราคาเมื่อมีการเปลี่ยนแปลง ***
+        handleFormCalculation('letterForm', 'letter');
+    }
+
+    if (inputTypeText) inputTypeText.addEventListener('change', updateQuantityBasedOnMethod);
+    if (inputTypeCount) inputTypeCount.addEventListener('change', updateQuantityBasedOnMethod);
+
+    if (letterTextTextarea) {
+        letterTextTextarea.addEventListener('input', function() {
+            if (inputTypeText.checked) {
+                const charCount = countCharacters(this.value);
+                letterQuantityInput.value = charCount;
+                // *** เรียก handleFormCalculation เพื่ออัปเดตราคาเมื่อมีการพิมพ์ ***
+                handleFormCalculation('letterForm', 'letter');
+            }
+        });
+    }
+    
+    if (letterQuantityInput) {
+        // *** Event listener สำหรับเมื่อผู้ใช้แก้ไขช่องจำนวนโดยตรง (ในโหมด "กรอกจำนวนเอง") ***
+        letterQuantityInput.addEventListener('input', function() {
+            if (inputTypeCount.checked) {
+                handleFormCalculation('letterForm', 'letter');
+            }
+        });
+         letterQuantityInput.addEventListener('change', function() {
+            if (inputTypeCount.checked) {
+                handleFormCalculation('letterForm', 'letter');
+            }
+        });
+    }
+
+    updateQuantityBasedOnMethod(); // เรียกใช้เมื่อโหลดหน้าเพื่อตั้งค่าเริ่มต้น
+}
+// ========== END: ฟังก์ชันใหม่/แก้ไข ==========
+
 // --- ตัวแปรสำหรับเก็บผลลัพธ์ล่าสุด ---
 let currentResults = {
     sticker: null, // เพิ่มสำหรับสติ๊กเกอร์
@@ -294,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById(formId);
         if (form) {
             const calculatorType = formId.replace('Form', '').toLowerCase();
-            form.querySelectorAll('input[type="text"], select').forEach(element => {
+            form.querySelectorAll('input[type="text"], input[type="number"], select').forEach(element => { // เพิ่ม input[type="number"]
                 element.addEventListener('change', () => handleFormCalculation(formId, calculatorType));
                 element.addEventListener('keyup', () => handleFormCalculation(formId, calculatorType));
             });
@@ -305,14 +384,32 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     setupTravelDropdown('st_travel_type', 'st_distance_section', 'stickerForm', 'sticker');
-    setupTravelDropdown('travel_type', 'lt_distance_section', 'letterForm', 'letter');
+    setupTravelDropdown('vn_travel_type', 'vn_distance_section', 'vinylForm', 'vinyl'); // แก้ไขจาก travel_type เป็น vn_travel_type
+    setupTravelDropdown('travel_type', 'lt_distance_section', 'letterForm', 'letter'); // ID นี้สำหรับ Letter form
     setupTravelDropdown('lb_travel_type', 'lb_distance_section', 'lightboxForm', 'lightbox');
-    setupTravelDropdown('vn_travel_type', 'vn_distance_section', 'vinylForm', 'vinyl'); // เพิ่ม
+
 
     document.getElementById('st_distance_km')?.addEventListener('keyup', () => handleFormCalculation('stickerForm', 'sticker'));
-    document.getElementById('distance_km')?.addEventListener('keyup', () => handleFormCalculation('letterForm', 'letter'));
+    document.getElementById('vn_distance_km')?.addEventListener('keyup', () => handleFormCalculation('vinylForm', 'vinyl')); // เพิ่มการผูก event สำหรับ vn_distance_km
+    document.getElementById('distance_km')?.addEventListener('keyup', () => handleFormCalculation('letterForm', 'letter')); // ID นี้สำหรับ Letter form
     document.getElementById('lb_distance_km')?.addEventListener('keyup', () => handleFormCalculation('lightboxForm', 'lightbox'));
-    document.getElementById('vn_distance_km')?.addEventListener('keyup', () => handleFormCalculation('vinylForm', 'vinyl')); // เพิ่ม
+
+
+    document.querySelector('.container').addEventListener('click', function(event) {
+        if (event.target.classList.contains('btn-copy')) {
+            const button = event.target;
+            const type = button.getAttribute('data-type');
+            if (type && currentResults[type]) {
+                const textToCopy = buildCopyText(type);
+                copyTextToClipboard(textToCopy, button);
+            } else {
+                console.error("ไม่พบข้อมูลสำหรับคัดลอก:", type);
+                alert("ไม่พบข้อมูลสำหรับคัดลอก");
+            }
+        }
+    });
+
+    setupLetterInputMethod(); // เรียกใช้ฟังก์ชันใหม่
 
     document.querySelector('.container').addEventListener('click', function(event) {
         if (event.target.classList.contains('btn-copy')) {

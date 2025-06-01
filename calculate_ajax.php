@@ -102,8 +102,8 @@ if (isset($_POST['calculator_type'])) {
         // ========================== LETTER ==========================
         elseif ($calculator_type == 'letter') {
             $lt_height = $_POST['letter_height'] ?? '0'; $lt_quantity = $_POST['letter_quantity'] ?? '0';
-            $lt_selected_material_id = $_POST['material'] ?? '';
-            $lt_selected_options = isset($_POST['options']) ? (is_array($_POST['options']) ? $_POST['options'] : []) : [];
+            $lt_selected_material_id = $_POST['material'] ?? ''; // Corresponds to name="material" in index.php
+            $lt_selected_options = isset($_POST['lt_options']) ? (is_array($_POST['lt_options']) ? $_POST['lt_options'] : []) : []; // Changed 'options' to 'lt_options'
             $lt_travel_type = $_POST['travel_type'] ?? 'none'; $lt_distance_km = $_POST['distance_km'] ?? '0';
 
             if (!is_numeric($lt_height) || !is_numeric($lt_quantity) || empty($lt_selected_material_id) || $lt_height <= 0 || $lt_quantity <= 0) {
