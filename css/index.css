@@ -10,11 +10,11 @@ body {
   align-items: start; /* จัดให้เนื้อหาทั้งสองฝั่งเริ่มจากด้านบน */
 }
 .container {
-  width: 80%;
+  width: 100%;
   min-width: 320px;
   margin: auto;
-  padding: 20px;
 }
+
 h1 {
   color: #0056b3;
   border-bottom: 2px solid #0056b3;
@@ -111,7 +111,7 @@ small {
   border-color: #ff9800;
   background-color: #fff8e1;
 }
-.admin-link {
+/* .admin-link { Original style for the old admin link - can be removed or kept if used elsewhere
   margin-bottom: 20px;
   text-align: right;
 }
@@ -131,6 +131,57 @@ small {
 .admin-link .btn-admin:hover {
   background-color: #0056b3;
   color: #fff;
+} */
+
+/* === NAVBAR STYLES (Adapted from admin.css) === */
+.navbar {
+    background-color: #ffffff; /* สีพื้นหลังของ Navbar */
+    padding: 12px 0; /* ระยะห่างภายในแนวตั้ง */
+    border-bottom: 1px solid #e3e7ed; /* เส้นขอบล่าง */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* เพิ่มเงาเล็กน้อย */
+    margin-bottom: 20px; /* ระยะห่างด้านล่าง Navbar */
+}
+
+.navbar-container {
+    width: 80%; /* ให้สอดคล้องกับ .container หลักของหน้า index */
+    margin: 0 auto; /* จัดให้อยู่กึ่งกลาง */
+    padding: 0 15px; /* ปรับ padding ซ้ายขวาให้เหมาะสมกับ container ของ index */
+    display: flex;
+    justify-content: space-between; /* จัดให้ brand อยู่ซ้าย และปุ่มอยู่ขวา */
+    align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+}
+
+.navbar-brand {
+    font-size: 1.5rem; /* ขนาดฟอนต์สำหรับชื่อเว็บ */
+    font-weight: 600;
+    color: #333;
+    text-decoration: none; /* เอาเส้นใต้ลิงก์ออก */
+}
+
+.navbar-button { /* สไตล์ปุ่มให้คล้ายกับ .btn-admin เดิม */
+    display: inline-block;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 22px; /* ขนาดปุ่มให้เหมือน .btn-admin เดิม */
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 1em;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.07);
+    transition: background-color 0.3s, color 0.2s;
+    border: none;
+}
+
+.navbar-button:hover {
+    background-color: #0056b3;
+    color: #fff;
+}
+
+/* === Main Content Area Wrapper === */
+.main-content-area {
+    width: 80%; /* ให้สอดคล้องกับ .navbar-container */
+    margin: 0 auto; /* จัดให้อยู่กึ่งกลาง เหมือน .navbar-container */
+    /* ไม่จำเป็นต้องมี padding ที่นี่ เพราะ .main-layout-grid จะจัดการระยะห่างภายในเอง */
 }
 
 /* --- Spinner Styles --- */
@@ -458,4 +509,69 @@ text-align: right;
 /* ปรับ label ของจำนวนตัวอักษร เมื่อมี textarea อยู่ด้านบน */
 #letterForm div:has(> #letter_quantity) > label {
   margin-top: 5px; /* อาจจะไม่จำเป็นถ้า layout พอดีแล้ว */
+}
+
+/* === Stock Display Table Styles (Copied from admin.css for consistency) === */
+#stockDisplayTable {
+    width: 100%;
+    margin: 20px auto; /* เพิ่ม margin บน-ล่าง เล็กน้อย */
+    border-collapse: collapse;
+    font-size: 0.95rem; /* ปรับขนาดฟอนต์เล็กน้อยให้เหมาะกับหน้า index */
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+#stockDisplayTable th,
+#stockDisplayTable td {
+    padding: 12px 15px; /* ปรับ padding เล็กน้อย */
+    vertical-align: middle;
+    border: none;
+    text-align: left; /* ให้ข้อความชิดซ้ายเป็นหลัก */
+}
+
+#stockDisplayTable th {
+    background-color: #FFF0F3; /* สีชมพูอ่อนสำหรับพื้นหลังหัวตาราง */
+    color: #A53F64; /* สีชมพูเข้มสำหรับตัวอักษรหัวตาราง */
+    font-weight: 600;
+    text-align: center; /* หัวตารางจัดกลาง */
+    border-bottom: 2px solid #FDE7EA; /* เส้นขอบล่างของหัวตารางสีชมพูอ่อนลง */
+}
+
+#stockDisplayTable td {
+    border-bottom: 1px solid #f0f2f5; /* เส้นขอบล่างบางๆ สีเทาอ่อนสำหรับแต่ละแถวข้อมูล */
+}
+
+#stockDisplayTable tr:last-child td {
+    border-bottom: none;
+}
+
+#stockDisplayTable tbody tr:nth-child(even) {
+    background-color: #fdfdfe; /* ปรับสีแถวคู่ให้อ่อนลง */
+}
+
+#stockDisplayTable tbody tr:hover {
+    background-color: #f5f7fa; /* ปรับสี hover ให้ดูนุ่มนวลขึ้น */
+}
+
+/* จัดคอลัมน์ "จำนวน" ให้ชิดขวา */
+#stockDisplayTable td:nth-child(3) {
+    text-align: right;
+}
+
+/* กรณีไม่มีข้อมูล */
+#stockDisplayTable td[colspan="4"] { /* ถ้ามี 4 คอลัมน์ */
+    text-align: center;
+    padding: 20px;
+    color: #777;
+}
+#stockDisplayTable td[colspan="3"] { /* ถ้ามี 3 คอลัมน์ (ตามโค้ด HTML ปัจจุบัน) */
+    text-align: center;
+    padding: 20px;
+    color: #777;
+}
+
+.stock-display-section .table-responsive {
+    margin-top: 10px;
+    overflow-x: auto;
 }

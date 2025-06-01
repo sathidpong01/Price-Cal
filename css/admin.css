@@ -291,22 +291,37 @@ button[type="submit"]:hover {
 table {
     width: 100%;
     margin: 0 auto;
-    border-collapse: collapse;
+    border-collapse: collapse; /* ให้เส้นขอบรวมกัน */
     font-size: 1rem;
+    border-radius: 8px; /* เพิ่มความโค้งมนให้ตาราง */
+    overflow: hidden; /* สำคัญมาก! เพื่อให้เนื้อหาภายใน (th, td) ถูกตัดตามความโค้งของตาราง */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* เพิ่มเงาให้ดูมีมิติและทันสมัย */
 }
 
 table th, table td {
-    padding: 12px 15px;             /* เพิ่มระยะห่าง บน-ล่าง 12px, ซ้าย-ขวา 15px */
-    border: 1px solid #dee2e6;      /* กำหนดเส้นขอบให้เหมือนกันทุกเซลล์ */
-    vertical-align: middle;         /* จัดให้เนื้อหาอยู่ตรงกลางแนวตั้ง */
+    padding: 14px 18px; /* เพิ่ม padding เล็กน้อยเพื่อให้ดูโปร่งสบายตาขึ้น */
+    vertical-align: middle;
+    border: none; /* ลบเส้นขอบเดิมทั้งหมดออกก่อน แล้วจะกำหนดใหม่เฉพาะส่วนที่จำเป็น */
 }
 
 table th {
+    background-color: #FFF0F3; /* ปรับเป็นสีชมพูที่อ่อนลงอีก */
+    color: #A53F64; /* สีชมพูเข้มสำหรับตัวอักษรหัวตาราง เพื่อให้อ่านง่าย */
+    font-weight: 600; /* ทำให้ตัวอักษรหัวตารางหนาขึ้นเล็กน้อย */
     text-align: center;
+    border-bottom: 2px solid #FDE7EA; /* ปรับสีเส้นขอบล่างให้อ่อนลงตามพื้นหลัง */
 }
 
+table td {
+    border-bottom: 1px solid #f0f2f5; /* เส้นขอบล่างบางๆ สีเทาอ่อนสำหรับแต่ละแถวข้อมูล */
+}
+
+/* ลบเส้นขอบล่างของแถวสุดท้ายในส่วน tbody */
+table tr:last-child td {
+    border-bottom: none;
+}
 tr:nth-child(even) {
-    background-color: #f8f9fa;
+    background-color: #fdfdfe; /* ปรับสีแถวคู่ให้อ่อนลงอีกนิด เพื่อความสะอาดตา */
 }
 
 table td:nth-child(1) {
@@ -332,7 +347,7 @@ table td:nth-child(6) {
 }
 
 tr:hover {
-    background-color: #e9ecef;
+    background-color: #f5f7fa; /* ปรับสี hover ให้ดูนุ่มนวลขึ้น */
 }
 
 .close-btn {
@@ -481,7 +496,7 @@ tr:hover {
 #stockManagementTable th {
     position: sticky;
     top: -1px; /* จัดตำแหน่งให้สวยงามเมื่อ scroll */
-    background-color: #f8f9fa; /* ต้องกำหนดสีพื้นหลัง */
+    background-color: #FFF0F3; /* ปรับเป็นสีชมพูที่อ่อนลงอีก ให้เหมือนกับ table th ทั่วไป */
     z-index: 1;
 }
 
