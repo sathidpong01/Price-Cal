@@ -50,8 +50,51 @@ NAVBAR STYLES
     background-color: #218838; /* สีเข้มขึ้นเมื่อ hover */
 }
 
+/* Styles for Global Search in Navbar */
+.navbar-search-container {
+    display: flex; /* จัดเรียงไอคอนและ input ให้อยู่ในแถวเดียว */
+    align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+    flex-grow: 0.4; /* ให้ search container ขยายตัวได้ระดับหนึ่ง (ปรับค่าได้ตามต้องการ) */
+    margin: 0 20px; /* ระยะห่างซ้ายขวาจากองค์ประกอบข้างเคียงใน navbar */
+    max-width: 400px; /* กำหนดความกว้างสูงสุด (ปรับค่าได้ตามต้องการ) */
+    /* ตัว input field จะมีพื้นหลังและเส้นขอบของตัวเองเพื่อให้เหมือนกับ search box อื่นๆ */
+}
+
+.navbar-search-container .icon-navbar { /* ชื่อคลาสตรงกับที่ใช้ใน admin.php */
+    fill: #9e9ea7;   /* สีไอคอน ให้เหมือนกับ .icon ของ filter อื่น */
+    width: 1rem;     /* ขนาดไอคอน ให้เหมือนกับ .icon ของ filter อื่น */
+    height: 1rem;    /* ขนาดไอคอน ให้เหมือนกับ .icon ของ filter อื่น */
+    margin-right: 8px; /* ระยะห่างระหว่างไอคอนกับ input field */
+    flex-shrink: 0;  /* ป้องกันไม่ให้ไอคอนหดตัวเมื่อพื้นที่จำกัด */
+}
+
+/*
+Input field (id="globalSearch") ใน admin.php มี class="search-box" อยู่แล้ว
+ดังนั้นมันจะสืบทอดสไตล์หลักๆ (สีพื้นหลัง, เส้นขอบ, ความสูง, สีตัวอักษร, hover/focus effects)
+มาจาก rule .search-box ที่มีอยู่แล้ว
+
+Rule ด้านล่างนี้ใช้สำหรับปรับแต่งเฉพาะส่วนที่จำเป็นสำหรับ navbar context:
+*/
+.navbar-search-container .search-box {
+    width: 100%; /* ทำให้ input field ขยายเต็มพื้นที่ที่ได้รับใน navbar-search-container */
+
+    /*
+    Rule ทั่วไปของ .search-box กำหนด:
+    padding: 0 1rem;
+    padding-left: 2.5rem; (ค่านี้มีไว้สำหรับไอคอนที่อยู่ *ข้างใน* input field)
+
+    สำหรับ global filter ใน navbar ไอคอน (icon-navbar) เป็น sibling อยู่ด้านนอก input
+    ดังนั้นเราต้องปรับ padding-left ของ input ให้เหมาะสม (ไม่ต้องเว้นที่เยอะเท่าเดิม)
+    ส่วน padding อื่นๆ (top, bottom, right) จาก "padding: 0 1rem;" ของ .search-box ทั่วไปยังคงใช้ได้
+    */
+    padding-left: 1rem; /* ปรับ padding ด้านซ้ายของ input ให้น้อยลง */
+    /* ไม่จำเป็นต้องกำหนด background-color, border, color, height, line-height, transition ที่นี่
+       เพราะมันจะสืบทอดมาจาก .search-box rule หลัก */
+}
+
+
 .container-body {
-    max-width: 80%;
+    max-width: 90%;
     margin: 40px auto 40px auto;
     gap: 32px;
     display: grid;
@@ -220,7 +263,7 @@ button[type="submit"]:hover {
     padding: 0 1rem;
     padding-left: 2.5rem;
     border: 2px solid transparent;
-    border-radius: 8px;
+    border-radius: 30px;
     outline: none;
     background-color: #f3f3f4;
     color: #0d0c22;

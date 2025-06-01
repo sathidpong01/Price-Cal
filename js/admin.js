@@ -286,32 +286,6 @@ function repaginate(tableId) {
     showPage(tableId, paginatedTables[tableId]?.currentPage || 1);
 }
 
-function filterTable(inputId, tableId, ...columnIndices) {
-    const input = document.getElementById(inputId);
-    const table = document.getElementById(tableId);
-    const filter = input.value.toLowerCase();
-    const state = paginatedTables[tableId];
-    if (!state) return;
-    state.filteredRows = state.originalRows.filter(row => {
-        // ข้ามแถว header หรือแถวที่ไม่มี td
-        const tds = row.getElementsByTagName('td');
-        if (!tds.length) return false;
-        let found = false;
-        for (const colIndex of columnIndices) {
-            const cell = tds[colIndex];
-            if (cell) {
-                const text = cell.textContent || cell.innerText;
-                if (text.toLowerCase().indexOf(filter) > -1) {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        return found;
-    });
-    showPage(tableId, 1); // รีเซ็ตไปหน้าแรกของผลลัพธ์ filter
-}
-
 // --- DOMContentLoaded ---
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize pagination for tables
@@ -334,15 +308,6 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         submitModalForm(this, 'admin_ajax_data_handler.php', '#options_section', 'editOptionModal');
     });
-
-    // Add search event listeners
-    document.getElementById('ruleSearch')?.addEventListener('keyup', () => filterTable('ruleSearch', 'rulesTable', 1));
-    document.getElementById('materialSearch')?.addEventListener('keyup', () => filterTable('materialSearch', 'materialsTable', 1, 2));
-    document.getElementById('optionSearch')?.addEventListener('keyup', () => filterTable('optionSearch', 'optionsTable', 1, 3));
-    // เพิ่มการเรียกใช้สำหรับตารางสต็อก
-    setupStockControls();
-
-});
 
 // ฟังก์ชันสำหรับจัดการการอัปเดตสต็อก
 function handleStockUpdate(stockId, buttonElement) {
@@ -387,3 +352,146 @@ function setupStockControls() {
         }
     });
 }
+
+    // Configuration for which columns to search in each table
+    const tableSearchConfigs = {
+        'rulesTable': { individualInputId: 'ruleSearch', searchCols: [1, 3] }, // Column indices: ชื่อกฎ, หน่วย
+        'materialsTable': { individualInputId: 'materialSearch', searchCols: [1, 2, 4] }, // ประเภท, ชื่อวัสดุ, หน่วย
+        'optionsTable': { individualInputId: 'optionSearch', searchCols: [1, 3] }, // ชื่อออปชัน, หมวดหมู่
+        'stockManagementTable': { searchCols: [0, 1, 3] } // ประเภท, ชื่อสินค้า, หน่วย (No individual search box for stock yet)
+    };
+
+    /**
+     * Applies filters to all configured tables based on global and individual search terms.
+     */
+    function applyCombinedFilters() {
+        const globalSearchTerm = document.getElementById('globalSearch').value.toUpperCase();
+
+        for (const tableId in tableSearchConfigs) {
+            const config = tableSearchConfigs[tableId];
+            let individualSearchTerm = '';
+            if (config.individualInputId) {
+                const individualInput = document.getElementById(config.individualInputId);
+                if (individualInput) {
+                    individualSearchTerm = individualInput.value.toUpperCase();
+                }
+            }            
+
+            const state = paginatedTables[tableId];
+            if (!state) {
+                console.warn(`Pagination state not found for table: ${tableId}. Skipping filter.`);
+                continue;
+            }
+
+            const newFilteredRows = [];
+            for (const row of state.originalRows) {
+                // Skip "no data" rows or invalid rows
+                if (row.cells.length === 1 && row.cells[0].colSpan > 1) {
+                    continue; // This is the "no data" row, don't include it in filtered data rows
+                }
+                if (config.searchCols.length > 0 && row.cells.length <= Math.max(...config.searchCols)) {
+                    continue; // Skip rows that don't have the required columns
+                }
+
+                let matchesIndividual = !individualSearchTerm;
+                let matchesGlobal = !globalSearchTerm;
+
+                if (individualSearchTerm) {
+                    matchesIndividual = false;
+                    for (const colIndex of config.searchCols) {
+                        if (row.cells[colIndex]) {
+                            const txtValue = row.cells[colIndex].textContent || row.cells[colIndex].innerText;
+                            if (txtValue.toUpperCase().indexOf(individualSearchTerm) > -1) {
+                                matchesIndividual = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (globalSearchTerm) {
+                    matchesGlobal = false;
+                    for (const colIndex of config.searchCols) {
+                        if (row.cells[colIndex]) {
+                            const txtValue = row.cells[colIndex].textContent || row.cells[colIndex].innerText;
+                            if (txtValue.toUpperCase().indexOf(globalSearchTerm) > -1) {
+                                matchesGlobal = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (matchesIndividual && matchesGlobal) {
+                    newFilteredRows.push(row);
+                }
+            }
+            state.filteredRows = newFilteredRows;
+            showPage(tableId, 1);
+            updateNoDataRowVisibility(tableId);
+        }
+    }
+
+    /**
+     * Shows or hides the "no data" row for a table based on visible data rows.
+     * @param {string} tableId - The ID of the table.
+     */
+    function updateNoDataRowVisibility(tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const tbody = table.getElementsByTagName("tbody")[0];
+        if (!tbody) return;
+    
+        const state = paginatedTables[tableId];
+        const hasVisibleDataRows = state && state.filteredRows && state.filteredRows.length > 0;
+    
+        let noDataRowElement = null;
+        // Find the "no data" row. It should be in originalRows if it exists.
+        if (state && state.originalRows) {
+            for (const row of state.originalRows) {
+                if (row.cells.length === 1 && row.cells[0].colSpan > 1) {
+                    noDataRowElement = row;
+                    break;
+                }
+            }
+        }
+        if (!noDataRowElement) { // Fallback: try to find it in the current tbody
+            const allRowsInTbody = tbody.getElementsByTagName("tr");
+            for (let i = 0; i < allRowsInTbody.length; i++) {
+                if (allRowsInTbody[i].cells.length === 1 && allRowsInTbody[i].cells[0].colSpan > 1) {
+                    noDataRowElement = allRowsInTbody[i];
+                    break;
+                }
+            }
+        }
+        if (noDataRowElement) {
+            noDataRowElement.style.display = hasVisibleDataRows ? "none" : "";
+        }
+    }
+
+    // Setup event listeners for search inputs
+    const globalSearchInput = document.getElementById('globalSearch');
+    if (globalSearchInput) {
+        globalSearchInput.addEventListener('keyup', applyCombinedFilters);
+    }
+
+    for (const tableId in tableSearchConfigs) {
+        const config = tableSearchConfigs[tableId];
+        if (config.individualInputId) {
+            const individualInput = document.getElementById(config.individualInputId);
+            if (individualInput) {
+                individualInput.addEventListener('keyup', applyCombinedFilters);
+            }
+        }
+    }
+
+    // Setup stock controls
+    setupStockControls();
+
+    // Initial filter application on page load to handle any pre-filled values or set initial "no data" states
+    applyCombinedFilters();
+
+    // --- (ส่วนที่เหลือของ admin.js เช่น modal handling, delete, edit, stock update) ---
+    // Ensure that existing functions like openEditModal, handleDeleteClick, handleStockUpdate
+    // are still present and working. This new code focuses on filtering.
+});
