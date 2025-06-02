@@ -15,7 +15,7 @@ function customRound($number) {
 
 // --- 3. ดึงข้อมูลจำเป็นจากฐานข้อมูล ---
 $price_rules = [];
-$sql_rules = "SELECT rule_name, rule_value FROM price_rules";
+$sql_rules = "SELECT rule_name, rule_value FROM price_rules WHERE display_in_calculator = 1";
 $result_rules = $conn->query($sql_rules);
 if ($result_rules) { while ($row = $result_rules->fetch_assoc()) { $price_rules[$row['rule_name']] = $row['rule_value']; } }
 $sticker_price_per_sqm = isset($price_rules['ราคาสติ๊กเกอร์ต่อตรม.']) ? $price_rules['ราคาสติ๊กเกอร์ต่อตรม.'] : 450;
@@ -26,7 +26,7 @@ $travel_cost_in_city = isset($price_rules['ติดตั้งในเมื�
 
 
 $options_list = [];
-$sql_options = "SELECT option_id, option_name, option_price FROM options";
+$sql_options = "SELECT option_id, option_name, option_price, category FROM options WHERE display_in_calculator = 1";
 $result_options = $conn->query($sql_options);
 if ($result_options) { while ($row = $result_options->fetch_assoc()) { $options_list[] = $row; } }
 
@@ -35,7 +35,7 @@ $lightbox_materials = [];
 $sheet_list_for_sticker = [];
 $vinyl_materials = []; // เพิ่ม
 
-$sql_all_materials = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials";
+$sql_all_materials = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials WHERE display_in_calculator = 1";
 $result_all_materials_query = $conn->query($sql_all_materials); // เปลี่ยนชื่อตัวแปร result
 if ($result_all_materials_query) { // ใช้ตัวแปรใหม่
     while ($row_mat = $result_all_materials_query->fetch_assoc()) { // ใช้ตัวแปรใหม่

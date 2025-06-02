@@ -18,6 +18,9 @@ NAVBAR STYLES
     padding: 12px 0; /* ระยะห่างภายในแนวตั้ง */
     border-bottom: 1px solid #e3e7ed; /* เส้นขอบล่าง */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* เพิ่มเงาเล็กน้อย */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .navbar-container {

@@ -187,13 +187,26 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         elseif ($type == 'material') { $table = 'materials'; $id_column = 'material_id'; $name_column = 'material_name'; } 
         elseif ($type == 'option') { $table = 'options'; $id_column = 'option_id'; $name_column = 'option_name'; }
 
-        if ($id > 0 && !empty($table)) {
+        if ($id > 0 && !empty($table) && !empty($id_column) && !empty($name_column)) {
             $sql = "UPDATE {$table} SET display_in_calculator = ? WHERE {$id_column} = ?";
             $stmt = $conn->prepare($sql);
             if ($stmt) {
                 $stmt->bind_param("ii", $visible, $id);
                 if ($stmt->execute()) {
                     $response['success'] = true;
+                    // ดึงชื่อรายการที่อัปเดตเพื่อส่งกลับไป
+                    $sql_select_name = "SELECT {$name_column} FROM {$table} WHERE {$id_column} = ?";
+                    $stmt_name = $conn->prepare($sql_select_name);
+                    if ($stmt_name) {
+                        $stmt_name->bind_param("i", $id);
+                        $stmt_name->execute();
+                        $result_name = $stmt_name->get_result();
+                        if ($result_name->num_rows === 1) {
+                            $row_name = $result_name->fetch_assoc();
+                            $response['name'] = $row_name[$name_column];
+                        }
+                        $stmt_name->close();
+                    }
                 } else {
                      $response['error'] = "ผิดพลาดในการอัปเดตฐานข้อมูล: " . $stmt->error;
                 }
@@ -209,55 +222,6 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
     // --- Fallback for unknown actions ---
     else {
         $response['error'] = "Action (POST) ไม่รู้จัก: " . htmlspecialchars($action);
-    }
-}
-
-// --- update_display_status handler ---
-elseif ($action == 'update_display_status') {
-    $type = $_POST['type'] ?? ''; // 'rule', 'material', หรือ 'option'
-    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
-    $visible = isset($_POST['visible']) ? intval($_POST['visible']) : 0; // 1 หรือ 0
-
-    $table = '';
-    $id_column = '';
-    $name_column = '';
-    if ($type == 'rule') {
-        $table = 'price_rules';
-        $id_column = 'rule_id';
-        $name_column = 'rule_name';
-    } elseif ($type == 'material') {
-        $table = 'materials';
-        $id_column = 'material_id';
-        $name_column = 'material_name';
-    } elseif ($type == 'option') {
-        $table = 'options';
-        $id_column = 'option_id';
-        $name_column = 'option_name';
-    }
-
-    if ($id > 0 && in_array($type, ['rule', 'material', 'option'])) {
-        $sql = "UPDATE {$table} SET display_in_calculator = ? WHERE {$id_column} = ?";
-        $stmt = $conn->prepare($sql);
-        if ($stmt) {
-            $stmt->bind_param("ii", $visible, $id);
-            if ($stmt->execute()) {
-                // ดึงชื่อรายการที่อัปเดตเพื่อส่งกลับไป
-                $sql_select = "SELECT {$name_column} FROM {$table} WHERE {$id_column} = ?";
-                $stmt_select = $conn->prepare($sql_select);
-                if ($stmt_select) {
-                    $stmt_select->bind_param("i", $id);
-                    $stmt_select->execute();
-                    $result = $stmt_select->get_result();
-                    $row = $result->fetch_assoc();
-                    $response['success'] = true;
-                    $response['name'] = $row[$name_column];
-                    $stmt_select->close();
-                }
-            }
-            $stmt->close();
-        }
-    } else {
-        $response['error'] = "ข้อมูลไม่ถูกต้องสำหรับการอัปเดตสถานะการแสดงผล";
     }
 }
 

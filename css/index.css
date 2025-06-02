@@ -137,6 +137,9 @@ small {
 .navbar {
     background-color: #ffffff; /* สีพื้นหลังของ Navbar */
     padding: 12px 0; /* ระยะห่างภายในแนวตั้ง */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
     border-bottom: 1px solid #e3e7ed; /* เส้นขอบล่าง */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* เพิ่มเงาเล็กน้อย */
     margin-bottom: 20px; /* ระยะห่างด้านล่าง Navbar */
