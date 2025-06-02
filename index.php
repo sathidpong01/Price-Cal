@@ -4,7 +4,7 @@ include 'includes/db_connect.php';
 
 // --- ดึงข้อมูลพื้นฐาน (Price Rules) ---
 $price_rules = [];
-$sql_rules = "SELECT rule_name, rule_value FROM price_rules";
+$sql_rules = "SELECT rule_name, rule_value FROM price_rules WHERE display_in_calculator = 1";
 $result_rules = $conn->query($sql_rules);
 if ($result_rules && $result_rules->num_rows > 0) {
     while ($row_rule = $result_rules->fetch_assoc()) {
@@ -12,8 +12,8 @@ if ($result_rules && $result_rules->num_rows > 0) {
     }
 }
 $sticker_price_per_sqm = isset($price_rules['ราคาสติ๊กเกอร์ต่อตรม.']) ? $price_rules['ราคาสติ๊กเกอร์ต่อตรม.'] : 450;
-$travel_cost_per_km = isset($price_rules['ค่าเดินทาง']) ? $price_rules['ค่าเดินทาง'] : 10;
-$travel_cost_in_city = isset($price_rules['ค่าเดินทางในเมือง']) ? $price_rules['ค่าเดินทางในเมือง'] : 300;
+$travel_cost_per_km = isset($price_rules['ติดตั้งนอกเมือง']) ? $price_rules['ติดตั้งนอกเมือง'] : 10;
+$travel_cost_in_city = isset($price_rules['ติดตั้งในเมือง']) ? $price_rules['ติดตั้งในเมือง'] : 300;
 
 
 // --- ดึงข้อมูล Options และจัดกลุ่มตาม Category ---
@@ -24,7 +24,7 @@ $options_by_category = [
     'ตัวอักษรโลหะ' => [],
     'กล่องไฟ' => []
 ];
-$sql_options = "SELECT option_id, option_name, option_price, category FROM options";
+$sql_options = "SELECT option_id, option_name, option_price, category FROM options WHERE display_in_calculator = 1";
 $result_options = $conn->query($sql_options);
 if ($result_options && $result_options->num_rows > 0) {
     while ($row_opt = $result_options->fetch_assoc()) {
@@ -43,7 +43,7 @@ $lightbox_list_for_form = [];
 $sheet_list_for_sticker = [];
 $vinyl_materials_list = [];
 
-$sql_materials_all = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials";
+$sql_materials_all = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials WHERE display_in_calculator = 1";
 $result_materials_all_query = $conn->query($sql_materials_all);
 if ($result_materials_all_query && $result_materials_all_query->num_rows > 0) {
     while ($row_mat = $result_materials_all_query->fetch_assoc()) {
@@ -102,14 +102,16 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
             </div>
         </nav>
 
-        <div class="main-content-area"> <!-- NEW WRAPPER -->
+        <div class="main-content-area">
+            <!-- NEW WRAPPER -->
             <!-- <div class="admin-link"><a href="admin.php" class="btn-admin">ไปหน้าจัดการ (Admin)</a></div> Original admin link removed -->
             <div class="main-layout-grid">
                 <div class="calculators-grid">
 
                     <div class="calculator-section">
                         <h1>คำนวณราคาสติ๊กเกอร์</h1>
-                        <p>(ราคาสติ๊กเกอร์พื้นฐานคือ <?php echo number_format($sticker_price_per_sqm, 2); ?> บาท/ตร.ม.)</p>
+                        <p>(ราคาสติ๊กเกอร์พื้นฐานคือ <?php echo number_format($sticker_price_per_sqm, 2); ?> บาท/ตร.ม.)
+                        </p>
                         <form id="stickerForm">
                             <div><label for="st_width">ความกว้าง (ซม.):</label><input type="text" id="st_width"
                                     name="st_width" placeholder="กรอกความกว้าง" value=""></div>
@@ -144,10 +146,12 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                                 <label for="st_travel_type">ค่าเดินทาง:</label>
                                 <select id="st_travel_type" name="st_travel_type">
                                     <option value="none">ไม่รวมค่าเดินทาง</option>
-                                    <option value="in_city">ในเมือง (<?php echo number_format($travel_cost_in_city, 2); ?>
+                                    <option value="in_city">ในเมือง
+                                        (<?php echo number_format($travel_cost_in_city, 2); ?>
                                         บาท)
                                     </option>
-                                    <option value="out_city">นอกเมือง (<?php echo number_format($travel_cost_per_km, 2); ?>
+                                    <option value="out_city">นอกเมือง
+                                        (<?php echo number_format($travel_cost_per_km, 2); ?>
                                         บาท/กม.)</option>
                                 </select>
                             </div>
@@ -204,10 +208,12 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                             <div class="full-width-field"><label for="vn_travel_type">ค่าเดินทาง:</label>
                                 <select id="vn_travel_type" name="vn_travel_type">
                                     <option value="none">ไม่รวมค่าเดินทาง</option>
-                                    <option value="in_city">ในเมือง (<?php echo number_format($travel_cost_in_city, 2); ?>
+                                    <option value="in_city">ในเมือง
+                                        (<?php echo number_format($travel_cost_in_city, 2); ?>
                                         บาท)
                                     </option>
-                                    <option value="out_city">นอกเมือง (<?php echo number_format($travel_cost_per_km, 2); ?>
+                                    <option value="out_city">นอกเมือง
+                                        (<?php echo number_format($travel_cost_per_km, 2); ?>
                                         บาท/กม.)</option>
                                 </select>
                             </div>
@@ -250,8 +256,8 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                             </div>
                             <div><label for="letter_height">ความสูง (นิ้ว):</label><input type="text" id="letter_height"
                                     name="letter_height" value=""></div>
-                            <div><label for="letter_quantity">จำนวนตัวอักษร:</label><input type="text" id="letter_quantity"
-                                    name="letter_quantity" value="" readonly> </div>
+                            <div><label for="letter_quantity">จำนวนตัวอักษร:</label><input type="text"
+                                    id="letter_quantity" name="letter_quantity" value="" readonly> </div>
                             <div><label for="material">เลือกวัสดุ:</label>
                                 <select id="material" name="material">
                                     <option value="">-- กรุณาเลือก --</option>
@@ -279,10 +285,12 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                             <div class="full-width-field"><label for="travel_type">ค่าเดินทาง:</label>
                                 <select id="travel_type" name="travel_type">
                                     <option value="none">ไม่รวมค่าเดินทาง</option>
-                                    <option value="in_city">ในเมือง (<?php echo number_format($travel_cost_in_city, 2); ?>
+                                    <option value="in_city">ในเมือง
+                                        (<?php echo number_format($travel_cost_in_city, 2); ?>
                                         บาท)
                                     </option>
-                                    <option value="out_city">นอกเมือง (<?php echo number_format($travel_cost_per_km, 2); ?>
+                                    <option value="out_city">นอกเมือง
+                                        (<?php echo number_format($travel_cost_per_km, 2); ?>
                                         บาท/กม.)</option>
                                 </select>
                             </div>

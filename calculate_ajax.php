@@ -18,9 +18,9 @@ $price_rules = [];
 $sql_rules = "SELECT rule_name, rule_value FROM price_rules";
 $result_rules = $conn->query($sql_rules);
 if ($result_rules) { while ($row = $result_rules->fetch_assoc()) { $price_rules[$row['rule_name']] = $row['rule_value']; } }
-$sticker_price_per_sqm = isset($price_rules['Sticker Price Per SQM']) ? $price_rules['Sticker Price Per SQM'] : 500;
-$travel_cost_per_km = isset($price_rules['Travel Cost Per KM']) ? $price_rules['Travel Cost Per KM'] : 10;
-$travel_cost_in_city = isset($price_rules['Travel Cost In City']) ? $price_rules['Travel Cost In City'] : 500;
+$sticker_price_per_sqm = isset($price_rules['ราคาสติ๊กเกอร์ต่อตรม.']) ? $price_rules['ราคาสติ๊กเกอร์ต่อตรม.'] : 450;
+$travel_cost_per_km = isset($price_rules['ติดตั้งนอกเมือง']) ? $price_rules['ติดตั้งนอกเมือง'] : 10;
+$travel_cost_in_city = isset($price_rules['ติดตั้งในเมือง']) ? $price_rules['ติดตั้งในเมือง'] : 300;
 // เพิ่ม rule สำหรับไวนิล ถ้ามีราคา default
 // $default_vinyl_price_sqm = isset($price_rules['Default Vinyl Price SQM']) ? $price_rules['Default Vinyl Price SQM'] : 400;
 

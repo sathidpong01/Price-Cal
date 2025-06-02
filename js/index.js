@@ -423,5 +423,5 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert("ไม่พบข้อมูลสำหรับคัดลอก");
             }
         }
-    });
+    });    
 });

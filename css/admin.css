@@ -512,3 +512,77 @@ tr:hover {
         margin-bottom: 16px;
     }
 }
+
+/* === Toggle Switch Styles === */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;  /* ปรับขนาดตามต้องการ */
+    height: 26px; /* ปรับขนาดตามต้องการ */
+    vertical-align: middle; /* จัดให้อยู่กึ่งกลางแนวตั้งกับข้อความอื่นใน cell */
+}
+
+/* ซ่อน Checkbox เดิม */
+.toggle-switch .original-checkbox {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* ตัว Slider (ส่วนพื้นหลังของ Toggle) */
+.toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #be0e20; /* สีเมื่อปิด - เปลี่ยนเป็นสีแดง (เหมือนปุ่มลบ) */
+    transition: .4s;
+}
+
+/* ตัวปุ่มกลมๆ ที่เลื่อนไปมา */
+.toggle-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 20px; /* ขนาดปุ่มกลม */
+    width: 20px;  /* ขนาดปุ่มกลม */
+    left: 3px;    /* ระยะห่างจากขอบซ้ายเมื่อปิด */
+    bottom: 3px;  /* ระยะห่างจากขอบล่าง */
+    background-color: white;
+    transition: .4s;
+}
+
+/* เมื่อ Checkbox ถูกติ๊ก (สถานะเปิด) */
+.toggle-switch .original-checkbox:checked + .slider {
+    background-color: #28a745; /* สีเขียว (เหมือนปุ่ม Add ใน Admin) */
+}
+
+/* Effect ตอน Focus (Accessibility) */
+.toggle-switch .original-checkbox:focus + .slider {
+    box-shadow: 0 0 1px #28a745;
+}
+
+/* การเคลื่อนที่ของปุ่มกลมเมื่อเปิด */
+.toggle-switch .original-checkbox:checked + .slider:before {
+    transform: translateX(24px); /* ระยะการเลื่อน (ปรับให้สัมพันธ์กับ width ของ .toggle-switch) */
+}
+
+/* ทำให้ขอบโค้งมน */
+.toggle-switch .slider.round {
+    border-radius: 26px; /* ทำให้พื้นหลังโค้งมน */
+}
+
+.toggle-switch .slider.round:before {
+    border-radius: 50%; /* ทำให้ปุ่มกลม */
+}
+
+/* --- HOVER EFFECT (เพิ่มส่วนนี้) --- */
+.toggle-switch:hover .slider {
+    box-shadow: 0 0 5px rgba(0,0,0,0.2); /* เพิ่มเงาจางๆ เมื่อ hover */
+}
+
+/* หรือ อาจจะเปลี่ยนความสว่างของปุ่มกลม (เลือกอย่างใดอย่างหนึ่ง หรือใช้ร่วมกัน) */
+.toggle-switch:hover .slider:before {
+    background-color: #f0f0f0; /* ทำให้ปุ่มกลมสว่างขึ้นเล็กน้อยเมื่อ hover */
+}

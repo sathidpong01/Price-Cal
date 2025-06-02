@@ -69,7 +69,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
     }
 
     // --- update_rule handler ---
-    if ($action == 'update_rule') {
+    elseif ($action == 'update_rule') {
         $rule_id = isset($_POST['rule_id']) ? intval($_POST['rule_id']) : 0;
         $rule_name = $_POST['rule_name'] ?? '';
         $rule_value = $_POST['rule_value'] ?? '';
@@ -95,6 +95,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
             $response['error'] = "กรุณากรอกข้อมูลกฎราคาให้ครบถ้วนและถูกต้อง!";
         }
     } 
+    
     // --- update_material handler ---
     elseif ($action == 'update_material') {
         $mat_id = isset($_POST['material_id']) ? intval($_POST['material_id']) : 0;
@@ -123,18 +124,19 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
             $response['error'] = "กรุณากรอกข้อมูลวัสดุให้ครบถ้วนและถูกต้อง!";
         }
     } 
+    
     // --- update_option handler (แก้ไข) ---
     elseif ($action == 'update_option') {
         $opt_id = isset($_POST['option_id']) ? intval($_POST['option_id']) : 0;
         $opt_name = $_POST['option_name'] ?? '';
         $opt_price = $_POST['option_price'] ?? '';
-        $opt_category = $_POST['option_category'] ?? 'ทั่วไป'; // รับค่า category
+        $opt_category = $_POST['option_category'] ?? 'ทั่วไป';
 
         if ($opt_id > 0 && !empty($opt_name) && is_numeric($opt_price) && $opt_price >= 0 && !empty($opt_category)) {
-            $sql_update = "UPDATE options SET option_name = ?, option_price = ?, category = ? WHERE option_id = ?"; // เพิ่ม category
+            $sql_update = "UPDATE options SET option_name = ?, option_price = ?, category = ? WHERE option_id = ?";
             $stmt_update = $conn->prepare($sql_update);
             if ($stmt_update) {
-                $stmt_update->bind_param("sdsi", $opt_name, $opt_price, $opt_category, $opt_id); // เพิ่ม "s"
+                $stmt_update->bind_param("sdsi", $opt_name, $opt_price, $opt_category, $opt_id);
                 if ($stmt_update->execute()) {
                     $response['success'] = true;
                     $response['message'] = "อัปเดตออปชัน '" . htmlspecialchars($opt_name) . "' เรียบร้อย!";
@@ -144,26 +146,15 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
             } else { $response['error'] = "ผิดพลาด SQL อัปเดตออปชัน: " . $conn->error; }
         } else { $response['error'] = "กรุณากรอกข้อมูลออปชันให้ครบถ้วนและถูกต้อง!"; }
     }
+    
     // --- delete handlers ---
     elseif (strpos($action, 'delete_') === 0) {
         $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
-        $table_name = '';
-        $id_column = '';
-        $item_type = '';
+        $table_name = ''; $id_column = ''; $item_type = '';
 
-        if ($action == 'delete_rule') {
-            $table_name = 'price_rules';
-            $id_column = 'rule_id';
-            $item_type = 'กฎราคา';
-        } elseif ($action == 'delete_material') {
-            $table_name = 'materials';
-            $id_column = 'material_id';
-            $item_type = 'วัสดุ';
-        } elseif ($action == 'delete_option') {
-            $table_name = 'options';
-            $id_column = 'option_id';
-            $item_type = 'ออปชัน';
-        }
+        if ($action == 'delete_rule') { $table_name = 'price_rules'; $id_column = 'rule_id'; $item_type = 'กฎราคา'; } 
+        elseif ($action == 'delete_material') { $table_name = 'materials'; $id_column = 'material_id'; $item_type = 'วัสดุ'; } 
+        elseif ($action == 'delete_option') { $table_name = 'options'; $id_column = 'option_id'; $item_type = 'ออปชัน'; }
 
         if ($id > 0 && !empty($table_name)) {
             $sql_delete = "DELETE FROM {$table_name} WHERE {$id_column} = ?";
@@ -183,11 +174,93 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         } else {
             $response['error'] = "ข้อมูลไม่ถูกต้องสำหรับการลบ{$item_type}";
         }
-    } 
+    }
+    
+    // --- update_display_status handler ---
+    elseif ($action == 'update_display_status') {
+        $type = $_POST['type'] ?? '';
+        $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        $visible = isset($_POST['visible']) ? intval($_POST['visible']) : 0;
+
+        $table = ''; $id_column = ''; $name_column = '';
+        if ($type == 'rule') { $table = 'price_rules'; $id_column = 'rule_id'; $name_column = 'rule_name'; } 
+        elseif ($type == 'material') { $table = 'materials'; $id_column = 'material_id'; $name_column = 'material_name'; } 
+        elseif ($type == 'option') { $table = 'options'; $id_column = 'option_id'; $name_column = 'option_name'; }
+
+        if ($id > 0 && !empty($table)) {
+            $sql = "UPDATE {$table} SET display_in_calculator = ? WHERE {$id_column} = ?";
+            $stmt = $conn->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param("ii", $visible, $id);
+                if ($stmt->execute()) {
+                    $response['success'] = true;
+                } else {
+                     $response['error'] = "ผิดพลาดในการอัปเดตฐานข้อมูล: " . $stmt->error;
+                }
+                $stmt->close();
+            } else {
+                $response['error'] = "ผิดพลาดในการเตรียม SQL: " . $conn->error;
+            }
+        } else {
+            $response['error'] = "ข้อมูลไม่ถูกต้องสำหรับการอัปเดตสถานะ (Type: {$type}, ID: {$id})";
+        }
+    }
+
+    // --- Fallback for unknown actions ---
     else {
         $response['error'] = "Action (POST) ไม่รู้จัก: " . htmlspecialchars($action);
     }
-} 
+}
+
+// --- update_display_status handler ---
+elseif ($action == 'update_display_status') {
+    $type = $_POST['type'] ?? ''; // 'rule', 'material', หรือ 'option'
+    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $visible = isset($_POST['visible']) ? intval($_POST['visible']) : 0; // 1 หรือ 0
+
+    $table = '';
+    $id_column = '';
+    $name_column = '';
+    if ($type == 'rule') {
+        $table = 'price_rules';
+        $id_column = 'rule_id';
+        $name_column = 'rule_name';
+    } elseif ($type == 'material') {
+        $table = 'materials';
+        $id_column = 'material_id';
+        $name_column = 'material_name';
+    } elseif ($type == 'option') {
+        $table = 'options';
+        $id_column = 'option_id';
+        $name_column = 'option_name';
+    }
+
+    if ($id > 0 && in_array($type, ['rule', 'material', 'option'])) {
+        $sql = "UPDATE {$table} SET display_in_calculator = ? WHERE {$id_column} = ?";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("ii", $visible, $id);
+            if ($stmt->execute()) {
+                // ดึงชื่อรายการที่อัปเดตเพื่อส่งกลับไป
+                $sql_select = "SELECT {$name_column} FROM {$table} WHERE {$id_column} = ?";
+                $stmt_select = $conn->prepare($sql_select);
+                if ($stmt_select) {
+                    $stmt_select->bind_param("i", $id);
+                    $stmt_select->execute();
+                    $result = $stmt_select->get_result();
+                    $row = $result->fetch_assoc();
+                    $response['success'] = true;
+                    $response['name'] = $row[$name_column];
+                    $stmt_select->close();
+                }
+            }
+            $stmt->close();
+        }
+    } else {
+        $response['error'] = "ข้อมูลไม่ถูกต้องสำหรับการอัปเดตสถานะการแสดงผล";
+    }
+}
+
 
 $conn->close();
 echo json_encode($response);

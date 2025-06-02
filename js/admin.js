@@ -309,6 +309,59 @@ document.addEventListener('DOMContentLoaded', function() {
         submitModalForm(this, 'admin_ajax_data_handler.php', '#options_section', 'editOptionModal');
     });
 
+// เพิ่มการจัดการ Toggle แสดง/ซ่อนในเครื่องคำนวณราคา
+// admin.js
+document.querySelectorAll('.rule-display-toggle, .material-display-toggle, .option-display-toggle').forEach(toggleInput => {
+    toggleInput.addEventListener('change', function() {
+        let type = '';
+        let id = 0; // กำหนดค่าเริ่มต้น
+
+        // ตรวจสอบ class เพื่อหา type และดึง id จาก data attribute ที่ถูกต้อง
+        if (this.classList.contains('rule-display-toggle')) {
+            type = 'rule';
+            id = this.dataset.ruleId;
+        } else if (this.classList.contains('material-display-toggle')) {
+            type = 'material';
+            id = this.dataset.materialId;
+        } else if (this.classList.contains('option-display-toggle')) {
+            type = 'option';
+            id = this.dataset.optionId;
+        }
+
+        if (type && id) { // ตรวจสอบว่าหา type และ id เจอ
+            const isVisible = this.checked;
+
+            fetch('admin_ajax_data_handler.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=update_display_status&type=${type}&id=${id}&visible=${isVisible ? 1 : 0}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`${type} ID ${id} display status updated to ${isVisible}`);
+                    // คุณอาจต้องการแสดง Global Message ที่นี่ด้วย
+                    // displayGlobalMessage('success', `${type} "${data.name || id}" display status updated.`);
+                } else {
+                    console.error('Error updating display status:', data.error);
+                    displayGlobalMessage('error', `Error updating display status: ${data.error || 'Unknown error'}`);
+                    this.checked = !isVisible; // คืนค่า checkbox ถ้าเกิดข้อผิดพลาด
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                displayGlobalMessage('error', 'Fetch error: Could not connect to server.');
+                this.checked = !isVisible; // คืนค่า checkbox ถ้าเกิดข้อผิดพลาด
+            });
+        } else {
+            console.error('Could not determine type or id for toggle:', this);
+            displayGlobalMessage('error', 'Error: Could not determine item type or ID for toggle.');
+        }
+    });
+});       
+
 // ฟังก์ชันสำหรับจัดการการอัปเดตสต็อก
 function handleStockUpdate(stockId, buttonElement) {
     const row = buttonElement.closest('tr');

@@ -123,18 +123,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // ส่วนดึงข้อมูล (Fetch Data) สำหรับแสดงผลในตาราง
 $price_rules_list = [];
-$sql_select_rules = "SELECT rule_id, rule_name, rule_value, rule_unit FROM price_rules ORDER BY rule_id";
+$sql_select_rules = "SELECT rule_id, rule_name, rule_value, rule_unit, display_in_calculator FROM price_rules ORDER BY rule_id";
 $result_rules = $conn->query($sql_select_rules);
 if ($result_rules) { while ($row_rule = $result_rules->fetch_assoc()) { $price_rules_list[] = $row_rule; } } else { $error .= "ไม่สามารถดึงข้อมูลกฎราคาได้<br>"; }
 
 $materials_list_admin = [];
-$sql_select_mats = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials ORDER BY product_type, material_name";
+$sql_select_mats = "SELECT material_id, product_type, material_name, price_per_unit, unit, display_in_calculator FROM materials ORDER BY product_type, material_name";
 $result_mats = $conn->query($sql_select_mats);
 if ($result_mats) { while ($row_mat = $result_mats->fetch_assoc()) { $materials_list_admin[] = $row_mat; } } else { $error .= "ไม่สามารถดึงข้อมูลวัสดุได้<br>"; }
 
 
 $options_list_admin = [];
-$sql_select_opts = "SELECT option_id, option_name, option_price, category FROM options ORDER BY category, option_name";
+$sql_select_opts = "SELECT option_id, option_name, option_price, category, display_in_calculator FROM options ORDER BY category, option_name";
 $result_opts = $conn->query($sql_select_opts);
 if ($result_opts) { while ($row_opt = $result_opts->fetch_assoc()) { $options_list_admin[] = $row_opt; } } else { $error .= "ไม่สามารถดึงข้อมูลออปชันได้<br>"; }
 
@@ -284,6 +284,7 @@ $conn->close();
                                             <th>ค่า</th>
                                             <th>หน่วย</th>
                                             <th>จัดการ</th>
+                                            <th>แสดงผล</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -306,6 +307,14 @@ $conn->close();
                                                     onclick="openEditModal('rule', <?php echo $rule['rule_id']; ?>)">แก้ไข</button>
                                                 <button type="button" class="btn-delete"
                                                     onclick="handleDeleteClick('rule', <?php echo $rule['rule_id']; ?>, '<?php echo htmlspecialchars(addslashes($rule['rule_name'])); ?>')">ลบ</button>
+                                            </td>
+                                            <td>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" class="original-checkbox rule-display-toggle"
+                                                        data-rule-id="<?php echo $rule['rule_id']; ?>"
+                                                        <?php echo (isset($rule['display_in_calculator']) && $rule['display_in_calculator'] == 1) ? 'checked' : ''; ?>>
+                                                    <span class="slider round"></span>
+                                                </label>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
@@ -375,6 +384,7 @@ $conn->close();
                                             <th>ราคา/หน่วย</th>
                                             <th>หน่วย</th>
                                             <th>จัดการ</th>
+                                            <th>แสดงผล</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -398,6 +408,15 @@ $conn->close();
                                                     onclick="openEditModal('material', <?php echo $mat['material_id']; ?>)">แก้ไข</button>
                                                 <button type="button" class="btn-delete"
                                                     onclick="handleDeleteClick('material', <?php echo $mat['material_id']; ?>, '<?php echo htmlspecialchars(addslashes($mat['material_name'])); ?>')">ลบ</button>
+                                            </td>
+                                            <td>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox"
+                                                        class="original-checkbox material-display-toggle"
+                                                        data-material-id="<?php echo $mat['material_id']; ?>"
+                                                        <?php echo (isset($mat['display_in_calculator']) && $mat['display_in_calculator'] == 1) ? 'checked' : ''; ?>>
+                                                    <span class="slider round"></span>
+                                                </label>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
@@ -462,6 +481,7 @@ $conn->close();
                                             <th>ราคา</th>
                                             <th>หมวดหมู่</th>
                                             <th>จัดการ</th>
+                                            <th>แสดงผล</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -484,6 +504,15 @@ $conn->close();
                                                     onclick="openEditModal('option', <?php echo $opt['option_id']; ?>)">แก้ไข</button>
                                                 <button type="button" class="btn-delete"
                                                     onclick="handleDeleteClick('option', <?php echo $opt['option_id']; ?>, '<?php echo htmlspecialchars(addslashes($opt['option_name'])); ?>')">ลบ</button>
+                                            </td>
+                                            <td>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox"
+                                                        class="original-checkbox option-display-toggle"
+                                                        data-option-id="<?php echo $opt['option_id']; ?>"
+                                                        <?php echo (isset($opt['display_in_calculator']) && $opt['display_in_calculator'] == 1) ? 'checked' : ''; ?>>
+                                                    <span class="slider round"></span>
+                                                </label>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
