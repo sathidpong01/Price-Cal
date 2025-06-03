@@ -99,19 +99,16 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
         <nav class="navbar">
             <div class="navbar-container">
                 <a href="index.php" class="navbar-brand">โปรแกรมคำนวณราคา</a>
-                <!-- Global search is not needed on the index page -->
                 <a href="admin.php" class="navbar-button">ไปหน้าจัดการ (Admin)</a>
             </div>
         </nav>
 
         <div class="main-content-area">
-            <!-- NEW WRAPPER -->
-            <!-- <div class="admin-link"><a href="admin.php" class="btn-admin">ไปหน้าจัดการ (Admin)</a></div> Original admin link removed -->
             <div class="main-layout-grid">
                 <div class="calculators-grid">
 
                     <div class="calculator-section">
-                        <h1>คำนวณราคาสติ๊กเกอร์</h1>
+                        <h1>คำนวณราคาสติ๊กเกอร์</h1> <br>
                         <form id="stickerForm">
                             <div><label for="st_width">ความกว้าง (ซม.):</label><input type="text" id="st_width"
                                     name="st_width" placeholder="กรอกความกว้าง" value=""></div>

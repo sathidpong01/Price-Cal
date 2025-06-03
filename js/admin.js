@@ -292,6 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initPagination('rulesTable', 5);
     initPagination('materialsTable', 5);
     initPagination('optionsTable', 5);
+    initPagination('stockManagementTable', 20);
 
     // Add form submit event listeners
     document.getElementById('editRuleForm')?.addEventListener('submit', function(e) {
@@ -411,7 +412,7 @@ function setupStockControls() {
         'rulesTable': { individualInputId: 'ruleSearch', searchCols: [1, 3] }, // Column indices: ชื่อกฎ, หน่วย
         'materialsTable': { individualInputId: 'materialSearch', searchCols: [1, 2, 4] }, // ประเภท, ชื่อวัสดุ, หน่วย
         'optionsTable': { individualInputId: 'optionSearch', searchCols: [1, 3] }, // ชื่อออปชัน, หมวดหมู่
-        'stockManagementTable': { searchCols: [0, 1, 3] } // ประเภท, ชื่อสินค้า, หน่วย (No individual search box for stock yet)
+        'stockManagementTable': { individualInputId: 'stockSearch', searchCols: [1, 2, 4] } // ค้นหาจาก ประเภท, ชื่อสินค้า, หน่วย (index ของ td เริ่มจาก 0)
     };
 
     /**
