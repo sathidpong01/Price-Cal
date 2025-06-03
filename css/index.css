@@ -578,3 +578,28 @@ text-align: right;
     margin-top: 10px;
     overflow-x: auto;
 }
+
+.text-size-options {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.text-size-options div {
+    margin-bottom: 8px;
+}
+
+.dimension-preview {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.dimension-preview .note {
+    color: #666;
+    font-size: 0.9em;
+    font-style: italic;
+    margin-top: 5px;
+}

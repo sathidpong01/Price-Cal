@@ -241,7 +241,6 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                     <div class="calculator-section">
                         <h1>คำนวณราคาตัวอักษร</h1>
                         <form id="letterForm">
-
                             <div>
                                 <label>วิธีระบุจำนวน:</label>
                                 <div class="input-method-options">
@@ -263,10 +262,11 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                                 <textarea id="letter_text" name="letter_text" rows="3"
                                     placeholder="ป้อนข้อความที่นี่เพื่อนับจำนวนตัวอักษร..."></textarea>
                             </div>
+
                             <div><label for="letter_height">ความสูง (นิ้ว):</label><input type="text" id="letter_height"
                                     name="letter_height" value=""></div>
                             <div><label for="letter_quantity">จำนวนตัวอักษร:</label><input type="text"
-                                    id="letter_quantity" name="letter_quantity" value="" readonly> </div>
+                                    id="letter_quantity" name="letter_quantity" value="" readonly></div>
                             <div><label for="material">เลือกวัสดุ:</label>
                                 <select id="material" name="material">
                                     <option value="">-- กรุณาเลือก --</option>
