@@ -143,15 +143,8 @@ $sql_types = "SELECT DISTINCT product_type FROM materials";
 $result_types = $conn->query($sql_types);
 if($result_types){ while($row_type = $result_types->fetch_assoc()){ $existing_product_types[] = $row_type['product_type']; } }
 
-$default_types = ['ตัวอักษรโลหะ', 'กล่องไฟ', 'วัสดุแผ่น', 'ผ้าไวนิล'];
-foreach ($default_types as $dt) {
-    if (!in_array($dt, $existing_product_types)) {
-        $existing_product_types[] = $dt;
-    }
-}
-
 // Ensure default types exist for selection, even if no materials of that type are present yet
-$default_types = ['ตัวอักษรโลหะ', 'กล่องไฟ', 'วัสดุแผ่น', 'ผ้าไวนิล'];
+$default_types = ['ตัวอักษรโลหะ', 'กล่องไฟ', 'วัสดุแผ่น', 'ผ้าไวนิล', 'สติ๊กเกอร์'];
 foreach ($default_types as $dt) {
     if (!in_array($dt, $existing_product_types)) {
         $existing_product_types[] = $dt;
@@ -527,6 +520,7 @@ $conn->close();
             <!-- Stock Section -->
             <div class="admin-section" id="stock_section">
                 <h2>จัดการสต็อกสินค้า</h2>
+                
                 <div class="table-container">
                     <div class="table-responsive">
                         <table id="stockManagementTable">

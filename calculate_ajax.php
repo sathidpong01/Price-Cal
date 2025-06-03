@@ -18,7 +18,6 @@ $price_rules = [];
 $sql_rules = "SELECT rule_name, rule_value FROM price_rules WHERE display_in_calculator = 1";
 $result_rules = $conn->query($sql_rules);
 if ($result_rules) { while ($row = $result_rules->fetch_assoc()) { $price_rules[$row['rule_name']] = $row['rule_value']; } }
-$sticker_price_per_sqm = isset($price_rules['ราคาสติ๊กเกอร์ต่อตรม.']) ? $price_rules['ราคาสติ๊กเกอร์ต่อตรม.'] : 450;
 $travel_cost_per_km = isset($price_rules['ติดตั้งนอกเมือง']) ? $price_rules['ติดตั้งนอกเมือง'] : 10;
 $travel_cost_in_city = isset($price_rules['ติดตั้งในเมือง']) ? $price_rules['ติดตั้งในเมือง'] : 300;
 // เพิ่ม rule สำหรับไวนิล ถ้ามีราคา default
@@ -42,7 +41,8 @@ if ($result_all_materials_query) { // ใช้ตัวแปรใหม่
         if ($row_mat['product_type'] == 'ตัวอักษรโลหะ') { $materials_for_letter[] = $row_mat; }
         elseif ($row_mat['product_type'] == 'กล่องไฟ') { $lightbox_materials[] = $row_mat; }
         elseif ($row_mat['product_type'] == 'วัสดุแผ่น') { $sheet_list_for_sticker[] = $row_mat; }
-        elseif ($row_mat['product_type'] == 'ผ้าไวนิล') { $vinyl_materials[] = $row_mat; } // เพิ่ม
+        elseif ($row_mat['product_type'] == 'ผ้าไวนิล') { $vinyl_materials[] = $row_mat; }
+        elseif ($row_mat['product_type'] == 'สติ๊กเกอร์') { $sticker_materials[] = $row_mat; } 
     }
 }
 
@@ -57,46 +57,65 @@ if (isset($_POST['calculator_type'])) {
     try {
         // ========================== STICKER ==========================
         if ($calculator_type == 'sticker') {
-            $st_width = $_POST['st_width'] ?? '0'; $st_height = $_POST['st_height'] ?? '0';
+            $st_width = $_POST['st_width'] ?? '0';
+            $st_height = $_POST['st_height'] ?? '0';
             $st_quantity = isset($_POST['st_quantity']) && is_numeric($_POST['st_quantity']) && $_POST['st_quantity'] > 0 ? intval($_POST['st_quantity']) : 1;
-            $st_selected_sheet_id = $_POST['st_sheet_material'] ?? 'none';
+            $st_selected_material_id = $_POST['st_material_type'] ?? '';
+            $st_selected_sheet_id = $_POST['st_sheet_type'] ?? 'none';
             $st_selected_options = isset($_POST['st_options']) ? (is_array($_POST['st_options']) ? $_POST['st_options'] : []) : [];
-            $st_travel_type = $_POST['st_travel_type'] ?? 'none'; $st_distance_km = $_POST['st_distance_km'] ?? '0';
+            $st_travel_type = $_POST['st_travel_type'] ?? 'none';
+            $st_distance_km = $_POST['st_distance_km'] ?? '0';
 
-            if (!is_numeric($st_width) || !is_numeric($st_height) || $st_width <= 0 || $st_height <= 0) {
-                $response['error'] = "กรุณากรอก กว้าง x สูง ให้ถูกต้อง";
+            if (!is_numeric($st_width) || !is_numeric($st_height) || $st_width <= 0 || $st_height <= 0 || empty($st_selected_material_id)) {
+                $response['error'] = "กรุณากรอก กว้าง x สูง และเลือกชนิดสติ๊กเกอร์ให้ถูกต้อง";
             } else {
                 $area_sqm = ($st_width / 100) * ($st_height / 100);
-                $sticker_only_price = $sticker_price_per_sqm * $area_sqm;
-                $sheet_price = 0; $selected_sheet_name = '';
-                if ($st_selected_sheet_id != 'none') {
-                    $sheet_ppu = 0;
-                    foreach ($sheet_list_for_sticker as $sh) { if ($sh['material_id'] == $st_selected_sheet_id) { $sheet_ppu = $sh['price_per_unit']; $selected_sheet_name = $sh['material_name']; break; } }
-                    if ($sheet_ppu > 0) { $sheet_price = $sheet_ppu * $area_sqm; }
+        
+                // --- หาาราคาของสติ๊กเกอร์ที่เลือก ---
+                $base_sticker_price_per_sqm = 0;
+                $selected_sticker_material_name = '';
+                foreach ($sticker_materials as $st_mat) {
+                    if ($st_mat['material_id'] == $st_selected_material_id) {
+                        $base_sticker_price_per_sqm = $st_mat['price_per_unit'];
+                        $selected_sticker_material_name = $st_mat['material_name'];
+                        break;
+                    }
                 }
-                $st_options_price_total = 0; $st_selected_options_details = [];
-                foreach ($options_list as $opt) { if (in_array($opt['option_id'], $st_selected_options)) { $st_options_price_total += $opt['option_price']; $st_selected_options_details[] = ['name' => $opt['option_name'], 'price' => $opt['option_price']]; } }
-                $st_travel_cost = 0; $st_travel_description = 'ไม่รวมค่าเดินทาง';
-                if ($st_travel_type == 'in_city') { $st_travel_cost = $travel_cost_in_city; $st_travel_description = 'ในเมือง'; }
-                elseif ($st_travel_type == 'out_city') { if (is_numeric($st_distance_km) && $st_distance_km > 0) { $st_travel_cost = $st_distance_km * $travel_cost_per_km; $st_travel_description = "นอกเมือง ({$st_distance_km} กม.)"; } }
+        
+                if ($base_sticker_price_per_sqm <= 0) {
+                    $response['error'] = "ไม่พบราคาของชนิดสติ๊กเกอร์ที่เลือก";
+                } else {
+                    $sticker_only_price = $base_sticker_price_per_sqm * $area_sqm;
+                    $sheet_price = 0; $selected_sheet_name = '';
+                    if ($st_selected_sheet_id != 'none') {
+                        $sheet_ppu = 0;
+                        foreach ($sheet_list_for_sticker as $sh) { if ($sh['material_id'] == $st_selected_sheet_id) { $sheet_ppu = $sh['price_per_unit']; $selected_sheet_name = $sh['material_name']; break; } }
+                        if ($sheet_ppu > 0) { $sheet_price = $sheet_ppu * $area_sqm; }
+                    }
+                    $st_options_price_total = 0; $st_selected_options_details = [];
+                    foreach ($options_list as $opt) { if (in_array($opt['option_id'], $st_selected_options)) { $st_options_price_total += $opt['option_price']; $st_selected_options_details[] = ['name' => $opt['option_name'], 'price' => $opt['option_price']]; } }
+                    $st_travel_cost = 0; $st_travel_description = 'ไม่รวมค่าเดินทาง';
+                    if ($st_travel_type == 'in_city') { $st_travel_cost = $travel_cost_in_city; $st_travel_description = 'ในเมือง'; }
+                    elseif ($st_travel_type == 'out_city') { if (is_numeric($st_distance_km) && $st_distance_km > 0) { $st_travel_cost = $st_distance_km * $travel_cost_per_km; $st_travel_description = "นอกเมือง ({$st_distance_km} กม.)"; } }
 
-                $price_per_sheet = customRound($sticker_only_price + $sheet_price + $st_options_price_total + $st_travel_cost);
-                $st_total_price = $price_per_sheet * $st_quantity;
-                $response['success'] = true;
-                $response['results'] = [
-                    'width' => $st_width,
-                    'height' => $st_height,
-                    'area' => $area_sqm,
-                    'quantity' => $st_quantity,
-                    'price_per_sheet' => $price_per_sheet,
-                    'sticker_price' => $sticker_only_price,
-                    'sheet_name' => $selected_sheet_name,
-                    'sheet_price' => $sheet_price,
-                    'options' => $st_selected_options_details,
-                    'travel_desc' => $st_travel_description,
-                    'travel_price' => $st_travel_cost,
-                    'total_price' => $st_total_price
-                ];
+                    $price_per_sheet = customRound($sticker_only_price + $sheet_price + $st_options_price_total + $st_travel_cost);
+                    $st_total_price = $price_per_sheet * $st_quantity;
+                    $response['success'] = true;
+                    $response['results'] = [
+                        'width' => $st_width,
+                        'height' => $st_height,
+                        'area' => $area_sqm,
+                        'quantity' => $st_quantity,
+                        'price_per_sheet' => $price_per_sheet,
+                        'sticker_price' => $sticker_only_price,
+                        'sheet_name' => $selected_sheet_name,
+                        'sheet_price' => $sheet_price,
+                        'options' => $st_selected_options_details,
+                        'travel_desc' => $st_travel_description,
+                        'travel_price' => $st_travel_cost,
+                        'total_price' => $st_total_price
+                    ];
+                }
             }
         }
         // ========================== LETTER ==========================

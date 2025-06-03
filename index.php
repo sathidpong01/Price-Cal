@@ -55,6 +55,8 @@ if ($result_materials_all_query && $result_materials_all_query->num_rows > 0) {
             $sheet_list_for_sticker[] = $row_mat;
         } elseif ($row_mat['product_type'] == 'ผ้าไวนิล') {
             $vinyl_materials_list[] = $row_mat;
+        } elseif ($row_mat['product_type'] == 'สติ๊กเกอร์') {
+            $sticker_materials_list[] = $row_mat;
         }
     }
 }
@@ -110,8 +112,6 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
 
                     <div class="calculator-section">
                         <h1>คำนวณราคาสติ๊กเกอร์</h1>
-                        <p>(ราคาสติ๊กเกอร์พื้นฐานคือ <?php echo number_format($sticker_price_per_sqm, 2); ?> บาท/ตร.ม.)
-                        </p>
                         <form id="stickerForm">
                             <div><label for="st_width">ความกว้าง (ซม.):</label><input type="text" id="st_width"
                                     name="st_width" placeholder="กรอกความกว้าง" value=""></div>
@@ -119,6 +119,18 @@ $lightbox_options = array_merge($options_by_category['ทั่วไป'], $opt
                                     name="st_height" placeholder="กรอกความสูง" value=""></div>
                             <div><label for="st_quantity">จำนวน (แผ่น):</label><input type="text" id="st_quantity"
                                     name="st_quantity" placeholder="กรอกจำนวน" value="1"></div>
+                            <?php if (!empty($sticker_materials_list)): ?>
+                            <div><label for="st_material_type">ชนิดสติ๊กเกอร์:</label>
+                                <select id="st_material_type" name="st_material_type" required>
+                                    <option value="">-- กรุณาเลือกชนิดสติ๊กเกอร์ --</option>
+                                    <?php foreach ($sticker_materials_list as $st_mat): ?>
+                                    <option value="<?php echo $st_mat['material_id']; ?>">
+                                        <?php echo htmlspecialchars($st_mat['material_name']) . " (" . number_format($st_mat['price_per_unit'], 2) . " บาท/ตร.ม.)"; ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <?php endif; ?>
                             <div><label for="st_sheet_material">วัสดุแผ่น (เสริม):</label>
                                 <select id="st_sheet_material" name="st_sheet_material">
                                     <option value="none">-- ไม่ใช้วัสดุแผ่น --</option>

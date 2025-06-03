@@ -386,7 +386,7 @@ function handleStockUpdate(stockId, buttonElement) {
         })
         .catch(error => console.error('Error updating stock:', error));
 }
-
+window.handleStockUpdate = handleStockUpdate;
 // ฟังก์ชันสำหรับตั้งค่าการตรวจจับการเปลี่ยนแปลงในตารางสต็อก
 function setupStockControls() {
     const stockTable = document.getElementById('stockManagementTable');
