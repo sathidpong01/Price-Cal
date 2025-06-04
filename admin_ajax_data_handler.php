@@ -17,6 +17,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && isset($_GET
             $sql = "SELECT * FROM materials WHERE material_id = ?";
         } elseif ($action == 'get_option_data') {
             $sql = "SELECT * FROM options WHERE option_id = ?";
+        } elseif ($action == 'get_stock_data') {
+            $sql = "SELECT * FROM stock WHERE stock_id = ?";
         }
 
         if (!empty($sql)) {
@@ -46,25 +48,35 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
     // --- update_stock handler ---
     if ($action == 'update_stock') {
         $stock_id = isset($_POST['stock_id']) ? intval($_POST['stock_id']) : 0;
+        $product_name = $_POST['product_name'] ?? '';
+        $product_type = $_POST['product_type'] ?? '';
         $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
+        $unit = $_POST['unit'] ?? '';
 
-        if ($stock_id > 0 && $quantity >= 0) {
-            $sql_update_stock = "UPDATE stock SET quantity = ? WHERE stock_id = ?";
-            $stmt = $conn->prepare($sql_update_stock);
-            if ($stmt) {
-                $stmt->bind_param("ii", $quantity, $stock_id);
-                if ($stmt->execute()) {
+        if ($stock_id > 0 && !empty($product_name) && !empty($product_type) && $quantity >= 0 && !empty($unit)) {
+            $sql_update = "UPDATE stock SET product_name = ?, product_type = ?, quantity = ?, unit = ? WHERE stock_id = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            if ($stmt_update) {
+                $stmt_update->bind_param("ssisi", $product_name, $product_type, $quantity, $unit, $stock_id);
+                if ($stmt_update->execute()) {
                     $response['success'] = true;
-                    $response['message'] = "อัปเดตสต็อกเรียบร้อย!";
+                    $response['message'] = "อัปเดตสินค้า '" . htmlspecialchars($product_name) . "' เรียบร้อย!";
+                    $response['data'] = [
+                        'stock_id' => $stock_id,
+                        'product_name' => $product_name,
+                        'product_type' => $product_type,
+                        'quantity' => $quantity,
+                        'unit' => $unit
+                    ];
                 } else {
-                    $response['error'] = "ผิดพลาด: " . $stmt->error;
+                    $response['error'] = "ผิดพลาด อัปเดตสินค้า: " . $stmt_update->error;
                 }
-                $stmt->close();
+                $stmt_update->close();
             } else {
-                $response['error'] = "ผิดพลาด SQL: " . $conn->error;
+                $response['error'] = "ผิดพลาด SQL อัปเดตสินค้า: " . $conn->error;
             }
         } else {
-            $response['error'] = "ข้อมูลไม่ถูกต้องสำหรับอัปเดตสต็อก";
+            $response['error'] = "กรุณากรอกข้อมูลสินค้าให้ครบถ้วนและถูกต้อง!";
         }
     }
 

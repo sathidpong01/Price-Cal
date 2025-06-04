@@ -91,3 +91,33 @@
         </form>
     </div>
 </div>
+
+<div id="editStockModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('editStockModal')">&times;</span>
+        <h2>แก้ไขสินค้าในสต็อก:</h2>
+        <form id="editStockForm" method="post" action="admin_ajax_data_handler.php">
+            <input type="hidden" name="action" value="update_stock">
+            <input type="hidden" id="edit_stock_id" name="stock_id">
+            <div class="form-group">
+                <label for="edit_stock_product_name">ชื่อสินค้า:</label>
+                <input type="text" id="edit_stock_product_name" name="product_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="edit_stock_product_type">ประเภทสินค้า:</label>
+                <input type="text" id="edit_stock_product_type" name="product_type" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="edit_stock_quantity">จำนวน:</label>
+                <input type="number" step="1" id="edit_stock_quantity" name="quantity" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="edit_stock_unit">หน่วย:</label>
+                <input type="text" id="edit_stock_unit" name="unit" class="form-control" required>
+            </div>
+            <div class="btn-group">
+                <button type="submit">บันทึกการเปลี่ยนแปลง</button>
+            </div>
+        </form>
+    </div>
+</div>

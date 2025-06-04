@@ -129,6 +129,7 @@ function openEditModal(type, id) {
     if (type === 'rule') { modalId = 'editRuleModal'; formId = 'editRuleForm'; }
     else if (type === 'material') { modalId = 'editMaterialModal'; formId = 'editMaterialForm'; }
     else if (type === 'option') { modalId = 'editOptionModal'; formId = 'editOptionForm'; }
+    else if (type === 'stock') { modalId = 'editStockModal'; formId = 'editStockForm'; }
     else { console.error('[DEBUG] Unknown modal type:', type); return; }
 
     const modal = document.getElementById(modalId);
@@ -161,7 +162,13 @@ function openEditModal(type, id) {
                     form.elements['option_id'].value = itemData.option_id;
                     form.elements['option_name'].value = itemData.option_name;
                     form.elements['option_price'].value = parseFloat(itemData.option_price).toFixed(2);
-                    form.elements['option_category'].value = itemData.category || 'ทั่วไป'; // เพิ่มการตั้งค่า category
+                    form.elements['option_category'].value = itemData.category || 'ทั่วไป';
+                } else if (type === 'stock') {
+                    form.elements['stock_id'].value = itemData.stock_id;
+                    form.elements['product_name'].value = itemData.product_name;
+                    form.elements['product_type'].value = itemData.product_type;
+                    form.elements['quantity'].value = itemData.quantity;
+                    form.elements['unit'].value = itemData.unit;
                 }
                 console.log(`[DEBUG] 5. Setting modal display to "block" for:`, modalId);
                 modal.style.display = "block";
@@ -309,6 +316,15 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         submitModalForm(this, 'admin_ajax_data_handler.php', '#options_section', 'editOptionModal');
     });
+
+    // Stock edit form submission
+    const editStockForm = document.getElementById('editStockForm');
+    if (editStockForm) {
+        editStockForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitModalForm(this, 'admin_ajax_data_handler.php', '#stock_section', 'editStockModal');
+        });
+    }
 
 // เพิ่มการจัดการ Toggle แสดง/ซ่อนในเครื่องคำนวณราคา
 // admin.js

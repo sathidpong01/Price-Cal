@@ -277,7 +277,11 @@ $conn->close();
                         <div class="table-container">
                             <div class="search-section">
                                 <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
-                                     <g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path></g>
+                                    <g>
+                                        <path
+                                            d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z">
+                                        </path>
+                                    </g>
                                 </svg>
                                 <input type="text" id="ruleSearch" class="search-box" placeholder="ค้นหากฎราคา...">
                             </div>
@@ -295,21 +299,30 @@ $conn->close();
                                     </thead>
                                     <tbody>
                                         <?php if (empty($price_rules_list)): ?>
-                                        <tr><td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลกฎราคา</td></tr>
+                                        <tr>
+                                            <td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลกฎราคา</td>
+                                        </tr>
                                         <?php else: ?>
                                         <?php foreach ($price_rules_list as $rule): ?>
                                         <tr id="rule-row-<?php echo $rule['rule_id']; ?>">
                                             <td><?php echo htmlspecialchars($rule['rule_id']); ?></td>
-                                            <td data-field="name"><?php echo htmlspecialchars($rule['rule_name']); ?></td>
-                                            <td data-field="value" style="text-align: right;"><?php echo number_format($rule['rule_value'], 2); ?></td>
-                                            <td data-field="unit"><?php echo htmlspecialchars($rule['rule_unit']); ?></td>
+                                            <td data-field="name"><?php echo htmlspecialchars($rule['rule_name']); ?>
+                                            </td>
+                                            <td data-field="value" style="text-align: right;">
+                                                <?php echo number_format($rule['rule_value'], 2); ?></td>
+                                            <td data-field="unit"><?php echo htmlspecialchars($rule['rule_unit']); ?>
+                                            </td>
                                             <td class="table-actions">
-                                                <button type="button" class="btn-edit" onclick="openEditModal('rule', <?php echo $rule['rule_id']; ?>)">แก้ไข</button>
-                                                <button type="button" class="btn-delete" onclick="handleDeleteClick('rule', <?php echo $rule['rule_id']; ?>, '<?php echo htmlspecialchars(addslashes($rule['rule_name'])); ?>')">ลบ</button>
+                                                <button type="button" class="btn-edit"
+                                                    onclick="openEditModal('rule', <?php echo $rule['rule_id']; ?>)">แก้ไข</button>
+                                                <button type="button" class="btn-delete"
+                                                    onclick="handleDeleteClick('rule', <?php echo $rule['rule_id']; ?>, '<?php echo htmlspecialchars(addslashes($rule['rule_name'])); ?>')">ลบ</button>
                                             </td>
                                             <td>
                                                 <label class="toggle-switch">
-                                                    <input type="checkbox" class="original-checkbox rule-display-toggle" data-rule-id="<?php echo $rule['rule_id']; ?>" <?php echo (isset($rule['display_in_calculator']) && $rule['display_in_calculator'] == 1) ? 'checked' : ''; ?>>
+                                                    <input type="checkbox" class="original-checkbox rule-display-toggle"
+                                                        data-rule-id="<?php echo $rule['rule_id']; ?>"
+                                                        <?php echo (isset($rule['display_in_calculator']) && $rule['display_in_calculator'] == 1) ? 'checked' : ''; ?>>
                                                     <span class="slider round"></span>
                                                 </label>
                                             </td>
@@ -329,23 +342,28 @@ $conn->close();
                             <form action="admin.php#materials_section" method="post">
                                 <div class="form-group">
                                     <label for="add_material_type">ประเภทวัสดุ:</label>
-                                    <select id="add_material_type" name="add_material_type" class="form-control" required>
+                                    <select id="add_material_type" name="add_material_type" class="form-control"
+                                        required>
                                         <?php foreach (array_unique($existing_product_types) as $type): ?>
-                                        <option value="<?php echo htmlspecialchars($type); ?>"><?php echo htmlspecialchars($type); ?></option>
+                                        <option value="<?php echo htmlspecialchars($type); ?>">
+                                            <?php echo htmlspecialchars($type); ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_material_name">ชื่อวัสดุ:</label>
-                                    <input type="text" id="add_material_name" name="add_material_name" class="form-control" required>
+                                    <input type="text" id="add_material_name" name="add_material_name"
+                                        class="form-control" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_material_price">ราคาต่อหน่วย:</label>
-                                    <input type="number" step="0.01" id="add_material_price" name="add_material_price" class="form-control" required>
+                                    <input type="number" step="0.01" id="add_material_price" name="add_material_price"
+                                        class="form-control" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_material_unit">หน่วย:</label>
-                                    <input type="text" id="add_material_unit" name="add_material_unit" class="form-control" required>
+                                    <input type="text" id="add_material_unit" name="add_material_unit"
+                                        class="form-control" required>
                                 </div>
                                 <div class="btn-group">
                                     <button type="submit" name="add_material">เพิ่มวัสดุ</button>
@@ -355,9 +373,14 @@ $conn->close();
                         <div class="table-container">
                             <div class="search-section">
                                 <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
-                                    <g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path></g>
+                                    <g>
+                                        <path
+                                            d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z">
+                                        </path>
+                                    </g>
                                 </svg>
-                                <input type="text" id="materialSearch" class="search-box" placeholder="ค้นหาด้วยชื่อ หรือ ประเภท...">
+                                <input type="text" id="materialSearch" class="search-box"
+                                    placeholder="ค้นหาด้วยชื่อ หรือ ประเภท...">
                             </div>
                             <div class="table-responsive">
                                 <table id="materialsTable">
@@ -374,22 +397,32 @@ $conn->close();
                                     </thead>
                                     <tbody>
                                         <?php if (empty($materials_list_admin)): ?>
-                                        <tr><td colspan="7" style="text-align: center;">ยังไม่มีข้อมูลวัสดุ</td></tr>
+                                        <tr>
+                                            <td colspan="7" style="text-align: center;">ยังไม่มีข้อมูลวัสดุ</td>
+                                        </tr>
                                         <?php else: ?>
                                         <?php foreach ($materials_list_admin as $mat): ?>
                                         <tr id="material-row-<?php echo $mat['material_id']; ?>">
                                             <td><?php echo htmlspecialchars($mat['material_id']); ?></td>
-                                            <td data-field="type"><?php echo htmlspecialchars($mat['product_type']); ?></td>
-                                            <td data-field="name"><?php echo htmlspecialchars($mat['material_name']); ?></td>
-                                            <td data-field="price" style="text-align:right;"><?php echo number_format($mat['price_per_unit'], 2); ?></td>
+                                            <td data-field="type"><?php echo htmlspecialchars($mat['product_type']); ?>
+                                            </td>
+                                            <td data-field="name"><?php echo htmlspecialchars($mat['material_name']); ?>
+                                            </td>
+                                            <td data-field="price" style="text-align:right;">
+                                                <?php echo number_format($mat['price_per_unit'], 2); ?></td>
                                             <td data-field="unit"><?php echo htmlspecialchars($mat['unit']); ?></td>
                                             <td class="table-actions">
-                                                <button type="button" class="btn-edit" onclick="openEditModal('material', <?php echo $mat['material_id']; ?>)">แก้ไข</button>
-                                                <button type="button" class="btn-delete" onclick="handleDeleteClick('material', <?php echo $mat['material_id']; ?>, '<?php echo htmlspecialchars(addslashes($mat['material_name'])); ?>')">ลบ</button>
+                                                <button type="button" class="btn-edit"
+                                                    onclick="openEditModal('material', <?php echo $mat['material_id']; ?>)">แก้ไข</button>
+                                                <button type="button" class="btn-delete"
+                                                    onclick="handleDeleteClick('material', <?php echo $mat['material_id']; ?>, '<?php echo htmlspecialchars(addslashes($mat['material_name'])); ?>')">ลบ</button>
                                             </td>
                                             <td>
                                                 <label class="toggle-switch">
-                                                    <input type="checkbox" class="original-checkbox material-display-toggle" data-material-id="<?php echo $mat['material_id']; ?>" <?php echo (isset($mat['display_in_calculator']) && $mat['display_in_calculator'] == 1) ? 'checked' : ''; ?>>
+                                                    <input type="checkbox"
+                                                        class="original-checkbox material-display-toggle"
+                                                        data-material-id="<?php echo $mat['material_id']; ?>"
+                                                        <?php echo (isset($mat['display_in_calculator']) && $mat['display_in_calculator'] == 1) ? 'checked' : ''; ?>>
                                                     <span class="slider round"></span>
                                                 </label>
                                             </td>
@@ -406,20 +439,24 @@ $conn->close();
                     <h2>จัดการออปชันเสริม</h2>
                     <div class="content-wrapper">
                         <div class="form-container">
-                           <form action="admin.php#options_section" method="post">
+                            <form action="admin.php#options_section" method="post">
                                 <div class="form-group">
                                     <label for="add_option_name">ชื่อออปชัน:</label>
-                                    <input type="text" id="add_option_name" name="add_option_name" class="form-control" required>
+                                    <input type="text" id="add_option_name" name="add_option_name" class="form-control"
+                                        required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_option_price">ราคา (บาท):</label>
-                                    <input type="number" step="0.01" id="add_option_price" name="add_option_price" class="form-control" required>
+                                    <input type="number" step="0.01" id="add_option_price" name="add_option_price"
+                                        class="form-control" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_option_category">หมวดหมู่:</label>
-                                    <select id="add_option_category" name="add_option_category" class="form-control" required>
+                                    <select id="add_option_category" name="add_option_category" class="form-control"
+                                        required>
                                         <?php foreach ($option_categories as $cat): ?>
-                                        <option value="<?php echo htmlspecialchars($cat); ?>"><?php echo htmlspecialchars($cat); ?></option>
+                                        <option value="<?php echo htmlspecialchars($cat); ?>">
+                                            <?php echo htmlspecialchars($cat); ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -430,10 +467,15 @@ $conn->close();
                         </div>
                         <div class="table-container">
                             <div class="search-section">
-                               <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
-                                    <g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path></g>
+                                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
+                                    <g>
+                                        <path
+                                            d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z">
+                                        </path>
+                                    </g>
                                 </svg>
-                                <input type="text" id="optionSearch" class="search-box" placeholder="ค้นหาด้วยชื่อหรือหมวดหมู่...">
+                                <input type="text" id="optionSearch" class="search-box"
+                                    placeholder="ค้นหาด้วยชื่อหรือหมวดหมู่...">
                             </div>
                             <div class="table-responsive">
                                 <table id="optionsTable">
@@ -449,21 +491,31 @@ $conn->close();
                                     </thead>
                                     <tbody>
                                         <?php if (empty($options_list_admin)): ?>
-                                        <tr><td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลออปชัน</td></tr>
+                                        <tr>
+                                            <td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลออปชัน</td>
+                                        </tr>
                                         <?php else: ?>
                                         <?php foreach ($options_list_admin as $opt): ?>
                                         <tr id="option-row-<?php echo $opt['option_id']; ?>">
                                             <td><?php echo htmlspecialchars($opt['option_id']); ?></td>
-                                            <td data-field="name"><?php echo htmlspecialchars($opt['option_name']); ?></td>
-                                            <td data-field="price" style="text-align:right;"><?php echo number_format($opt['option_price'], 2); ?></td>
-                                            <td data-field="category"><?php echo htmlspecialchars($opt['category'] ?? 'ทั่วไป'); ?></td>
+                                            <td data-field="name"><?php echo htmlspecialchars($opt['option_name']); ?>
+                                            </td>
+                                            <td data-field="price" style="text-align:right;">
+                                                <?php echo number_format($opt['option_price'], 2); ?></td>
+                                            <td data-field="category">
+                                                <?php echo htmlspecialchars($opt['category'] ?? 'ทั่วไป'); ?></td>
                                             <td class="table-actions">
-                                                <button type="button" class="btn-edit" onclick="openEditModal('option', <?php echo $opt['option_id']; ?>)">แก้ไข</button>
-                                                <button type="button" class="btn-delete" onclick="handleDeleteClick('option', <?php echo $opt['option_id']; ?>, '<?php echo htmlspecialchars(addslashes($opt['option_name'])); ?>')">ลบ</button>
+                                                <button type="button" class="btn-edit"
+                                                    onclick="openEditModal('option', <?php echo $opt['option_id']; ?>)">แก้ไข</button>
+                                                <button type="button" class="btn-delete"
+                                                    onclick="handleDeleteClick('option', <?php echo $opt['option_id']; ?>, '<?php echo htmlspecialchars(addslashes($opt['option_name'])); ?>')">ลบ</button>
                                             </td>
                                             <td>
                                                 <label class="toggle-switch">
-                                                    <input type="checkbox" class="original-checkbox option-display-toggle" data-option-id="<?php echo $opt['option_id']; ?>" <?php echo (isset($opt['display_in_calculator']) && $opt['display_in_calculator'] == 1) ? 'checked' : ''; ?>>
+                                                    <input type="checkbox"
+                                                        class="original-checkbox option-display-toggle"
+                                                        data-option-id="<?php echo $opt['option_id']; ?>"
+                                                        <?php echo (isset($opt['display_in_calculator']) && $opt['display_in_calculator'] == 1) ? 'checked' : ''; ?>>
                                                     <span class="slider round"></span>
                                                 </label>
                                             </td>
@@ -476,22 +528,26 @@ $conn->close();
                         </div>
                     </div>
                 </div>
-            </div> <div class="admin-section" id="stock_section">
+            </div>
+            <div class="admin-section" id="stock_section">
                 <h2>จัดการสต็อกสินค้า</h2>
-                
+
                 <div class="form-container" style="margin-bottom: 20px;">
-                     <form action="admin.php#stock_section" method="post">
+                    <form action="admin.php#stock_section" method="post">
                         <div class="form-group">
                             <label for="add_stock_product_name">ชื่อสินค้า:</label>
-                            <input type="text" id="add_stock_product_name" name="add_stock_product_name" class="form-control" required>
+                            <input type="text" id="add_stock_product_name" name="add_stock_product_name"
+                                class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label for="add_stock_product_type">ประเภทสินค้า:</label>
-                            <input type="text" id="add_stock_product_type" name="add_stock_product_type" class="form-control" required>
+                            <input type="text" id="add_stock_product_type" name="add_stock_product_type"
+                                class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label for="add_stock_quantity">จำนวน:</label>
-                            <input type="number" step="1" id="add_stock_quantity" name="add_stock_quantity" class="form-control" required>
+                            <input type="number" step="1" id="add_stock_quantity" name="add_stock_quantity"
+                                class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label for="add_stock_unit">หน่วย:</label>
@@ -504,9 +560,13 @@ $conn->close();
                 </div>
 
                 <div class="table-container">
-                     <div class="search-section">
+                    <div class="search-section">
                         <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
-                           <g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path></g>
+                            <g>
+                                <path
+                                    d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z">
+                                </path>
+                            </g>
                         </svg>
                         <input type="text" id="stockSearch" class="search-box" placeholder="ค้นหาสต็อก...">
                     </div>
@@ -524,7 +584,9 @@ $conn->close();
                             </thead>
                             <tbody>
                                 <?php if (empty($stock_list)): ?>
-                                <tr><td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลสต็อก</td></tr>
+                                <tr>
+                                    <td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลสต็อก</td>
+                                </tr>
                                 <?php else: ?>
                                 <?php foreach ($stock_list as $item): ?>
                                 <tr id="stock-row-<?php echo $item['stock_id']; ?>">
@@ -540,8 +602,12 @@ $conn->close();
                                     <td><?php echo htmlspecialchars($item['unit']); ?></td>
                                     <td class="table-actions">
                                         <button type="button" class="btn-stock-save"
-                                            onclick="handleStockUpdate(<?php echo $item['stock_id']; ?>, this)">บันทึก</button>
-                                        </td>
+                                            onclick="handleStockUpdate(<?php echo $item['stock_id']; ?>, this)">✓</button>
+                                        <button type="button" class="btn-delete"
+                                            onclick="handleDeleteClick('stock', <?php echo $item['stock_id']; ?>, '<?php echo htmlspecialchars(addslashes($item['product_name'])); ?>')">ลบ</button>
+                                        <button type="button" class="btn-edit"
+                                            onclick="openEditModal('stock', <?php echo $item['stock_id']; ?>)">แก้ไข</button>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                                 <?php endif; ?>
@@ -549,7 +615,10 @@ $conn->close();
                         </table>
                     </div>
                 </div>
-            </div> </div> <?php include 'includes/modals.php'; ?>
-    </div> <script src="js/admin.js" defer></script>
+            </div>
+        </div> <?php include 'includes/modals.php'; ?>
+    </div>
+    <script src="js/admin.js" defer></script>
 </body>
+
 </html>
