@@ -167,6 +167,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         if ($action == 'delete_rule') { $table_name = 'price_rules'; $id_column = 'rule_id'; $item_type = 'กฎราคา'; } 
         elseif ($action == 'delete_material') { $table_name = 'materials'; $id_column = 'material_id'; $item_type = 'วัสดุ'; } 
         elseif ($action == 'delete_option') { $table_name = 'options'; $id_column = 'option_id'; $item_type = 'ออปชัน'; }
+        elseif ($action == 'delete_stock') { $table_name = 'stock'; $id_column = 'stock_id'; $item_type = 'สินค้าในสต็อก'; }
 
         if ($id > 0 && !empty($table_name)) {
             $sql_delete = "DELETE FROM {$table_name} WHERE {$id_column} = ?";

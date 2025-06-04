@@ -171,28 +171,44 @@ Rule ด้านล่างนี้ใช้สำหรับปรับแ
 
 /* Form Styles */
 .form-group {
-    margin-bottom: 10px;
+    margin-bottom: 1.25rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 3px;
-    font-size: 0.9rem;
-    color: #555;
+    margin-bottom: 0.5rem; /* << CHANGED: เพิ่มระยะห่าง label กับ input (เช่น 8px) */
+    font-size: 0.875rem;  /* << อาจปรับขนาด font label */
+    color: #495057;       /* << สี label เข้มขึ้นเล็กน้อย */
+    font-weight: 500;     /* << เพิ่มน้ำหนัก font เล็กน้อย */
 }
 
 .form-control {
-    width: auto;
-    padding: 6px 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    display: block;
+    width: 100%; /* << ADDED: ทำให้ input เต็มความกว้างของ container */
+    padding: 0.65rem 0.9rem; /* << CHANGED: เพิ่ม padding ภายใน input field */
     font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da; /* << สีขอบเดิม */
+    appearance: none; /* Remove default styling */
+    border-radius: 0.3rem; /* << CHANGED: เพิ่มความโค้งมน */
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    box-sizing: border-box; /* << ADDED: เพื่อให้ padding และ border ไม่ทำให้ขนาดเกิน */
 }
 
 .form-control:focus {
-    border-color: #80bdff;
+    border-color: #86b7fe; /* << CHANGED: สีขอบเมื่อ focus (สีฟ้าอ่อน) */
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25); /* << CHANGED: เพิ่ม shadow เมื่อ focus ให้เหมือน Bootstrap */
+}
+
+.form-control::placeholder {
+    margin-top: 1.5rem; /* << CHANGED: เพิ่มระยะห่างบนกลุ่มปุ่ม */
+    display: flex; /* << ADDED: เพื่อให้สามารถจัดตำแหน่งปุ่มได้ง่ายขึ้น */
+    justify-content: flex-end; /* << ADDED: จัดปุ่มไปทางขวา */
 }
 
 /* Button Styles */
@@ -209,13 +225,44 @@ button {
     transition: all 0.3s ease;
 }
 
-button[type="submit"] {
-    background-color: #28a745;
+button[type="submit"],
+.form-container button[name^="add_"] /* Targeting buttons like add_rule, add_material etc. */
+{
+    background-color: #0d6efd; /* << CHANGED: สีน้ำเงิน Bootstrap Primary (ตัวอย่าง) */
+    color: white;
+    border: 1px solid #0d6efd; /* << CHANGED */
+    padding: 0.6rem 1.2rem;    /* << CHANGED: เพิ่ม padding ให้ปุ่มใหญ่ขึ้น */
+    font-size: 0.9rem;
+    font-weight: 500;          /* << ADDED */
+    border-radius: 0.3rem;     /* << CHANGED: เพิ่มความโค้งมน */
+    cursor: pointer;
+    transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    user-select: none;
+}
+
+button[type="submit"]:hover,
+.form-container button[name^="add_"]:hover
+{
+    background-color: #0b5ed7; /* << CHANGED: สีเข้มขึ้นเมื่อ hover */
+    border-color: #0a58ca;   /* << CHANGED */
     color: white;
 }
 
-button[type="submit"]:hover {
-    background-color: #218838;
+button[type="submit"]:focus,
+.form-container button[name^="add_"]:focus
+{
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(49, 132, 253, .5); /* << ADDED: Shadow เมื่อ focus */
+}
+
+button[type="submit"]:active,
+.form-container button[name^="add_"]:active
+{
+    background-color: #0a58ca; /* << ADDED: สีเมื่อคลิก */
+    border-color: #0a53be;
 }
 
 .btn-edit {
@@ -588,4 +635,62 @@ tr:hover {
 /* หรือ อาจจะเปลี่ยนความสว่างของปุ่มกลม (เลือกอย่างใดอย่างหนึ่ง หรือใช้ร่วมกัน) */
 .toggle-switch:hover .slider:before {
     background-color: #f0f0f0; /* ทำให้ปุ่มกลมสว่างขึ้นเล็กน้อยเมื่อ hover */
+}
+
+/* CHANGED/ADDED: Styles for filter section if needed */
+.filter-section {
+    display: flex;
+    gap: 15px; /* ระยะห่างระหว่าง search box กับ dropdown */
+    margin-bottom: 15px; /* ระยะห่างจากตาราง */
+    align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+    flex-wrap: wrap; /* ให้ขึ้นบรรทัดใหม่ได้บนจอเล็ก */
+}
+
+.filter-section .search-section {
+    margin-bottom: 0; /* ลบ margin-bottom ของ search-section ที่อยู่ใน filter-section */
+    flex-grow: 1; /* ให้ช่องค้นหาขยายได้ */
+    min-width: 200px; /* ความกว้างขั้นต่ำ */
+}
+.filter-section .search-section .search-box{
+    width: 100%; /* ให้ search box เต็มพื้นที่ของ search-section */
+}
+
+
+.filter-section > div { /* สำหรับครอบ label และ select */
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* ให้ส่วน dropdown ขยายได้ */
+    min-width: 220px; /* ความกว้างขั้นต่ำ */
+}
+
+.filter-section label {
+    margin-right: 8px;
+    font-size: 0.875rem; /* ขนาดเดียวกับ label อื่นๆ ในฟอร์ม */
+    color: #495057;
+    font-weight: 500;
+    margin-bottom: 0; /* ไม่ต้องมี margin-bottom เพราะ align-items: center แล้ว */
+}
+
+.filter-section select.form-control {
+    width: auto; /* ให้ความกว้างปรับตามเนื้อหา option + min-width */
+    min-width: 180px;
+    display: inline-block; /* หรือ flex-grow:1; ถ้าต้องการให้เต็มพื้นที่ที่เหลือใน div ครอบ */
+    padding: 8px 10px; /* อาจจะต้องปรับให้เท่ากับ search-box */
+    height: 40px;     /* ความสูงเท่า search-box */
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+/* Responsive for filter section */
+@media (max-width: 767px) {
+    .filter-section {
+        flex-direction: column;
+        align-items: stretch; /* ให้แต่ละ item ยืดเต็มความกว้าง */
+    }
+    .filter-section > div {
+        width: 100%; /* ให้ส่วน dropdown เต็มความกว้างบนจอเล็ก */
+    }
+     .filter-section select.form-control {
+        width: 100%; /* ให้ select เต็มความกว้าง */
+    }
 }

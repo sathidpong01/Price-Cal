@@ -32,6 +32,12 @@ if (isset($_GET['action']) && isset($_GET['id']) && strpos($_GET['action'], 'del
         $id_column = 'material_id';
         $redirect_msg = 'mat_deleted';
         $section_anchor = '#materials_section';
+    } elseif ($_GET['action'] == 'delete_stock') {
+        $item_type = 'สินค้าในสต็อก';
+        $table_name = 'stock';
+        $id_column = 'stock_id';
+        $redirect_msg = 'stock_deleted';
+        $section_anchor = '#stock_section';
     }
 
     if (!empty($table_name)) {
@@ -256,21 +262,21 @@ $conn->close();
                             <form action="admin.php#rules_section" method="post">
                                 <div class="form-group">
                                     <label for="add_rule_name">ชื่อกฎราคา:</label>
-                                    <input type="text" id="add_rule_name" name="add_rule_name" class="form-control"
-                                        required>
+                                    <input type="text" id="add_rule_name" name="add_rule_name" class="form-control "
+                                    placeholder="ค่าบริการ" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_rule_value">ราคา:</label>
                                     <input type="number" step="0.01" id="add_rule_value" name="add_rule_value"
-                                        class="form-control" required>
+                                        class="form-control" placeholder="1,000"required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_rule_unit">หน่วย:</label>
-                                    <input type="text" id="add_rule_unit" name="add_rule_unit" class="form-control"
+                                    <input type="text" id="add_rule_unit" name="add_rule_unit" class="form-control" placeholder="บาท"
                                         required>
                                 </div>
                                 <div class="btn-group">
-                                    <button type="submit" name="add_rule">เพิ่มกฎราคา</button>
+                                    <button type="submit" name="add_rule">เพิ่ม</button>
                                 </div>
                             </form>
                         </div>
@@ -353,20 +359,20 @@ $conn->close();
                                 <div class="form-group">
                                     <label for="add_material_name">ชื่อวัสดุ:</label>
                                     <input type="text" id="add_material_name" name="add_material_name"
-                                        class="form-control" required>
+                                        class="form-control" placeholder="สแตนเลส" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_material_price">ราคาต่อหน่วย:</label>
                                     <input type="number" step="0.01" id="add_material_price" name="add_material_price"
-                                        class="form-control" required>
+                                        class="form-control" placeholder="80 บาท" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_material_unit">หน่วย:</label>
                                     <input type="text" id="add_material_unit" name="add_material_unit"
-                                        class="form-control" required>
+                                        class="form-control" placeholder="บาท/นิ้ว"required>
                                 </div>
                                 <div class="btn-group">
-                                    <button type="submit" name="add_material">เพิ่มวัสดุ</button>
+                                    <button type="submit" name="add_material">เพิ่ม</button>
                                 </div>
                             </form>
                         </div>
@@ -443,12 +449,12 @@ $conn->close();
                                 <div class="form-group">
                                     <label for="add_option_name">ชื่อออปชัน:</label>
                                     <input type="text" id="add_option_name" name="add_option_name" class="form-control"
-                                        required>
+                                    placeholder="เสาเหล็ก" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_option_price">ราคา (บาท):</label>
                                     <input type="number" step="0.01" id="add_option_price" name="add_option_price"
-                                        class="form-control" required>
+                                        class="form-control" placeholder="1,000 บาท" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="add_option_category">หมวดหมู่:</label>
@@ -461,7 +467,7 @@ $conn->close();
                                     </select>
                                 </div>
                                 <div class="btn-group">
-                                    <button type="submit" name="add_option">เพิ่มออปชัน</button>
+                                    <button type="submit" name="add_option">เพิ่ม</button>
                                 </div>
                             </form>
                         </div>
@@ -560,15 +566,33 @@ $conn->close();
                 </div>
 
                 <div class="table-container">
-                    <div class="search-section">
-                        <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
-                            <g>
-                                <path
-                                    d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z">
-                                </path>
-                            </g>
-                        </svg>
-                        <input type="text" id="stockSearch" class="search-box" placeholder="ค้นหาสต็อก...">
+                    <div class="filter-section" style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center;">
+                        <div class="search-section" style="margin-bottom: 0;">
+                            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
+                                <g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path></g>
+                            </svg>
+                            <input type="text" id="stockSearch" class="search-box" placeholder="ค้นหาชื่อสินค้า, หน่วย...">
+                        </div>
+                        <div>
+                            <label for="stockTypeFilter" style="margin-right: 5px; font-size: 0.9rem; color: #495057;">หมวดหมู่:</label>
+                            <select id="stockTypeFilter" class="form-control" style="width: auto; min-width: 180px; display: inline-block; padding: 8px 10px; height: 40px; line-height: 1.5;">
+                                <option value="">ทั้งหมด</option>
+                                <?php
+                                // CHANGED/ADDED: ดึง Product Types ที่มีอยู่จาก $stock_list
+                                $product_types_in_stock = [];
+                                if (!empty($stock_list)) {
+                                    foreach ($stock_list as $item) {
+                                        $product_types_in_stock[] = $item['product_type'];
+                                    }
+                                }
+                                $unique_product_types = array_unique($product_types_in_stock);
+                                sort($unique_product_types); // เรียงตามตัวอักษร (ถ้าต้องการ)
+                                foreach ($unique_product_types as $type):
+                                ?>
+                                    <option value="<?php echo htmlspecialchars($type); ?>"><?php echo htmlspecialchars($type); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table id="stockManagementTable">
