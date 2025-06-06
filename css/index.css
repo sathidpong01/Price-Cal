@@ -182,7 +182,7 @@ small {
 
 /* === Main Content Area Wrapper === */
 .main-content-area {
-    width: 80%; /* ให้สอดคล้องกับ .navbar-container */
+    width: 90%; /* ให้สอดคล้องกับ .navbar-container */
     margin: 0 auto; /* จัดให้อยู่กึ่งกลาง เหมือน .navbar-container */
     /* ไม่จำเป็นต้องมี padding ที่นี่ เพราะ .main-layout-grid จะจัดการระยะห่างภายในเอง */
 }
@@ -267,7 +267,7 @@ small {
   background-color: #f9f9f9; /* สีพื้นหลังอ่อนๆ */
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  padding: 20px;
+  padding: 25px;
   margin-bottom: 30px; /* เพิ่มระยะห่างระหว่าง Section */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }

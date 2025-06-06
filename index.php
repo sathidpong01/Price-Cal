@@ -1,67 +1,31 @@
 <?php
-// เรียกใช้ไฟล์เชื่อมต่อฐานข้อมูล
+// เรียกใช้ไฟล์เชื่อมต่อและไฟล์ดึงข้อมูล
 include 'includes/db_connect.php';
+include 'includes/data_fetcher.php';
 
-// --- ดึงข้อมูลพื้นฐาน (Price Rules) ---
-$price_rules = [];
-$sql_rules = "SELECT rule_name, rule_value FROM price_rules WHERE display_in_calculator = 1";
-$result_rules = $conn->query($sql_rules);
-if ($result_rules && $result_rules->num_rows > 0) {
-    while ($row_rule = $result_rules->fetch_assoc()) {
-        $price_rules[$row_rule['rule_name']] = $row_rule['rule_value'];
-    }
-}
+// --- ใช้ฟังก์ชันจาก data_fetcher.php เพื่อดึงข้อมูล ---
+$price_rules = getPriceRules($conn);
+$options_by_category = getAllOptionsByCategory($conn);
+$all_materials = getAllMaterialsByType($conn);
+
+// --- กำหนดค่าตัวแปรจากข้อมูลที่ดึงมา ---
 $sticker_price_per_sqm = isset($price_rules['ราคาสติ๊กเกอร์ต่อตรม.']) ? $price_rules['ราคาสติ๊กเกอร์ต่อตรม.'] : 450;
 $travel_cost_per_km = isset($price_rules['ติดตั้งนอกเมือง']) ? $price_rules['ติดตั้งนอกเมือง'] : 10;
 $travel_cost_in_city = isset($price_rules['ติดตั้งในเมือง']) ? $price_rules['ติดตั้งในเมือง'] : 300;
 
+// --- แยกข้อมูล Materials และ Options สำหรับแต่ละฟอร์ม ---
+$materials_list_for_letter = $all_materials['ตัวอักษรโลหะ'];
+$lightbox_list_for_form = $all_materials['กล่องไฟ'];
+$sheet_list_for_sticker = $all_materials['วัสดุแผ่น'];
+$vinyl_materials_list = $all_materials['ผ้าไวนิล'];
+$sticker_materials_list = $all_materials['สติ๊กเกอร์'];
 
-// --- ดึงข้อมูล Options และจัดกลุ่มตาม Category ---
-$options_by_category = [
-    'ทั่วไป' => [],
-    'สติ๊กเกอร์' => [],
-    'ผ้าไวนิล' => [],
-    'ตัวอักษรโลหะ' => [],
-    'กล่องไฟ' => []
-];
-$sql_options = "SELECT option_id, option_name, option_price, category FROM options WHERE display_in_calculator = 1";
-$result_options = $conn->query($sql_options);
-if ($result_options && $result_options->num_rows > 0) {
-    while ($row_opt = $result_options->fetch_assoc()) {
-        $category_key = $row_opt['category'] ?? 'ทั่วไป';
-        if (array_key_exists($category_key, $options_by_category)) {
-            $options_by_category[$category_key][] = $row_opt;
-        } else {
-            $options_by_category['ทั่วไป'][] = $row_opt;
-        }
-    }
-}
+$sticker_options = array_merge($options_by_category['ทั่วไป'], $options_by_category['สติ๊กเกอร์']);
+$vinyl_options = array_merge($options_by_category['ทั่วไป'], $options_by_category['ผ้าไวนิล']);
+$letter_options = array_merge($options_by_category['ทั่วไป'], $options_by_category['ตัวอักษรโลหะ']);
+$lightbox_options = array_merge($options_by_category['ทั่วไป'], $options_by_category['กล่องไฟ']);
 
-// --- ดึงข้อมูล Materials ---
-$materials_list_for_letter = [];
-$lightbox_list_for_form = [];
-$sheet_list_for_sticker = [];
-$vinyl_materials_list = [];
-
-$sql_materials_all = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials WHERE display_in_calculator = 1";
-$result_materials_all_query = $conn->query($sql_materials_all);
-if ($result_materials_all_query && $result_materials_all_query->num_rows > 0) {
-    while ($row_mat = $result_materials_all_query->fetch_assoc()) {
-        if ($row_mat['product_type'] == 'ตัวอักษรโลหะ') {
-            $materials_list_for_letter[] = $row_mat;
-        } elseif ($row_mat['product_type'] == 'กล่องไฟ') {
-            $lightbox_list_for_form[] = $row_mat;
-        } elseif ($row_mat['product_type'] == 'วัสดุแผ่น') {
-            $sheet_list_for_sticker[] = $row_mat;
-        } elseif ($row_mat['product_type'] == 'ผ้าไวนิล') {
-            $vinyl_materials_list[] = $row_mat;
-        } elseif ($row_mat['product_type'] == 'สติ๊กเกอร์') {
-            $sticker_materials_list[] = $row_mat;
-        }
-    }
-}
-
-// --- ดึงข้อมูลสต็อกสำหรับแสดงผล ---
+// --- ดึงข้อมูลสต็อกสำหรับแสดงผล (เฉพาะหน้านี้) ---
 $stock_list_display = [];
 $sql_stock_display = "SELECT product_name, product_type, quantity, unit FROM stock WHERE quantity > 0 ORDER BY product_type, product_name";
 $result_stock_display = $conn->query($sql_stock_display);
@@ -70,17 +34,8 @@ if ($result_stock_display) {
         $stock_list_display[] = $row_stock;
     }
 }
-
-$conn->close();
-
-
-// --- สร้างรายการออปชันสำหรับแต่ละหมวดหมู่ ---
-$sticker_options = array_merge($options_by_category['ทั่วไป'], $options_by_category['สติ๊กเกอร์']);
-$vinyl_options = array_merge($options_by_category['ทั่วไป'], $options_by_category['ผ้าไวนิล']);
-$letter_options = array_merge($options_by_category['ทั่วไป'], $options_by_category['ตัวอักษรโลหะ']);
-$lightbox_options = array_merge($options_by_category['ทั่วไป'], $options_by_category['กล่องไฟ']);
-
 ?>
+
 <!DOCTYPE html>
 <html lang="th">
 

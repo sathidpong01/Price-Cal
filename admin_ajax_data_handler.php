@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['action']) && isset($_GET
 elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
     $action = $_POST['action'];
 
-    // --- update_stock handler ---
+    // --- (Full Update) update_stock handler from Modal ---
     if ($action == 'update_stock') {
         $stock_id = isset($_POST['stock_id']) ? intval($_POST['stock_id']) : 0;
         $product_name = $_POST['product_name'] ?? '';
@@ -79,6 +79,34 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
             $response['error'] = "กรุณากรอกข้อมูลสินค้าให้ครบถ้วนและถูกต้อง!";
         }
     }
+
+    // --- (Quantity Only Update) update_stock_quantity handler from inline edit ---
+    // --- ADDED START ---
+    elseif ($action == 'update_stock_quantity') {
+        $stock_id = isset($_POST['stock_id']) ? intval($_POST['stock_id']) : 0;
+        $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : -1; // -1 to detect if not sent
+
+        if ($stock_id > 0 && $quantity >= 0) {
+            $sql_update = "UPDATE stock SET quantity = ? WHERE stock_id = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            if ($stmt_update) {
+                $stmt_update->bind_param("ii", $quantity, $stock_id);
+                if ($stmt_update->execute()) {
+                    $response['success'] = true;
+                    $response['message'] = "อัปเดตจำนวนสต็อกเรียบร้อย!";
+                    $response['data'] = ['stock_id' => $stock_id, 'quantity' => $quantity];
+                } else {
+                    $response['error'] = "ผิดพลาด อัปเดตจำนวนสต็อก: " . $stmt_update->error;
+                }
+                $stmt_update->close();
+            } else {
+                $response['error'] = "ผิดพลาด SQL อัปเดตจำนวนสต็อก: " . $conn->error;
+            }
+        } else {
+            $response['error'] = "ข้อมูล ID หรือ Quantity ไม่ถูกต้อง!";
+        }
+    }
+    // --- ADDED END ---
 
     // --- update_rule handler ---
     elseif ($action == 'update_rule') {
@@ -137,7 +165,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         }
     } 
     
-    // --- update_option handler (แก้ไข) ---
+    // --- update_option handler ---
     elseif ($action == 'update_option') {
         $opt_id = isset($_POST['option_id']) ? intval($_POST['option_id']) : 0;
         $opt_name = $_POST['option_name'] ?? '';
@@ -200,14 +228,13 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         elseif ($type == 'material') { $table = 'materials'; $id_column = 'material_id'; $name_column = 'material_name'; } 
         elseif ($type == 'option') { $table = 'options'; $id_column = 'option_id'; $name_column = 'option_name'; }
 
-        if ($id > 0 && !empty($table) && !empty($id_column) && !empty($name_column)) {
+        if ($id > 0 && !empty($table)) {
             $sql = "UPDATE {$table} SET display_in_calculator = ? WHERE {$id_column} = ?";
             $stmt = $conn->prepare($sql);
             if ($stmt) {
                 $stmt->bind_param("ii", $visible, $id);
                 if ($stmt->execute()) {
                     $response['success'] = true;
-                    // ดึงชื่อรายการที่อัปเดตเพื่อส่งกลับไป
                     $sql_select_name = "SELECT {$name_column} FROM {$table} WHERE {$id_column} = ?";
                     $stmt_name = $conn->prepare($sql_select_name);
                     if ($stmt_name) {

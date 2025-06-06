@@ -564,25 +564,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const input = row.querySelector('.stock-quantity-input');
         if (!input) return;
         const newQuantity = input.value;
-
+    
         const formData = new FormData();
-        formData.append('action', 'update_stock'); // This is for inline editing using the text input
-        formData.append('stock_id', stockId);     // It's different from editStockForm submission
+        formData.append('action', 'update_stock_quantity'); // <-- แก้ไขเป็นชื่อ action ใหม่
+        formData.append('stock_id', stockId);
         formData.append('quantity', newQuantity);
-        // product_name, product_type, unit are not part of this specific inline quantity update
-        // The modal form `editStockForm` handles full record updates.
-
+    
         fetch('admin_ajax_data_handler.php', { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
-                if (data.success && data.data) { // Check for data.data which contains updated stock info
+                if (data.success && data.data) {
                     input.setAttribute('data-initial-value', data.data.quantity);
                     row.classList.remove('changed');
-                    buttonElement.style.visibility = 'hidden'; // Hide save button after successful save
-                    buttonElement.style.opacity = '0';
+                    // ซ่อนปุ่มหลังจากบันทึกสำเร็จ
+                    const saveButton = row.querySelector('.btn-stock-save');
+                    if (saveButton) {
+                        saveButton.style.visibility = 'hidden';
+                        saveButton.style.opacity = '0';
+                    }
                     displayGlobalMessage('success', data.message || 'อัปเดตจำนวนสต็อกเรียบร้อย!');
-                    // Potentially update other fields if they were part of the response and could change
-                    // updateTableRow('stock', data.data); // This might be redundant if only quantity changes here
                 } else {
                     displayGlobalMessage('error', data.error || 'เกิดข้อผิดพลาดในการอัปเดตสต็อก');
                 }
@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error updating stock quantity:', error);
                 displayGlobalMessage('error', 'การเชื่อมต่อล้มเหลว ไม่สามารถอัปเดตสต็อกได้');
             });
-    }; //
+    };
 
     function setupStockControls() {
         const stockTable = document.getElementById('stockManagementTable');

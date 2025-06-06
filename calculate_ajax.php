@@ -3,48 +3,36 @@
  * calculate_ajax.php
  * ทำหน้าที่รับข้อมูลจาก JavaScript (AJAX), คำนวณราคา, และส่งผลกลับเป็น JSON
  */
+ // เรียกใช้ไฟล์เชื่อมต่อและไฟล์ดึงข้อมูล
+ include 'includes/db_connect.php';
+ include 'includes/data_fetcher.php';
 
-// --- 1. ตั้งค่าพื้นฐาน ---
-header('Content-Type: application/json; charset=utf-8');
-include 'includes/db_connect.php';
-
-// --- 2. ฟังก์ชันปัดเศษ ---
+ // --- เพิ่มฟังก์ชันปัดเศษกลับเข้ามา ---
 function customRound($number) {
     return floor(($number + 6) / 10) * 10;
 }
-
-// --- 3. ดึงข้อมูลจำเป็นจากฐานข้อมูล ---
-$price_rules = [];
-$sql_rules = "SELECT rule_name, rule_value FROM price_rules WHERE display_in_calculator = 1";
-$result_rules = $conn->query($sql_rules);
-if ($result_rules) { while ($row = $result_rules->fetch_assoc()) { $price_rules[$row['rule_name']] = $row['rule_value']; } }
-$travel_cost_per_km = isset($price_rules['ติดตั้งนอกเมือง']) ? $price_rules['ติดตั้งนอกเมือง'] : 10;
-$travel_cost_in_city = isset($price_rules['ติดตั้งในเมือง']) ? $price_rules['ติดตั้งในเมือง'] : 300;
-// เพิ่ม rule สำหรับไวนิล ถ้ามีราคา default
-// $default_vinyl_price_sqm = isset($price_rules['Default Vinyl Price SQM']) ? $price_rules['Default Vinyl Price SQM'] : 400;
-
-
-$options_list = [];
-$sql_options = "SELECT option_id, option_name, option_price, category FROM options WHERE display_in_calculator = 1";
-$result_options = $conn->query($sql_options);
-if ($result_options) { while ($row = $result_options->fetch_assoc()) { $options_list[] = $row; } }
-
-$materials_for_letter = [];
-$lightbox_materials = [];
-$sheet_list_for_sticker = [];
-$vinyl_materials = []; // เพิ่ม
-
-$sql_all_materials = "SELECT material_id, product_type, material_name, price_per_unit, unit FROM materials WHERE display_in_calculator = 1";
-$result_all_materials_query = $conn->query($sql_all_materials); // เปลี่ยนชื่อตัวแปร result
-if ($result_all_materials_query) { // ใช้ตัวแปรใหม่
-    while ($row_mat = $result_all_materials_query->fetch_assoc()) { // ใช้ตัวแปรใหม่
-        if ($row_mat['product_type'] == 'ตัวอักษรโลหะ') { $materials_for_letter[] = $row_mat; }
-        elseif ($row_mat['product_type'] == 'กล่องไฟ') { $lightbox_materials[] = $row_mat; }
-        elseif ($row_mat['product_type'] == 'วัสดุแผ่น') { $sheet_list_for_sticker[] = $row_mat; }
-        elseif ($row_mat['product_type'] == 'ผ้าไวนิล') { $vinyl_materials[] = $row_mat; }
-        elseif ($row_mat['product_type'] == 'สติ๊กเกอร์') { $sticker_materials[] = $row_mat; } 
-    }
-}
+ 
+ // --- ใช้ฟังก์ชันจาก data_fetcher.php เพื่อดึงข้อมูล ---
+ $price_rules = getPriceRules($conn);
+ $all_options_by_cat = getAllOptionsByCategory($conn);
+ $all_materials = getAllMaterialsByType($conn);
+ 
+ // --- กำหนดค่าตัวแปรจากข้อมูลที่ดึงมา ---
+ $travel_cost_per_km = isset($price_rules['ติดตั้งนอกเมือง']) ? $price_rules['ติดตั้งนอกเมือง'] : 10;
+ $travel_cost_in_city = isset($price_rules['ติดตั้งในเมือง']) ? $price_rules['ติดตั้งในเมือง'] : 300;
+ 
+ // --- รวม Options ทั้งหมดเป็น array เดียวเพื่อให้ค้นหาง่ายขึ้นในไฟล์นี้ ---
+ $options_list = [];
+ foreach ($all_options_by_cat as $category => $opts) {
+     $options_list = array_merge($options_list, $opts);
+ }
+ 
+ // --- แยกข้อมูล Materials สำหรับการคำนวณ ---
+ $materials_for_letter = $all_materials['ตัวอักษรโลหะ'];
+ $lightbox_materials = $all_materials['กล่องไฟ'];
+ $sheet_list_for_sticker = $all_materials['วัสดุแผ่น'];
+ $vinyl_materials = $all_materials['ผ้าไวนิล'];
+ $sticker_materials = $all_materials['สติ๊กเกอร์'];
 
 // --- 4. เตรียมตัวแปรสำหรับตอบกลับ ---
 $response = ['success' => false, 'error' => '', 'results' => null, 'calculator_type' => 'unknown'];
@@ -61,7 +49,10 @@ if (isset($_POST['calculator_type'])) {
             $st_height = $_POST['st_height'] ?? '0';
             $st_quantity = isset($_POST['st_quantity']) && is_numeric($_POST['st_quantity']) && $_POST['st_quantity'] > 0 ? intval($_POST['st_quantity']) : 1;
             $st_selected_material_id = $_POST['st_material_type'] ?? '';
-            $st_selected_sheet_id = $_POST['st_sheet_type'] ?? 'none';
+            
+            // !!!!! FIXED HERE !!!!!
+            $st_selected_sheet_id = $_POST['st_sheet_material'] ?? 'none';
+            
             $st_selected_options = isset($_POST['st_options']) ? (is_array($_POST['st_options']) ? $_POST['st_options'] : []) : [];
             $st_travel_type = $_POST['st_travel_type'] ?? 'none';
             $st_distance_km = $_POST['st_distance_km'] ?? '0';
@@ -108,6 +99,7 @@ if (isset($_POST['calculator_type'])) {
                         'quantity' => $st_quantity,
                         'price_per_sheet' => $price_per_sheet,
                         'sticker_price' => $sticker_only_price,
+                        'sticker_material_name' => $selected_sticker_material_name,
                         'sheet_name' => $selected_sheet_name,
                         'sheet_price' => $sheet_price,
                         'options' => $st_selected_options_details,
@@ -118,11 +110,12 @@ if (isset($_POST['calculator_type'])) {
                 }
             }
         }
+        // ... (โค้ดส่วนที่เหลือเหมือนเดิม) ...
         // ========================== LETTER ==========================
         elseif ($calculator_type == 'letter') {
             $lt_height = $_POST['letter_height'] ?? '0'; $lt_quantity = $_POST['letter_quantity'] ?? '0';
-            $lt_selected_material_id = $_POST['material'] ?? ''; // Corresponds to name="material" in index.php
-            $lt_selected_options = isset($_POST['lt_options']) ? (is_array($_POST['lt_options']) ? $_POST['lt_options'] : []) : []; // Changed 'options' to 'lt_options'
+            $lt_selected_material_id = $_POST['material'] ?? '';
+            $lt_selected_options = isset($_POST['lt_options']) ? (is_array($_POST['lt_options']) ? $_POST['lt_options'] : []) : [];
             $lt_travel_type = $_POST['travel_type'] ?? 'none'; $lt_distance_km = $_POST['distance_km'] ?? '0';
 
             if (!is_numeric($lt_height) || !is_numeric($lt_quantity) || empty($lt_selected_material_id) || $lt_height <= 0 || $lt_quantity <= 0) {
@@ -214,9 +207,6 @@ if (isset($_POST['calculator_type'])) {
                          $response['error'] = "ไม่พบชนิดผ้าไวนิลที่เลือก";
                     }
                 } else {
-                    // ถ้าไม่ได้บังคับเลือกชนิดผ้า และต้องการให้มีราคา default
-                    // $base_vinyl_price_per_sqm = $default_vinyl_price_sqm; // ใช้ตัวแปรที่ตั้งค่าไว้ด้านบน
-                    // $selected_vinyl_material_name = "ไวนิลมาตรฐาน (Default)";
                     $response['error'] = "กรุณาเลือกชนิดผ้าไวนิล"; // หรือจะบังคับเลือก
                 }
 
@@ -279,4 +269,5 @@ if (isset($_POST['calculator_type'])) {
 $conn->close();
 echo json_encode($response);
 exit;
+
 ?>
