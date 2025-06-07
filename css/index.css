@@ -1,605 +1,326 @@
+/* =================================================================== */
+/* INDEX.CSS (MUJI MINIMALIST THEME - MORE ROUNDED)    */
+/* =================================================================== */
+/* เวอร์ชันมินิมอลสีชมพูที่เพิ่มความโค้งมนให้กับทุกกรอบ               */
+/* =================================================================== */
+
+/* --- 1. General & Body Styles --- */
 body {
-  font-family: sans-serif;
-  padding: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   margin: 0;
+  background-color: #f9f8f6;
+  color: #333333;
 }
-.main-layout-grid {
-  display: grid;
-  grid-template-columns: 3fr 1fr; /* แบ่งพื้นที่เป็น 2 ส่วน (เครื่องคำนวณได้ 2 ส่วน, สต็อกได้ 1 ส่วน) */
-  gap: 30px; /* ระยะห่างระหว่าง 2 ฝั่ง */
-  align-items: start; /* จัดให้เนื้อหาทั้งสองฝั่งเริ่มจากด้านบน */
-}
+
 .container {
   width: 100%;
-  min-width: 320px;
-  margin: auto;
+  margin: 0 auto;
 }
 
-h1 {
-  color: #0056b3;
-  border-bottom: 2px solid #0056b3;
-  padding-bottom: 10px;
-}
-form {
-  border: 1px solid #ccc;
-  padding: 20px;
-  margin-bottom: 20px;
-  background-color: #fefefe;
-  border-radius: 5px;
-}
-label {
-  display: inline-block;
-  width: 150px;
-  margin-bottom: 10px;
-  vertical-align: top;
-}
-input[type="text"],
-select {
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-/* ปุ่ม Submit หลักจะถูกลบออกไปจากทุกฟอร์ม */
-.error {
-  font-size: 1em;
-  color: red;
-  border: 1px solid red;
-  padding: 10px;
-  background-color: #ffeeee;
-  margin-top: 10px;
-}
-.result-details {
-  border: 1px solid #ccc;
-  padding: 15px;
-  margin-top: 10px;
-  border-radius: 5px;
-  min-height: 50px; /*เพื่อให้มีพื้นที่แสดง error เบื้องต้น*/
-}
-.result-details h3 {
-  margin-top: 0;
-  color: #333;
-}
-.result-details ul {
-  list-style: none;
-  padding: 0;
-}
-.result-details li {
-  margin-bottom: 8px;
-}
-.result-details ul ul {
-  padding-left: 25px;
-  list-style: disc;
-  margin-top: 5px;
-}
-.result-details li strong {
-  color: #000;
-}
-.result-details .total-price {
-  font-size: 1.3em;
-  margin-top: 15px;
-  border-top: 1px dashed #ccc;
-  padding-top: 10px;
-}
-.result-details .total-price .price-value {
-  color: green;
-  float: right;
-}
-.options-group {
-  display: inline-block;
-  vertical-align: top;
-}
-.options-group label {
-  width: auto;
-  margin-right: 15px;
-  font-weight: normal;
-}
-small {
-  color: #666;
-  font-size: 0.85em;
-  margin-left: 10px;
-}
-.result-details.sticker {
-  border-color: #4caf50;
-  background-color: #f0fff0;
-}
-.result-details.letter {
-  border-color: #007bff;
-  background-color: #f0f8ff;
-}
-.result-details.lightbox {
-  border-color: #ff9800;
-  background-color: #fff8e1;
-}
-/* .admin-link { Original style for the old admin link - can be removed or kept if used elsewhere
-  margin-bottom: 20px;
-  text-align: right;
-}
-.admin-link .btn-admin {
-  display: inline-block;
-  background-color: #007bff;
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: 4px;
-  text-decoration: none;
-  font-size: 1em;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.07);
-  transition: background 0.2s, color 0.2s;
-  border: none;
-}
-.admin-link .btn-admin:hover {
-  background-color: #0056b3;
-  color: #fff;
-} */
-
-/* === NAVBAR STYLES (Adapted from admin.css) === */
+/* --- 2. Navbar Styles --- */
 .navbar {
-    background-color: #ffffff; /* สีพื้นหลังของ Navbar */
-    padding: 12px 0; /* ระยะห่างภายในแนวตั้ง */
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    border-bottom: 1px solid #e3e7ed; /* เส้นขอบล่าง */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* เพิ่มเงาเล็กน้อย */
-    margin-bottom: 20px; /* ระยะห่างด้านล่าง Navbar */
+  background-color: rgba(249, 248, 246, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid #e5e5e5;
+  box-shadow: none;
+  margin-bottom: 40px;
 }
 
 .navbar-container {
-    width: 80%; /* ให้สอดคล้องกับ .container หลักของหน้า index */
-    margin: 0 auto; /* จัดให้อยู่กึ่งกลาง */
-    padding: 0 15px; /* ปรับ padding ซ้ายขวาให้เหมาะสมกับ container ของ index */
-    display: flex;
-    justify-content: space-between; /* จัดให้ brand อยู่ซ้าย และปุ่มอยู่ขวา */
-    align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+  width: 90%;
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .navbar-brand {
-    font-size: 1.5rem; /* ขนาดฟอนต์สำหรับชื่อเว็บ */
-    font-weight: 600;
-    color: #333;
-    text-decoration: none; /* เอาเส้นใต้ลิงก์ออก */
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #333;
+  text-decoration: none;
 }
 
-.navbar-button { /* สไตล์ปุ่มให้คล้ายกับ .btn-admin เดิม */
-    display: inline-block;
-    background-color: #007bff;
-    color: #fff;
-    padding: 10px 22px; /* ขนาดปุ่มให้เหมือน .btn-admin เดิม */
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 1em;
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.07);
-    transition: background-color 0.3s, color 0.2s;
-    border: none;
+.navbar-button {
+  display: inline-block;
+  background-color: transparent;
+  color: #555;
+  padding: 8px 20px;
+  border-radius: 12px; /* ROUNDED: เพิ่มความโค้งมน */
+  text-decoration: none;
+  font-size: 0.95em;
+  font-weight: 500;
+  border: 1px solid #cccccc;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .navbar-button:hover {
-    background-color: #0056b3;
-    color: #fff;
+  background-color: #A53F64;
+  border-color: #A53F64;
+  color: #fff;
 }
 
-/* === Main Content Area Wrapper === */
+/* --- 3. Main Layout & Grid --- */
 .main-content-area {
-    width: 90%; /* ให้สอดคล้องกับ .navbar-container */
-    margin: 0 auto; /* จัดให้อยู่กึ่งกลาง เหมือน .navbar-container */
-    /* ไม่จำเป็นต้องมี padding ที่นี่ เพราะ .main-layout-grid จะจัดการระยะห่างภายในเอง */
+  width: 90%;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
-/* --- Spinner Styles --- */
-.spinner-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+.main-layout-grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.calculators-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  align-items: start;
+}
+
+/* --- 4. Section & Card Styles --- */
+.calculator-section,
+.stock-display-section {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px; /* ROUNDED: เพิ่มความโค้งมน */
+  padding: 30px;
+  box-shadow: none;
+}
+
+.stock-display-section {
+  position: sticky;
+  top: 95px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+/* --- 5. Typography --- */
+h1 {
+  font-size: 1.6em;
+  font-weight: 500;
+  color: #A53F64;
+  margin-top: 0;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #fde7ea;
+}
+
+label {
+  display: inline-block;
+  width: 150px;
+  margin-bottom: 12px;
+  vertical-align: middle;
+  font-size: 0.95em;
   color: #555;
-  font-style: italic;
 }
 
-.spinner {
-  border: 4px solid #f3f3f3; /* Light grey */
-  border-top: 4px solid #3498db; /* Blue */
-  border-radius: 50%;
-  width: 25px;
-  height: 25px;
-  animation: spin 1s linear infinite;
-  margin-right: 10px;
+/* --- 6. Form Element Styles --- */
+.calculator-section form {
+  border: none; padding: 0; margin: 0; background-color: transparent;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.calculator-section input[type="text"],
+.calculator-section select,
+.calculator-section textarea {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border: 1px solid #dcdcdc;
+  border-radius: 12px; /* ROUNDED: เพิ่มความโค้งมน */
+  width: calc(100% - 170px);
+  box-sizing: border-box;
+  background-color: #fdfdfd;
+  transition: border-color 0.2s ease;
+  font-size: 0.95em;
 }
 
-/* --- Button Styles --- */
+.calculator-section input[type="text"]:focus,
+.calculator-section select:focus,
+.calculator-section textarea:focus {
+  border-color: #D98B99;
+  outline: 0;
+  box-shadow: none;
+}
+
 .form-actions {
-  margin-top: 15px;
-  text-align: right; /* จัดปุ่มไปทางขวา */
+  margin-top: 20px;
+  text-align: right;
 }
 
 .btn-action {
-  padding: 8px 15px;
+  padding: 8px 18px;
   cursor: pointer;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f0f0f0;
+  border-radius: 12px; /* ROUNDED: เพิ่มความโค้งมน */
+  background-color: #f5f5f5;
   margin-left: 10px;
   font-size: 0.9em;
   transition: background-color 0.2s;
 }
-
 .btn-action:hover {
   background-color: #e0e0e0;
+  border-color: #bbb;
 }
-
 .btn-clear {
-  background-color: #ffc107; /* สีเหลือง */
-  border-color: #ffc107;
-  color: #333;
+  background-color: transparent;
+  color: #555;
+  border: 1px solid #ccc;
 }
 .btn-clear:hover {
-  background-color: #e0a800;
+  background-color: #A53F64;
+  border-color: #A53F64;
+  color: #fff;
 }
-
 .btn-copy {
-  background-color: #17a2b8; /* สีฟ้า */
-  border-color: #17a2b8;
+  background-color: #A53F64;
+  border-color: #A53F64;
   color: white;
-  margin-left: 5px; /* ลดระยะห่าง */
-  padding: 3px 8px; /* ทำให้เล็กหน่อย */
+  margin-left: 5px;
+  padding: 4px 10px;
   font-size: 0.8em;
 }
-.btn-copy:hover {
-  background-color: #138496;
-}
 .btn-copy.copied {
-  background-color: #28a745; /* สีเขียวเมื่อคัดลอกแล้ว */
-  border-color: #28a745;
+  background-color: #778a35;
 }
-
-/* --- เพิ่ม: Card Style สำหรับแต่ละ Form Section --- */
-.calculator-section {
-  background-color: #f9f9f9; /* สีพื้นหลังอ่อนๆ */
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 25px;
-  margin-bottom: 30px; /* เพิ่มระยะห่างระหว่าง Section */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.calculator-section h1 {
-  margin-top: 0;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #007bff; /* เปลี่ยนสีเส้นใต้หัวข้อ */
-  color: #007bff; /* เปลี่ยนสีหัวข้อ */
-  font-size: 1.8em; /* ปรับขนาดหัวข้อ */
-}
-
-/* ปรับ form ไม่ให้มี border ซ้ำซ้อนเมื่ออยู่ใน .calculator-section */
-.calculator-section form {
-  border: none; /* เอา border ของ form ออก */
-  padding: 0; /* เอา padding ของ form ออก (หรือปรับตามความเหมาะสม) */
-  margin-bottom: 0; /* เอา margin-bottom ของ form ออก */
-  background-color: transparent; /* ทำให้พื้นหลัง form โปร่งใส */
-}
-
-/* อาจจะต้องปรับ <hr> ถ้ายังใช้อยู่ */
-hr {
-  margin: 30px 0;
-  border-top: 1px solid #e0e0e0;
-}
-
-/* สไตล์สำหรับราคารายการหลัก (ถ้าต้องการปรับแต่งเพิ่มเติมจาก <strong> ปกติ) */
-.result-details li.main-item-price {
-    color: #1a73e8; /* ตัวอย่างสีน้ำเงิน ถ้าอยากให้เด่น */
-}
-
-/* สไตล์สำหรับรายละเอียดราคารอง */
-.result-details li.sub-item-detail {
-    color: #5f6368; /* สีเทาเข้ม ทำให้ดูสำคัญน้อยลง */
-    font-size: 0.95em; /* ขนาดตัวอักษรเล็กน้อย */
-    padding-left: 15px; /* เพิ่มการเยื้องเล็กน้อย ถ้าต้องการ */
-}
-
-.result-details li.sub-item-detail .sub-item-price {
-    font-weight: normal; /* ทำให้ไม่หนา */
-    color: #3c4043; /* สีของราคาอาจจะเข้มกว่า text ปกติเล็กน้อย */
-}
-
-/* ปรับปรุงส่วนราคารวมให้เด่นที่สุด */
-.result-details .total-price {
-    font-size: 1.5em; /* ใหญ่ขึ้นอีก */
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 2px solid #007bff; /* เส้นคั่นหนาขึ้นและสีเด่น */
-}
-
-.result-details .total-price strong.price-value {
-    color: #007bff; /* เปลี่ยนเป็นสีน้ำเงินให้สอดคล้อง */
-    font-weight: bold; /* เน้นตัวหนา */
-}
-
-/* --- Grid Layout for Calculators --- */
-.calculators-grid {
-  display: grid;
-  /* - สร้าง 2 คอลัมน์บนหน้าจอขนาดใหญ่ และปรับเป็น 1 คอลัมน์บนจอเล็กอัตโนมัติ
-    - minmax(420px, 1fr) หมายถึงแต่ละส่วนจะกว้างอย่างน้อย 420px
-  */
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  gap: 25px; /* ช่องว่างระหว่างเครื่องคำนวณ */
-}
-
-.calculator-section {
-  /* อาจเพิ่มเส้นขอบหรือพื้นหลังเพื่อความสวยงาม (ถ้าต้องการ) */
-  border: 1px solid #e0e0e0; 
-  padding: 15px; 
-  border-radius: 5px; 
-}
-
-.calculator-section h1 {
-  margin-top: 0;
-}
-
-/*=================================
-OPTIONS GRID STYLES
-(สำหรับจัดวาง Checkbox ออปชันเสริม)
-=================================*/
 
 .options-grid {
-    display: grid; /* ใช้ CSS Grid ในการจัดวาง */
-    /* - สร้างคอลัมน์อัตโนมัติ โดยแต่ละคอลัมน์กว้างอย่างน้อย 250px
-      - 1fr หมายถึงให้แบ่งพื้นที่ที่เหลือเท่าๆ กัน
-    */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 5px; /* ระยะห่างระหว่างออปชัน */
-    padding: 5px;
-    background-color: #fdfdfd;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    margin-top: 5px;
-    margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin-top: 5px;
+  margin-bottom: 15px;
 }
-
 .option-item {
-    display: flex;
-    align-items: center; /* จัดให้ checkbox และข้อความอยู่กลางแนวตั้ง */
-    background-color: #ffffff;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid #f0f0f0;
-    transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  padding: 0;
 }
-
-.option-item:hover {
-    border-color: #007bff; /* ไฮไลท์เมื่อเอาเมาส์ไปชี้ */
-    background-color: #f0f8ff;
-}
-
-.option-item input[type="checkbox"] {
-    margin-right: 10px; /* ระยะห่างระหว่าง checkbox กับข้อความ */
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-}
-
 .option-item label {
-    font-size: 0.9rem;
-    color: #333;
-    cursor: pointer;
-    /* Override สไตล์เดิม */
-    width: auto;
-    margin-bottom: 0;
-    font-weight: normal;
-}
-
-/* --- Stock Display Section Styles --- */
-/* สไตล์สำหรับกล่องสต็อกสินค้าฝั่งขวา */
-.stock-display-section {
-  background-color: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-
-  /* --- ส่วนสำคัญที่ทำให้ Scroll ได้ --- */
-  position: sticky; /* ทำให้ยึดอยู่กับที่เมื่อ scroll หน้าหลัก */
-  top: 20px; /* ระยะห่างจากด้านบน */
-  max-height: 90vh; /* กำหนดความสูงสูงสุดไม่เกิน 90% ของความสูงจอ */
-  overflow-y: auto; /* ถ้าเนื้อหาเกินความสูงสูงสุด ให้แสดง scrollbar แนวตั้ง */
-}
-
-.stock-display-section h1 {
-  font-size: 1.8em;
-  color: #007bff;
-  border-bottom: 2px solid #007bff;
-  margin-top: 0;
-  padding-bottom: 10px;
-}
-
-/* ทำให้ตารางสต็อกใช้พื้นที่ได้เต็มที่ */
-.stock-display-section .table-responsive {
-  width: 100%;
-}
-
-#stockDisplayTable {
-width: 100%;
-border-collapse: collapse;
-margin-top: 15px;
-}
-
-#stockDisplayTable th,
-#stockDisplayTable td {
-border: 1px solid #e0e0e0;
-padding: 10px 12px;
-text-align: left;
-font-size: 0.9rem; /* ปรับขนาดฟอนต์ให้เล็กลงเล็กน้อย */
-}
-
-#stockDisplayTable th {
-background-color: #f0f3f5;
-position: sticky; /* ทำให้หัวตารางติดหนึบอยู่ด้านบนเมื่อ scroll */
-top: -1px; /* แก้ปัญหาเห็นเส้นขอบเมื่อ scroll */
-}
-
-#stockDisplayTable td {
-background-color: #fff;
-}
-
-#stockDisplayTable td:nth-child(3) {
-text-align: right;
-}
-
-/* --- Responsive for smaller screens --- */
-@media (max-width: 1024px) {
-.main-layout-grid {
-  grid-template-columns: 1fr; /* บนจอเล็กให้เรียงเป็น 1 คอลัมน์ */
-}
-
-.stock-display-section {
-  position: static; /* ยกเลิกการ sticky บนจอเล็ก */
-  max-height: none; /* ไม่จำกัดความสูง */
-  margin-top: 40px;
-}
-}
-
-/* ใน css/index.css (เพิ่มต่อท้าย) */
-
-.input-method-options {
-  margin-bottom: 10px; /* เพิ่มระยะห่างด้านล่างของกลุ่ม radio */
-}
-
-.input-method-options span {
-  margin-right: 15px;
-}
-
-.input-method-options input[type="radio"] {
-  margin-right: 5px;
-  vertical-align: middle;
-}
-
-.input-method-options label { /* สไตล์สำหรับ label ของ radio */
   width: auto;
   margin-bottom: 0;
-  vertical-align: middle;
-  font-weight: normal; /* ทำให้ไม่หนาเหมือน label หลัก */
+  font-weight: normal;
+  cursor: pointer;
+}
+.option-item input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
 }
 
-#letter_text_input_group {
-  margin-bottom: 10px; /* เพิ่มระยะห่างให้กลุ่ม textarea */
+/* --- 7. Result Display Styles --- */
+.result-details {
+  border: 1px solid #fde7ea;
+  background-color: #fffafa;
+  padding: 20px;
+  margin-top: 25px;
+  border-radius: 12px; /* ROUNDED: เพิ่มความโค้งมน */
+}
+.result-details h3 { margin-top: 0; font-weight: 500; color: #A53F64; }
+.result-details ul { list-style: none; padding: 0; }
+.result-details li { margin-bottom: 10px; font-size: 0.95em; }
+.result-details .total-price {
+  font-size: 1.4em;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #fde7ea;
+  color: #A53F64;
+}
+.result-details .total-price .price-value {
+  color: #A53F64;
+  font-weight: 500;
+  float: right;
 }
 
-#letter_text_input_group label { /* สไตล์สำหรับ label "ข้อความ:" */
-  display: inline-block; /* หรือ block ตามต้องการ */
-  width: 150px; /* ปรับให้เท่ากับ label อื่นๆ */
-  vertical-align: top;
+/* --- 8. Stock Table & Filter Styles --- */
+.filter-section {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 15px; margin-bottom: 20px;
 }
-
-#letter_text_input_group textarea {
-  width: calc(100% - 170px); /* คำนวณความกว้างที่เหลือหลังจาก label */
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  min-height: 60px;
-  vertical-align: top;
-  box-sizing: border-box; /* เพิ่มเพื่อให้ padding และ border ไม่ทำให้เกินความกว้าง */
+.search-section {
+  position: relative;
 }
-
-/* ปรับ label ของจำนวนตัวอักษร เมื่อมี textarea อยู่ด้านบน */
-#letterForm div:has(> #letter_quantity) > label {
-  margin-top: 5px; /* อาจจะไม่จำเป็นถ้า layout พอดีแล้ว */
+.search-section .icon {
+  position: absolute; width: 16px; height: 16px; left: 14px; top: 50%;
+  transform: translateY(-50%); fill: #aaa; pointer-events: none;
 }
-
-/* === Stock Display Table Styles (Copied from admin.css for consistency) === */
+#indexStockSearch {
+  height: 40px;
+  padding: 8px 15px 8px 38px;
+  border: 1px solid #dcdcdc;
+  background-color: #fff;
+  font-size: 0.9em;
+  width: 220px;
+  border-radius: 20px; /* ROUNDED: เป็นทรงแคปซูล */
+}
+#indexStockTypeFilter {
+  height: 40px;
+  padding: 8px 15px;
+  border: 1px solid #dcdcdc;
+  background-color: #fff;
+  font-size: 0.9em;
+  border-radius: 12px; /* ROUNDED: เพิ่มความโค้งมน */
+}
+#indexStockSearch:focus, #indexStockTypeFilter:focus {
+  border-color: #D98B99;
+  outline: none;
+  box-shadow: none;
+}
 #stockDisplayTable {
-    width: 100%;
-    margin: 20px auto; /* เพิ่ม margin บน-ล่าง เล็กน้อย */
-    border-collapse: collapse;
-    font-size: 0.95rem; /* ปรับขนาดฟอนต์เล็กน้อยให้เหมาะกับหน้า index */
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: 100%; border-collapse: collapse; margin-top: 0; font-size: 0.9rem;
 }
-
-#stockDisplayTable th,
-#stockDisplayTable td {
-    padding: 12px 15px; /* ปรับ padding เล็กน้อย */
-    vertical-align: middle;
-    border: none;
-    text-align: left; /* ให้ข้อความชิดซ้ายเป็นหลัก */
+#stockDisplayTable th, #stockDisplayTable td {
+  padding: 12px; text-align: left; border-bottom: 1px solid #e5e5e5;
 }
-
 #stockDisplayTable th {
-    background-color: #FFF0F3; /* สีชมพูอ่อนสำหรับพื้นหลังหัวตาราง */
-    color: #A53F64; /* สีชมพูเข้มสำหรับตัวอักษรหัวตาราง */
-    font-weight: 600;
-    text-align: center; /* หัวตารางจัดกลาง */
-    border-bottom: 2px solid #FDE7EA; /* เส้นขอบล่างของหัวตารางสีชมพูอ่อนลง */
+  background-color: #FFF0F3;
+  color: #A53F64;
+  font-weight: 500;
+  text-align: left;
 }
-
-#stockDisplayTable td {
-    border-bottom: 1px solid #f0f2f5; /* เส้นขอบล่างบางๆ สีเทาอ่อนสำหรับแต่ละแถวข้อมูล */
-}
-
+#stockDisplayTable tr:first-child th:first-child { border-top-left-radius: 12px; } /* ROUNDED */
+#stockDisplayTable tr:first-child th:last-child { border-top-right-radius: 12px; }  /* ROUNDED */
+#stockDisplayTable tr:last-child td:first-child { border-bottom-left-radius: 12px; }/* ROUNDED */
+#stockDisplayTable tr:last-child td:last-child { border-bottom-right-radius: 12px; }/* ROUNDED */
 #stockDisplayTable tr:last-child td {
-    border-bottom: none;
+  border-bottom: none;
 }
-
-#stockDisplayTable tbody tr:nth-child(even) {
-    background-color: #fdfdfe; /* ปรับสีแถวคู่ให้อ่อนลง */
+#stockDisplayTable tbody tr:hover td {
+  background-color: #fffafa;
 }
-
-#stockDisplayTable tbody tr:hover {
-    background-color: #f5f7fa; /* ปรับสี hover ให้ดูนุ่มนวลขึ้น */
-}
-
-/* จัดคอลัมน์ "จำนวน" ให้ชิดขวา */
 #stockDisplayTable td:nth-child(3) {
-    text-align: right;
+  text-align: right;
+}
+#stockDisplayTable .no-data-row td {
+  text-align: center; padding: 20px; color: #999;
 }
 
-/* กรณีไม่มีข้อมูล */
-#stockDisplayTable td[colspan="4"] { /* ถ้ามี 4 คอลัมน์ */
-    text-align: center;
-    padding: 20px;
-    color: #777;
+/* --- 9. Utility Styles --- */
+.spinner-container {
+  display: flex; justify-content: center; align-items: center; padding: 20px; color: #888;
 }
-#stockDisplayTable td[colspan="3"] { /* ถ้ามี 3 คอลัมน์ (ตามโค้ด HTML ปัจจุบัน) */
-    text-align: center;
-    padding: 20px;
-    color: #777;
+.spinner {
+  border: 3px solid #eee; border-top: 3px solid #888; border-radius: 50%;
+  width: 20px; height: 20px; animation: spin 1s linear infinite; margin-right: 10px;
 }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.stock-display-section .table-responsive {
-    margin-top: 10px;
-    overflow-x: auto;
+/* --- 10. Responsive Media Queries --- */
+@media (max-width: 1200px) {
+  .main-layout-grid { grid-template-columns: 1fr; }
+  .stock-display-section { position: static; max-height: none; margin-top: 30px; }
 }
-
-.text-size-options {
-    margin-top: 10px;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 4px;
-}
-
-.text-size-options div {
-    margin-bottom: 8px;
-}
-
-.dimension-preview {
-    margin-top: 15px;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 4px;
-}
-
-.dimension-preview .note {
-    color: #666;
-    font-size: 0.9em;
-    font-style: italic;
-    margin-top: 5px;
+@media (max-width: 768px) {
+  .calculators-grid { grid-template-columns: 1fr; }
+  .navbar-container, .main-content-area { width: 95%; }
+  label { width: 100%; display: block; }
+  .calculator-section input[type="text"],
+  .calculator-section select,
+  .calculator-section textarea { width: 100%; }
 }

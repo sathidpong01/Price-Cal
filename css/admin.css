@@ -681,7 +681,7 @@ tr:hover {
 /* CHANGED/ADDED: Styles for filter section if needed */
 .filter-section {
     display: flex;
-    gap: 15px; /* ระยะห่างระหว่าง search box กับ dropdown */
+    gap: 30px; /* ระยะห่างระหว่าง search box กับ dropdown */
     margin-bottom: 15px; /* ระยะห่างจากตาราง */
     align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
     flex-wrap: wrap; /* ให้ขึ้นบรรทัดใหม่ได้บนจอเล็ก */
@@ -713,9 +713,9 @@ tr:hover {
 }
 
 .filter-section select.form-control {
-    width: auto; /* ให้ความกว้างปรับตามเนื้อหา option + min-width */
+    width: 50%; /* ให้ความกว้างปรับตามเนื้อหา option + min-width */
     min-width: 180px;
-    display: inline-block; /* หรือ flex-grow:1; ถ้าต้องการให้เต็มพื้นที่ที่เหลือใน div ครอบ */
+    flex-grow: 1; /* หรือ flex-grow:1; ถ้าต้องการให้เต็มพื้นที่ที่เหลือใน div ครอบ */
     padding: 8px 10px; /* อาจจะต้องปรับให้เท่ากับ search-box */
     height: 40px;     /* ความสูงเท่า search-box */
     line-height: 1.5;

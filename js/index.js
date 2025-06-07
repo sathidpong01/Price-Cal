@@ -377,6 +377,80 @@ document.addEventListener("DOMContentLoaded", function() {
       setupLetterForm();
   }
 
+   // ฟังก์ชันสำหรับกรองตารางสต็อกในหน้าแรก
+   function filterIndexStockTable() {
+    const searchInput = document.getElementById("indexStockSearch");
+    const typeFilter = document.getElementById("indexStockTypeFilter");
+    const table = document.getElementById("stockDisplayTable");
+    
+    if (!searchInput || !typeFilter || !table) {
+        return; // ออกถ้าหา element ไม่เจอ
+    }
+
+    const searchTerm = searchInput.value.toUpperCase();
+    const selectedType = typeFilter.value.toUpperCase();
+    const tbody = table.querySelector("tbody");
+    const rows = tbody.querySelectorAll("tr");
+    let hasVisibleRows = false;
+
+    let noDataRow = tbody.querySelector(".no-data-row");
+    // ซ่อนแถว "ไม่มีข้อมูล" ไว้ก่อน
+    if (noDataRow) {
+        noDataRow.style.display = "none";
+    }
+
+
+    rows.forEach(row => {
+        // ข้ามแถว "ไม่มีข้อมูล" ที่อาจมีอยู่แล้ว
+        if (row.classList.contains('no-data-row') || row.cells.length < 4) {
+            return;
+        }
+
+        const productTypeCell = row.cells[0];
+        const productNameCell = row.cells[1];
+
+        const typeText = productTypeCell.textContent.toUpperCase();
+        const nameText = productNameCell.textContent.toUpperCase();
+
+        // ตรวจสอบว่าตรงกับเงื่อนไขการกรองหรือไม่
+        const typeMatch = (selectedType === "" || typeText === selectedType);
+        const searchMatch = (searchTerm === "" || nameText.includes(searchTerm));
+
+        if (typeMatch && searchMatch) {
+            row.style.display = ""; // แสดงแถว
+            hasVisibleRows = true;
+        } else {
+            row.style.display = "none"; // ซ่อนแถว
+        }
+    });
+
+    // หากไม่มีแถวที่แสดงผลเลย ให้แสดงแถว "ไม่มีข้อมูลที่ตรงกัน"
+    if (!hasVisibleRows) {
+        if (!noDataRow) {
+            noDataRow = tbody.insertRow();
+            noDataRow.classList.add('no-data-row');
+            const cell = noDataRow.insertCell();
+            cell.colSpan = 4;
+            cell.textContent = "ไม่มีข้อมูลที่ตรงกับเงื่อนไข";
+            cell.style.textAlign = "center";
+            cell.style.padding = "15px";
+            cell.style.color = "#777";
+        }
+        noDataRow.style.display = ""; // แสดงแถว "ไม่มีข้อมูล"
+    }
+}
+
+// ผูก Event Listener เข้ากับช่องค้นหาและ Dropdown
+const stockSearchInput = document.getElementById("indexStockSearch");
+const stockTypeFilter = document.getElementById("indexStockTypeFilter");
+
+if (stockSearchInput) {
+    stockSearchInput.addEventListener("keyup", debounce(filterIndexStockTable, 300));
+}
+if (stockTypeFilter) {
+    stockTypeFilter.addEventListener("change", filterIndexStockTable);
+}
+
 
   // ผูก Event Listener กับปุ่ม "คัดลอก" ผ่าน Event Delegation
   document.querySelector(".container").addEventListener("click", function(event) {

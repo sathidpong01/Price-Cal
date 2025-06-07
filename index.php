@@ -326,6 +326,32 @@ if ($result_stock_display) {
 
                 <div class="stock-display-section">
                     <h1>สต็อกสินค้า</h1>
+                    <div class="filter-section">
+                        <div class="search-section" >
+                            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
+                                <g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path></g>
+                            </svg>
+                            <input type="text" id="indexStockSearch" class="search-box" placeholder="ค้นหาชื่อสินค้า...">
+                        </div>
+                        <div>
+                            <select id="indexStockTypeFilter" class="form-control">
+                                <option value="">หมวดหมู่ทั้งหมด</option>
+                                <?php
+                                $product_types_in_stock = [];
+                                if (!empty($stock_list_display)) {
+                                    foreach ($stock_list_display as $item) {
+                                        $product_types_in_stock[] = $item['product_type'];
+                                    }
+                                }
+                                $unique_product_types = array_unique($product_types_in_stock);
+                                sort($unique_product_types);
+                                foreach ($unique_product_types as $type):
+                                ?>
+                                    <option value="<?php echo htmlspecialchars($type); ?>"><?php echo htmlspecialchars($type); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table id="stockDisplayTable">
                             <thead>
