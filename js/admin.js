@@ -53,7 +53,38 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
     }
 
-    // --- 4. Modal and Form Handling ---
+    // --- 4. Modal and Form Handling (UPDATED SECTION) ---
+    
+    // Helper function to populate the "current data" display in modals
+    function populateCurrentDataDisplay(type, data) {
+        // --- START: CORRECTED CODE ---
+        // Correct the field names to match the database columns returned by the AJAX handler.
+        const fields = {
+            rule: ['rule_name', 'rule_value', 'rule_unit'],
+            material: ['product_type', 'material_name', 'price_per_unit', 'unit'],
+            option: ['option_name', 'option_price', 'category'],
+            stock: ['product_type', 'product_name', 'quantity', 'unit']
+        };
+        // --- END: CORRECTED CODE ---
+    
+        if (!fields[type]) return;
+    
+        fields[type].forEach(fieldKey => {
+            // Create a simpler key for the HTML element ID, e.g., 'rule_name' becomes 'name'
+            const elementKey = fieldKey.replace('rule_', '').replace('material_', '').replace('option_', '').replace('price_per_unit', 'price');
+            const element = document.getElementById(`current_${type}_${elementKey}`);
+    
+            if (element) {
+                let value = data[fieldKey] || '';
+                // Use the same formatting as the table for consistency
+                if (fieldKey.includes('price') || fieldKey.includes('value')) {
+                    value = formatNumber(value);
+                }
+                element.textContent = value;
+            }
+        });
+    }
+
     window.openEditModal = function(type, id) {
         const modalId = `edit${type.charAt(0).toUpperCase() + type.slice(1)}Modal`;
         const formId = `edit${type.charAt(0).toUpperCase() + type.slice(1)}Form`;
@@ -69,9 +100,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data) {
                     form.reset(); // Reset form before populating
                     const itemData = data.data;
+
+                    // --- NEW: Populate the "current data" display ---
+                    populateCurrentDataDisplay(type, itemData);
+
+                    // --- Populate the form fields for editing ---
                     form.elements[`${type}_id`].value = id;
                     
-                    // A more generic way to populate form fields
                     for (const key in itemData) {
                         if (form.elements[key]) {
                             form.elements[key].value = itemData[key];
@@ -82,8 +117,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Handle specific cases where form name differs from db column
                     if (type === 'material') form.elements['material_price'].value = itemData['price_per_unit'];
                     if (type === 'option') form.elements['option_category'].value = itemData['category'];
+                    // --- ADDED: Handle stock-specific fields ---
+                    if (type === 'stock') {
+                        form.elements['product_name'].value = itemData['product_name'];
+                        form.elements['product_type'].value = itemData['product_type'];
+                        form.elements['quantity'].value = itemData['quantity'];
+                        form.elements['unit'].value = itemData['unit'];
+                    }
 
-                    modal.style.display = "block";
+                    modal.style.display = "flex"; // Use flex for better centering as per modals.css
                     form.querySelector('input, select')?.focus();
                 } else {
                     displayGlobalMessage('error', 'ไม่สามารถดึงข้อมูลได้: ' + (data.error || 'ไม่ทราบสาเหตุ'));
@@ -121,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function(e) { e.preventDefault(); submitModalForm(this); });
     });
 
-    // --- 5. Dynamic Table Row Update & Deletion ---
+    // --- 5. Dynamic Table Row Update & Deletion (UPDATED SECTION) ---
     function updateTableRow(type, data) {
         const idField = `${type}_id`;
         const rowId = `${type}-row-${data[idField]}`;
@@ -131,11 +173,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update data-fields
         row.querySelectorAll('td[data-field]').forEach(cell => {
             const field = cell.getAttribute('data-field');
+            
             // Handle name mapping differences
             let dataKey = field;
             if (type === 'material' && field === 'price') dataKey = 'price_per_unit';
             if (type === 'option' && field === 'category') dataKey = 'option_category';
-
+            // --- ADDED: Handle stock-specific fields ---
+            if (type === 'stock') {
+                // Map table cell `data-field` to the data object key
+                const stockFieldMap = {
+                    'product_type': 'product_type',
+                    'product_name': 'product_name',
+                    'quantity': 'quantity',
+                    'unit': 'unit'
+                };
+                if (stockFieldMap[field]) {
+                     dataKey = stockFieldMap[field];
+                }
+            }
+            
             let newValue = data[dataKey] || '';
             
             if (['value', 'price', 'price_per_unit', 'option_price'].includes(field)) {

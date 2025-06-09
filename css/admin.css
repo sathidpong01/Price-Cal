@@ -1,737 +1,358 @@
-/* Admin Page Styles */
+/* =================================================================== */
+/* ADMIN.CSS (MUJI MINIMALIST THEME - PINK ACCENT)     */
+/* =================================================================== */
+/* เวอร์ชันปรับดีไซน์ใหม่ทั้งหมดสำหรับหน้า Admin โดยเฉพาะ                 */
+/* =================================================================== */
+
+/* --- 1. General & Body Styles --- */
 body {
-    background: #f4f6fa;
-    font-family: 'Sarabun', 'Tahoma', Arial, sans-serif;
-    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    background-color: #f9f8f6; /* THEME: Off-white/Beige Background */
+    color: #333333;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/*
-=================================
-NAVBAR STYLES
-=================================
-*/
-
+/* --- 2. Navbar Styles --- */
 .navbar {
-    background-color: #ffffff; /* สีพื้นหลังของ Navbar */
-    padding: 12px 0; /* ระยะห่างภายในแนวตั้ง */
-    border-bottom: 1px solid #e3e7ed; /* เส้นขอบล่าง */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* เพิ่มเงาเล็กน้อย */
+    background-color: rgba(249, 248, 246, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 12px 0;
     position: sticky;
     top: 0;
     z-index: 1000;
+    border-bottom: 1px solid #e5e5e5;
+    box-shadow: none;
+    margin-bottom: 40px;
 }
-
 .navbar-container {
-    max-width: 80%;
-    margin: 0 auto; /* จัดให้อยู่กึ่งกลาง */
-    padding: 0 24px; /* ระยะห่างซ้าย-ขวา */
+    width: 90%;
+    max-width: 1600px;
+    margin: 0 auto;
     display: flex;
-    justify-content: space-between; /* จัดให้ brand อยู่ซ้าย และปุ่มอยู่ขวา */
-    align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+    justify-content: space-between;
+    align-items: center;
 }
-
 .navbar-brand {
-    font-size: 1.5rem; /* ขนาดฟอนต์สำหรับชื่อเว็บ */
-    font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 500;
     color: #333;
-    text-decoration: none; /* เอาเส้นใต้ลิงก์ออก */
-}
-
-.navbar-button {
-    background-color: #28a745; /* สีเดียวกับปุ่ม Add */
-    color: white;
-    padding: 8px 16px;
-    border-radius: 4px;
     text-decoration: none;
-    transition: background-color 0.3s;
-    margin-left: 10px;
 }
-
+.navbar-button {
+    display: inline-block;
+    background-color: transparent;
+    color: #555;
+    padding: 8px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 0.95em;
+    font-weight: 500;
+    border: 1px solid #cccccc;
+    transition: all 0.2s ease;
+}
 .navbar-button:hover {
-    background-color: #218838; /* สีเข้มขึ้นเมื่อ hover */
+    background-color: #A53F64;
+    border-color: #A53F64;
+    color: #fff;
 }
 
-/* Styles for Global Search in Navbar */
-.navbar-search-container {
-    display: flex; /* จัดเรียงไอคอนและ input ให้อยู่ในแถวเดียว */
-    align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
-    flex-grow: 0.4; /* ให้ search container ขยายตัวได้ระดับหนึ่ง (ปรับค่าได้ตามต้องการ) */
-    margin: 0 20px; /* ระยะห่างซ้ายขวาจากองค์ประกอบข้างเคียงใน navbar */
-    max-width: 400px; /* กำหนดความกว้างสูงสุด (ปรับค่าได้ตามต้องการ) */
-    /* ตัว input field จะมีพื้นหลังและเส้นขอบของตัวเองเพื่อให้เหมือนกับ search box อื่นๆ */
-}
-
-.navbar-search-container .icon-navbar { /* ชื่อคลาสตรงกับที่ใช้ใน admin.php */
-    fill: #9e9ea7;   /* สีไอคอน ให้เหมือนกับ .icon ของ filter อื่น */
-    width: 1rem;     /* ขนาดไอคอน ให้เหมือนกับ .icon ของ filter อื่น */
-    height: 1rem;    /* ขนาดไอคอน ให้เหมือนกับ .icon ของ filter อื่น */
-    margin-right: 8px; /* ระยะห่างระหว่างไอคอนกับ input field */
-    flex-shrink: 0;  /* ป้องกันไม่ให้ไอคอนหดตัวเมื่อพื้นที่จำกัด */
-}
-
-/*
-Input field (id="globalSearch") ใน admin.php มี class="search-box" อยู่แล้ว
-ดังนั้นมันจะสืบทอดสไตล์หลักๆ (สีพื้นหลัง, เส้นขอบ, ความสูง, สีตัวอักษร, hover/focus effects)
-มาจาก rule .search-box ที่มีอยู่แล้ว
-
-Rule ด้านล่างนี้ใช้สำหรับปรับแต่งเฉพาะส่วนที่จำเป็นสำหรับ navbar context:
-*/
-.navbar-search-container .search-box {
-    width: 100%; /* ทำให้ input field ขยายเต็มพื้นที่ที่ได้รับใน navbar-search-container */
-
-    /*
-    Rule ทั่วไปของ .search-box กำหนด:
-    padding: 0 1rem;
-    padding-left: 2.5rem; (ค่านี้มีไว้สำหรับไอคอนที่อยู่ *ข้างใน* input field)
-
-    สำหรับ global filter ใน navbar ไอคอน (icon-navbar) เป็น sibling อยู่ด้านนอก input
-    ดังนั้นเราต้องปรับ padding-left ของ input ให้เหมาะสม (ไม่ต้องเว้นที่เยอะเท่าเดิม)
-    ส่วน padding อื่นๆ (top, bottom, right) จาก "padding: 0 1rem;" ของ .search-box ทั่วไปยังคงใช้ได้
-    */
-    padding-left: 1rem; /* ปรับ padding ด้านซ้ายของ input ให้น้อยลง */
-    /* ไม่จำเป็นต้องกำหนด background-color, border, color, height, line-height, transition ที่นี่
-       เพราะมันจะสืบทอดมาจาก .search-box rule หลัก */
-}
-
-
+/* --- 3. Main Layout & Structure --- */
 .container-body {
-    max-width: 95%;
-    margin: 40px auto 40px auto;
-    gap: 32px;
-    display: grid;
-    gap: 16px; 
+    width: 90%;
+    margin: 0 auto 40px auto;
 }
-
-.container {
-    max-width: 90%;
-    min-width: 320px;
-    margin: auto;
-    padding: 32px 24px;
-    background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-}
-
 .main-layout-grid {
     display: grid;
-    grid-template-columns: 3fr 2fr; /* แบ่งพื้นที่เป็น 2 ส่วน (ส่วนจัดการหลักได้ 2, สต็อกได้ 1) */
-    gap: 24px;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
     align-items: start;
 }
-
 .main-admin-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+.content-wrapper {
     display: grid;
-    gap: 16px; /* ระยะห่างระหว่าง Section จัดการแต่ละอัน */
+    grid-template-columns: 300px 1fr;
+    gap: 30px;
 }
 
-/* Message Styles */
-#globalMessages {
-    grid-column: 1 / -1;
-}
-
-.message {
-    padding: 10px 15px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-}
-
-.message.success {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-    color: #155724;
-}
-
-.message.error {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-}
-
-/* Card Styles */
+/* --- 4. Section & Card Styles --- */
 .admin-section {
-    background: #f9fafb;
-    border: 1px solid #e3e7ed;
-    border-radius: 12px;
-    padding: 24px 18px 18px 18px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    margin-bottom: 0;
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 16px; /* ROUNDED */
+    padding: 30px;
+    box-shadow: none;
+}
+#stock_section {
+    position: sticky;
+    top: 95px;
+    max-height: 85vh;
+    overflow-y: auto;
 }
 
+/* --- 5. Typography --- */
 .admin-section h2 {
+    font-size: 1.5em;
+    font-weight: 500;
+    color: #A53F64; /* ACCENT: Pink */
     margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.2rem;
-    color: #333;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #fde7ea;
 }
 
-/* Form Styles */
+/* --- 6. Form & Input Styles --- */
+.form-container form {
+    padding: 0;
+}
 .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
 }
-
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem; /* << CHANGED: เพิ่มระยะห่าง label กับ input (เช่น 8px) */
-    font-size: 0.875rem;  /* << อาจปรับขนาด font label */
-    color: #495057;       /* << สี label เข้มขึ้นเล็กน้อย */
-    font-weight: 500;     /* << เพิ่มน้ำหนัก font เล็กน้อย */
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #555;
+    font-weight: 500;
 }
-
 .form-control {
     display: block;
-    width: 100%; /* << ADDED: ทำให้ input เต็มความกว้างของ container */
-    padding: 0.65rem 0.9rem; /* << CHANGED: เพิ่ม padding ภายใน input field */
-    font-size: 0.9rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #495057;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #ced4da; /* << สีขอบเดิม */
-    appearance: none; /* Remove default styling */
-    border-radius: 0.3rem; /* << CHANGED: เพิ่มความโค้งมน */
-    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
-    box-sizing: border-box; /* << ADDED: เพื่อให้ padding และ border ไม่ทำให้ขนาดเกิน */
-}
-
-.form-control:focus {
-    border-color: #86b7fe; /* << CHANGED: สีขอบเมื่อ focus (สีฟ้าอ่อน) */
-    outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25); /* << CHANGED: เพิ่ม shadow เมื่อ focus ให้เหมือน Bootstrap */
-}
-
-.form-control::placeholder {
-    margin-top: 1.5rem; /* << CHANGED: เพิ่มระยะห่างบนกลุ่มปุ่ม */
-    display: flex; /* << ADDED: เพื่อให้สามารถจัดตำแหน่งปุ่มได้ง่ายขึ้น */
-    justify-content: flex-end; /* << ADDED: จัดปุ่มไปทางขวา */
-}
-
-/* Button Styles */
-.btn-group {
-    margin-top: 10px;
-}
-
-button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-}
-
-button[type="submit"],
-.form-container button[name^="add_"] /* Targeting buttons like add_rule, add_material etc. */
-{
-    background-color: #0d6efd; /* << CHANGED: สีน้ำเงิน Bootstrap Primary (ตัวอย่าง) */
-    color: white;
-    border: 1px solid #0d6efd; /* << CHANGED */
-    padding: 0.6rem 1.2rem;    /* << CHANGED: เพิ่ม padding ให้ปุ่มใหญ่ขึ้น */
-    font-size: 0.9rem;
-    font-weight: 500;          /* << ADDED */
-    border-radius: 0.3rem;     /* << CHANGED: เพิ่มความโค้งมน */
-    cursor: pointer;
-    transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
-    text-align: center;
-    text-decoration: none;
-    vertical-align: middle;
-    user-select: none;
-}
-
-button[type="submit"]:hover,
-.form-container button[name^="add_"]:hover
-{
-    background-color: #0b5ed7; /* << CHANGED: สีเข้มขึ้นเมื่อ hover */
-    border-color: #0a58ca;   /* << CHANGED */
-    color: white;
-}
-
-button[type="submit"]:focus,
-.form-container button[name^="add_"]:focus
-{
-    outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(49, 132, 253, .5); /* << ADDED: Shadow เมื่อ focus */
-}
-
-button[type="submit"]:active,
-.form-container button[name^="add_"]:active
-{
-    background-color: #0a58ca; /* << ADDED: สีเมื่อคลิก */
-    border-color: #0a53be;
-}
-
-/* === MODIFIED: โค้ดที่แก้ไขสำหรับปุ่มจัดการ === */
-.btn-edit {
-    background-color: #ffc107;
-    border: 2px solid #ffc107;
-    color: #000;
-    padding: 6px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 5px;
-}
-
-.btn-edit:hover {
-    background-color: #e0a800;
-    border-color: #e0a800;
-    color: #000;
-}
-
-.icon-edit {
-    fill: currentColor;
-    transition: transform 0.3s ease;
-}
-
-.btn-edit:hover .icon-edit {
-    transform: rotate(45deg);
-}
-
-.btn-delete {
-    background-color: #dc3545;
-    border: 2px solid #dc3545;
-    color: white;
-    height: 34px;
-    padding: 6px 12px;
-    border-radius: 5px;
-    display: inline-flex;
-    align-items: center;
-}
-
-.btn-delete:hover {
-    background: #c82333;
-    border-color: #bd2130;
-    color: white;
-}
-/* === END MODIFIED SECTION === */
-
-
-/* Table Styles */
-.search-section {
-    display: flex;
-    line-height: 28px;
-    align-items: center;
-    position: relative;
-    max-width: 190px;
-   }
-
-.icon {
-    position: absolute;
-    left: 1rem;
-    fill: #9e9ea7;
-    width: 1rem;
-    height: 1rem;
-   }
-   
-.search-box {
-    width: auto;
-    height: 40px;
-    line-height: 28px;
-    padding: 0 1rem;
-    padding-left: 2.5rem;
-    border: 2px solid transparent;
-    border-radius: 30px;
-    outline: none;
-    background-color: #f3f3f4;
-    color: #0d0c22;
-    transition: .3s ease;
-   }
-
-.search-box::placeholder {
-    color: #9e9ea7;
-}
-
-.search-box:focus,
-.search-box:hover {
-    outline: none;
-    color: #9e9ea7;
-    border-color: rgba(0, 184, 24, 0.4);
-    background-color: #fff;
-}
-
-.table-responsive {
-    margin-top: 10px;
-    overflow-x: auto;
-    text-align: right;
-}
-
-table {
     width: 100%;
-    margin: 0 auto;
-    border-collapse: collapse; /* ให้เส้นขอบรวมกัน */
-    font-size: 1rem;
-    border-radius: 8px; /* เพิ่มความโค้งมนให้ตาราง */
-    overflow: hidden; /* สำคัญมาก! เพื่อให้เนื้อหาภายใน (th, td) ถูกตัดตามความโค้งของตาราง */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* เพิ่มเงาให้ดูมีมิติและทันสมัย */
+    height: 42px;
+    padding: 10px 14px;
+    font-size: 0.95em;
+    color: #333;
+    background-color: #fdfdfd;
+    border: 1px solid #dcdcdc;
+    border-radius: 12px; /* ROUNDED */
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+.form-control:focus {
+    border-color: #D98B99; /* ACCENT: Pink */
+    outline: 0;
+    box-shadow: none;
 }
 
-table th, table td {
-    padding: 14px 18px; /* เพิ่ม padding เล็กน้อยเพื่อให้ดูโปร่งสบายตาขึ้น */
-    vertical-align: middle;
-    border: none; /* ลบเส้นขอบเดิมทั้งหมดออกก่อน แล้วจะกำหนดใหม่เฉพาะส่วนที่จำเป็น */
+/* --- 7. Button Styles --- */
+.btn-group {
+    text-align: right;
+    margin-top: 20px;
+}
+.btn-group button[type="submit"] {
+    background-color: #A53F64; /* ACCENT: Pink */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px; /* ROUNDED */
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+.btn-group button[type="submit"]:hover {
+    background-color: #8c3654;
 }
 
-/* === ADDED: โค้ดที่เพิ่มเข้ามาสำหรับจัดวางปุ่ม === */
 .table-actions {
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: 8px;
-}
-/* === END ADDED SECTION === */
-
-table th {
-    background-color: #FFF0F3; /* ปรับเป็นสีชมพูที่อ่อนลงอีก */
-    color: #A53F64; /* สีชมพูเข้มสำหรับตัวอักษรหัวตาราง เพื่อให้อ่านง่าย */
-    font-weight: 600; /* ทำให้ตัวอักษรหัวตารางหนาขึ้นเล็กน้อย */
-    text-align: center;
-    border-bottom: 2px solid #FDE7EA; /* ปรับสีเส้นขอบล่างให้อ่อนลงตามพื้นหลัง */
-}
-
-table td {
-    border-bottom: 1px solid #f0f2f5; /* เส้นขอบล่างบางๆ สีเทาอ่อนสำหรับแต่ละแถวข้อมูล */
-}
-
-/* ลบเส้นขอบล่างของแถวสุดท้ายในส่วน tbody */
-table tr:last-child td {
-    border-bottom: none;
-}
-tr:nth-child(even) {
-    background-color: #fdfdfe; /* ปรับสีแถวคู่ให้อ่อนลงอีกนิด เพื่อความสะอาดตา */
-}
-
-table td:nth-child(1) {
-    text-align: right;
-}
-
-
-/* จัดคอลัมน์ ค่า (คอลัมน์ที่ 3) ให้ชิดขวา เพราะเป็นตัวเลข */
-table td:nth-child(2) {
-    text-align: right;
-}
-table td:nth-child(3) {
-    text-align: right;
-}
-table td:nth-child(4) {
-    text-align: right;
-}
-table td:nth-child(5) {
-    text-align: right;
-}
-table td:nth-child(6) {
-    text-align: right;
-}
-
-tr:hover {
-    background-color: #f5f7fa; /* ปรับสี hover ให้ดูนุ่มนวลขึ้น */
-}
-
-.close-btn {
-    position: absolute;
-    right: 15px;
-    top: 10px;
-    font-size: 20px;
-    cursor: pointer;
-    color: #666;
-}
-
-.close-btn:hover {
-    color: #000;
-}
-
-/* Responsive Design */
-@media (max-width: 992px) {
-    .container {
-        grid-template-columns: 1fr;
-        max-width: 98vw;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-        grid-template-columns: 1fr;
-        padding: 10px;
-    }
+    vertical-align: top;
     
-    .header-section {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 10% auto;
-    }
 }
-
-/* Pagination Styles */
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    margin: 12px 0 0 0;
-    flex-wrap: wrap;
-}
-.pagination-btn {
-    background-color: #f8f9fa;
-    color: #333;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    padding: 6px 14px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, border 0.2s;
-}
-.pagination-btn:hover {
-    background-color: #17a2b8;
-    color: #fff;
-    border-color: #17a2b8;
-}
-.pagination-btn.active {
-    background-color: #28a745;
-    color: #fff;
-    border-color: #28a745;
-    font-weight: bold;
-    pointer-events: none;
-} 
-
-/* --- CSS สำหรับจัด Layout ฟอร์มและตาราง --- */
-
-/* ใช้ Flexbox จัดการการวางตำแหน่ง */
-.content-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 4fr; /* ทำให้ขึ้นบรรทัดใหม่ได้เมื่อหน้าจอแคบ */
-    gap: 20px;      /* สร้างระยะห่างระหว่างฟอร์มกับตาราง */
-}
-
-/* กำหนดขนาดให้ฟอร์ม */
-.form-container {
-    flex: 1;                 /* ให้ฟอร์มยืดหยุ่นได้ */
-    min-width: 200px;        /* กำหนดความกว้างขั้นต่ำของฟอร์ม */
-}
-
-/* กำหนดขนาดให้ตาราง */
-.table-container {
-    flex: 3;                 /* ให้ตารางมีพื้นที่ประมาณ 2 เท่าของฟอร์ม */
-    min-width: 400px;        /* กำหนดความกว้างขั้นต่ำของตาราง */
-}
-
-/* ปรับปรุงสไตล์ฟอร์มเล็กน้อยเพื่อให้ดูดีขึ้นใน layout ใหม่ */
-.form-container form {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #e3e7ed;
-}
-
-/* ปรับการจัดวางปุ่มเพิ่มข้อมูลในฟอร์ม */
-.form-container .btn-group {
-    text-align: right; /* จัดปุ่มไปทางขวา */
-}
-
-/* --- Stock Management Table Styles --- */
-/* #stockManagementTable .table-actions {  <-- ลบ Rule นี้ออกเพราะซ้ำซ้อนกับ .table-actions ที่เพิ่มไป
-    text-align: center;
-} */
-
-/* === MODIFIED: โค้ดที่แก้ไขสำหรับปุ่มจัดการ === */
-#stockManagementTable .btn-stock-save {
-    background-color: #0cb143;
-    border: 2px solid #0cb143;
-    color: white;
-    visibility: hidden;
-    opacity: 0;
-    transition: all 0.2s ease-in-out;
-    height: 34px;
-    width: 34px;
-    border-radius: 5px;
-    font-size: 1.2rem;
-    padding: 0;
+.table-actions button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-}
-
-#stockManagementTable .btn-stock-save:hover {
-    background-color: #0a9a38;
-    color: white;
-}
-/* === END MODIFIED SECTION === */
-
-
-#stockManagementTable tr.changed .btn-stock-save {
-    visibility: visible; /* แสดงปุ่มเมื่อมีการเปลี่ยนแปลง */
-    opacity: 1;
-}
-
-/* ทำให้คอลัมน์ Stock สามารถ scroll ได้ */
-#stock_section {
-    position: sticky;
-    top: 20px;
-    max-height: 90vh; /* ความสูงสูงสุดไม่เกิน 90% ของหน้าจอ */
-    overflow-y: auto; /* ถ้าเนื้อหายาวเกิน ให้มี scrollbar */
-}
-
-#stock_section .table-container {
-    flex: none; /* ยกเลิก flex-grow ที่อาจติดมา */
-}
-
-/* ทำให้หัวตารางสต็อกติดหนึบเมื่อ scroll */
-#stockManagementTable th {
-    position: sticky;
-    top: -1px; /* จัดตำแหน่งให้สวยงามเมื่อ scroll */
-    background-color: #FFF0F3; /* ปรับเป็นสีชมพูที่อ่อนลงอีก ให้เหมือนกับ table th ทั่วไป */
-    z-index: 1;
-}
-
-/* --- Responsive for Admin Layout --- */
-@media (max-width: 1200px) {
-    .main-layout-grid {
-        grid-template-columns: 1fr; /* บนจอเล็กให้เรียงเป็น 1 คอลัมน์ */
-    }
-    #stock_section {
-        position: static; /* ยกเลิกการ sticky */
-        max-height: none; /* ไม่จำกัดความสูง */
-        order: -1; /* ย้าย section สต็อกไปไว้บนสุด */
-        margin-bottom: 16px;
-    }
-}
-
-/* === Toggle Switch Styles === */
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;  /* ปรับขนาดตามต้องการ */
-    height: 26px; /* ปรับขนาดตามต้องการ */
-    vertical-align: middle; /* จัดให้อยู่กึ่งกลางแนวตั้งกับข้อความอื่นใน cell */
-}
-
-/* ซ่อน Checkbox เดิม */
-.toggle-switch .original-checkbox {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-/* ตัว Slider (ส่วนพื้นหลังของ Toggle) */
-.toggle-switch .slider {
-    position: absolute;
+    padding: 5px 10px;
+    border-radius: 8px; /* ROUNDED */
+    background: transparent;
+    border: 1px solid;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #be0e20; /* สีเมื่อปิด - เปลี่ยนเป็นสีแดง (เหมือนปุ่มลบ) */
-    transition: .4s;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+}
+.btn-edit {
+    color: #b08d00; border-color: #ffe16b;
+}
+.btn-edit:hover {
+    background-color: #fff9e3; border-color: #b08d00;
+}
+/* แก้ไข .btn-delete ให้เป็นปุ่มสำหรับไอคอน */
+.btn-delete {
+    color: #c82333; /* Softer Red */
+    border-color: #f5c6cb;
+    /* NEW: ปรับขนาดและ padding สำหรับไอคอน */
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center; /* จัดไอคอนให้อยู่กึ่งกลาง */
+}
+.btn-delete:hover {
+    background-color: #f8d7da;
+    border-color: #c82333;
+}
+.btn-delete svg {
+    width: 16px; /* กำหนดขนาดไอคอน */
+    height: 16px;
+}
+.btn-stock-save {
+    color: #157347; border-color: #a3cfbb;
+    visibility: hidden; opacity: 0;
+}
+.btn-stock-save:hover {
+    background-color: #d1e7dd; border-color: #157347;
+}
+#stockManagementTable tr.changed .btn-stock-save {
+    visibility: visible; opacity: 1;
 }
 
-/* ตัวปุ่มกลมๆ ที่เลื่อนไปมา */
-.toggle-switch .slider:before {
-    position: absolute;
-    content: "";
-    height: 20px; /* ขนาดปุ่มกลม */
-    width: 20px;  /* ขนาดปุ่มกลม */
-    left: 3px;    /* ระยะห่างจากขอบซ้ายเมื่อปิด */
-    bottom: 3px;  /* ระยะห่างจากขอบล่าง */
-    background-color: white;
-    transition: .4s;
+/* --- 8. Table Styles --- */
+.table-responsive {
+    overflow-x: auto;
 }
-
-/* เมื่อ Checkbox ถูกติ๊ก (สถานะเปิด) */
-.toggle-switch .original-checkbox:checked + .slider {
-    background-color: #28a745; /* สีเขียว (เหมือนปุ่ม Add ใน Admin) */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px; /* ROUNDED */
 }
-
-/* Effect ตอน Focus (Accessibility) */
-.toggle-switch .original-checkbox:focus + .slider {
-    box-shadow: 0 0 1px #28a745;
+table th, table td {
+    padding: 14px; text-align: left; vertical-align: middle;
+    border-bottom: 1px solid #e5e5e5;
 }
+table th:first-child, table td:first-child { padding-left: 20px; }
+table th:last-child, table td:last-child { padding-right: 20px; }
 
-/* การเคลื่อนที่ของปุ่มกลมเมื่อเปิด */
-.toggle-switch .original-checkbox:checked + .slider:before {
-    transform: translateX(24px); /* ระยะการเลื่อน (ปรับให้สัมพันธ์กับ width ของ .toggle-switch) */
-}
-
-/* ทำให้ขอบโค้งมน */
-.toggle-switch .slider.round {
-    border-radius: 26px; /* ทำให้พื้นหลังโค้งมน */
-}
-
-.toggle-switch .slider.round:before {
-    border-radius: 50%; /* ทำให้ปุ่มกลม */
-}
-
-/* --- HOVER EFFECT (เพิ่มส่วนนี้) --- */
-.toggle-switch:hover .slider {
-    box-shadow: 0 0 5px rgba(0,0,0,0.2); /* เพิ่มเงาจางๆ เมื่อ hover */
-}
-
-/* หรือ อาจจะเปลี่ยนความสว่างของปุ่มกลม (เลือกอย่างใดอย่างหนึ่ง หรือใช้ร่วมกัน) */
-.toggle-switch:hover .slider:before {
-    background-color: #f0f0f0; /* ทำให้ปุ่มกลมสว่างขึ้นเล็กน้อยเมื่อ hover */
-}
-
-/* CHANGED/ADDED: Styles for filter section if needed */
-.filter-section {
-    display: flex;
-    gap: 30px; /* ระยะห่างระหว่าง search box กับ dropdown */
-    margin-bottom: 15px; /* ระยะห่างจากตาราง */
-    align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
-    flex-wrap: wrap; /* ให้ขึ้นบรรทัดใหม่ได้บนจอเล็ก */
-}
-
-.filter-section .search-section {
-    margin-bottom: 0; /* ลบ margin-bottom ของ search-section ที่อยู่ใน filter-section */
-    flex-grow: 1; /* ให้ช่องค้นหาขยายได้ */
-    min-width: 200px; /* ความกว้างขั้นต่ำ */
-}
-.filter-section .search-section .search-box{
-    width: 100%; /* ให้ search box เต็มพื้นที่ของ search-section */
-}
-
-
-.filter-section > div { /* สำหรับครอบ label และ select */
-    display: flex;
-    align-items: center;
-    flex-grow: 1; /* ให้ส่วน dropdown ขยายได้ */
-    min-width: 220px; /* ความกว้างขั้นต่ำ */
-}
-
-.filter-section label {
-    margin-right: 8px;
-    font-size: 0.875rem; /* ขนาดเดียวกับ label อื่นๆ ในฟอร์ม */
-    color: #495057;
+table thead th {
+    background-color: #FFF0F3; /* ACCENT: Pink */
+    color: #A53F64; /* ACCENT: Pink */
     font-weight: 500;
-    margin-bottom: 0; /* ไม่ต้องมี margin-bottom เพราะ align-items: center แล้ว */
+    position: sticky; top: -1px;
+}
+table thead tr th:first-child { border-top-left-radius: 11px; }
+table thead tr th:last-child { border-top-right-radius: 11px; }
+
+table tbody tr:hover td {
+    background-color: #fffafa; /* ACCENT: Pink */
+}
+table tbody tr:last-child td {
+    border-bottom: none;
 }
 
+/* --- 9. Filter & Search Styles --- */
+.filter-section {
+    display: flex; gap: 15px; margin-bottom: 20px; align-items: center;
+}
+.search-section {
+    position: relative; flex-grow: 1;
+}
+.search-section .icon {
+    position: absolute; width: 16px; height: 16px; left: 14px; top: 50%;
+    transform: translateY(-50%); fill: #aaa; pointer-events: none;
+}
+.search-box {
+    height: 42px; width: 100%; box-sizing: border-box;
+    border-radius: 12px; /* ROUNDED */
+    border: 1px solid #dcdcdc; background-color: #fff;
+    padding-left: 40px; transition: border-color 0.2s ease;
+}
+.search-box:focus {
+    border-color: #D98B99; outline: none; box-shadow: none;
+}
 .filter-section select.form-control {
-    width: 50%; /* ให้ความกว้างปรับตามเนื้อหา option + min-width */
     min-width: 180px;
-    flex-grow: 1; /* หรือ flex-grow:1; ถ้าต้องการให้เต็มพื้นที่ที่เหลือใน div ครอบ */
-    padding: 8px 10px; /* อาจจะต้องปรับให้เท่ากับ search-box */
-    height: 40px;     /* ความสูงเท่า search-box */
-    line-height: 1.5;
-    flex-grow: 1;
+}
+/* Navbar Search Specifics */
+.navbar-search-container {
+    flex-grow: 0.5; margin: 0 20px; max-width: 500px; position: relative;
+}
+.navbar-search-container .icon-navbar {
+    position: absolute; width: 16px; height: 16px; left: 14px; top: 50%;
+    transform: translateY(-50%); fill: #aaa; pointer-events: none;
+}
+.navbar-search-container .search-box {
+    border-radius: 12px;
 }
 
-/* Responsive for filter section */
-@media (max-width: 767px) {
-    .filter-section {
-        flex-direction: column;
-        align-items: stretch; /* ให้แต่ละ item ยืดเต็มความกว้าง */
-    }
-    .filter-section > div {
-        width: 100%; /* ให้ส่วน dropdown เต็มความกว้างบนจอเล็ก */
-    }
-     .filter-section select.form-control {
-        width: 100%; /* ให้ select เต็มความกว้าง */
-    }
+/* --- 10. Toggle Switch --- */
+.toggle-switch {
+    position: relative; display: inline-block; width: 48px; height: 26px;
+    vertical-align: middle;
+}
+.toggle-switch .original-checkbox {
+    opacity: 0; width: 0; height: 0;
+}
+.toggle-switch .slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc; /* Softer Off State */
+    transition: .3s;
+    border-radius: 26px;
+}
+.toggle-switch .slider:before {
+    position: absolute; content: ""; height: 20px; width: 20px;
+    left: 3px; bottom: 3px; background-color: white;
+    transition: .3s; border-radius: 50%;
+}
+.toggle-switch .original-checkbox:checked + .slider {
+    background-color: #D98B99; /* Softer Pink "On" State */
+}
+.toggle-switch .original-checkbox:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+/* === Pagination Styles (MUJI Pink Theme) === */
+.pagination {
+    display: flex;
+    justify-content: center; /* จัดกึ่งกลาง */
+    align-items: center;
+    gap: 8px; /* ระยะห่างระหว่างปุ่ม */
+    margin-top: 25px; /* ระยะห่างจากตาราง */
+    padding: 0;
+}
+
+.pagination-btn {
+    background-color: transparent;
+    color: #555;
+    border: 1px solid #dcdcdc; /* สีขอบเทาอ่อน */
+    border-radius: 12px; /* ROUNDED: เพิ่มความโค้งมน */
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn:hover {
+    background-color: #A53F64; /* ACCENT: Pink */
+    border-color: #A53F64;     /* ACCENT: Pink */
+    color: #fff;
+}
+
+.pagination-btn.active {
+    background-color: #A53F64; /* ACCENT: Pink */
+    border-color: #A53F64;     /* ACCENT: Pink */
+    color: #fff;
+    font-weight: bold;
+    pointer-events: none; /* ทำให้คลิกปุ่มหน้าที่เลือกอยู่ไม่ได้ */
+}
+
+.pagination-btn:disabled {
+    background-color: #f5f5f5;
+    border-color: #e5e5e5;
+    color: #bbb;
+    cursor: not-allowed;
+}
+
+/* สไตล์สำหรับ "..." ที่คั่นหน้า */
+.pagination-ellipsis {
+    padding: 8px 0;
+    color: #aaa;
 }
