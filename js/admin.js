@@ -473,3 +473,66 @@ document.addEventListener('DOMContentLoaded', function() {
     activateSectionFromHash(); // Activate section based on URL hash
     applyCombinedFilters(); // Apply initial filter state
 });
+
+// Helper: unique & cleaned array (de-dupe, non-empty, non-numeric)
+function uniqueClean(list){
+  const s=new Set();
+  return (list||[]).map(v=>(v??'').toString().trim()).filter(v=>v && !/^\d+(\.\d+)?$/.test(v) && !s.has(v) && (s.add(v),1));
+}
+
+const editOptionForm = document.getElementById('editOptionForm');
+if (editOptionForm) {
+  editOptionForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    const fd = new FormData(editOptionForm);
+    fetch('admin_ajax_data_handler.php', { method:'POST', body: fd })
+      .then(r=>r.json())
+      .then(res => {
+        if(!res || !res.success){ alert(res && res.error || 'บันทึกไม่สำเร็จ'); return; }
+        
+        // --- Update table row using server data (fallback to form fields) ---
+        try {
+          const fd = new FormData(editOptionForm);
+          const id = fd.get('optionId_id') || fd.get('material_id') || fd.get('option_id');
+          const row = findRowById('optionsTable', id, 'optionId');
+          const d = (res && res.data) ? res.data : {};
+          
+if (row && row.children) {
+  const name  = (d.option_name != null ? d.option_name : (document.getElementById('edit_option_name')?.value || ''));
+  const price = (d.option_price != null ? d.option_price : (document.getElementById('edit_option_price')?.value || ''));
+  const cat   = (d.category != null ? d.category : (document.getElementById('edit_option_category')?.value || ''));
+  row.children[1].textContent = name || '-';
+  row.children[2].textContent = (typeof formatNumber==='function'?formatNumber(price):price);
+  row.children[3].textContent = cat  || '-';
+}
+
+        } catch (e) {}
+        // Update the options table row (assume columns: [ID, ชื่อ, ราคา, หมวดหมู่, ...])
+        try {
+          const id = fd.get('option_id');
+          const row = document.querySelector(`tr[data-option-id="${id}"]`);
+          const priceVal = document.getElementById('edit_option_price').value;
+          if (row && row.children) {
+            row.children[1].textContent = document.getElementById('edit_option_name').value;
+            row.children[2].textContent = (typeof formatNumber==='function'?formatNumber(priceVal):priceVal);
+            row.children[3].textContent = document.getElementById('edit_option_category').value;
+          }
+        } catch(e) {}
+        if (typeof closeModal==='function') closeModal('editOptionModal');
+        alert(res.message || 'อัปเดตสำเร็จ');
+      })
+      .catch(()=> alert('เกิดข้อผิดพลาดระหว่างเชื่อมต่อเซิร์ฟเวอร์'));
+  });
+}
+
+
+// === Helper: find table row by ID (works with data-* or first cell) ===
+function findRowById(tableId, id, datasetKey) {
+  const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+  for (const tr of rows) {
+    if (datasetKey && tr.dataset && tr.dataset[datasetKey] && String(tr.dataset[datasetKey]) === String(id)) return tr;
+    const firstCell = tr.children && tr.children[0];
+    if (firstCell && (firstCell.textContent||'').trim() === String(id)) return tr;
+  }
+  return null;
+}

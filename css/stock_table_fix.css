@@ -1,0 +1,41 @@
+
+/* === Stock table fix: single-table sticky header === */
+.stock-table-wrap{
+  max-height: 440px;
+  overflow: auto;
+  border-radius: 10px;
+}
+.stock-table{
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.stock-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fde5ea;
+  font-weight: 600;
+}
+.stock-table th,
+.stock-table td{
+  padding: 12px 14px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0e7ea;
+  box-sizing: border-box;
+}
+.stock-table th:nth-child(1),
+.stock-table td:nth-child(1){ text-align:center; }
+.stock-table th:nth-child(4),
+.stock-table td:nth-child(4){ text-align:center; }
+.stock-table th:nth-child(6),
+.stock-table td:nth-child(6){ text-align:center; }
+.stock-table td:nth-child(4) input[type="number"],
+.stock-table td:nth-child(4) input.qty-input{
+  width: 72px;
+  text-align: center;
+  margin: 0 auto;
+  display: block;
+}
+.stock-table tbody{ display: table-row-group !important; }

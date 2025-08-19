@@ -1,0 +1,4 @@
+
+.select-search-wrap{display:flex;flex-direction:column;gap:6px}
+.select-search-input{padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;outline:none}
+.select-search-input:focus{box-shadow:0 0 0 3px rgba(99,102,241,.2)}
