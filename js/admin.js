@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                     // Handle specific cases where form name differs from db column
-                    if (type === 'material') form.elements['material_price'].value = itemData['price_per_unit'];
+                    if (type === 'material') { form.elements['material_price'].value = itemData['price_per_unit']; if (form.elements['material_type']) form.elements['material_type'].value = itemData['product_type'] || form.elements['material_type'].value; }
                     if (type === 'option') form.elements['option_category'].value = itemData['category'];
                     // --- ADDED: Handle stock-specific fields ---
                     if (type === 'stock') {

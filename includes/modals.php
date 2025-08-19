@@ -57,7 +57,12 @@
                     <div class="form-group">
                         <label for="edit_material_type">ประเภทวัสดุ:</label>
                         <select id="edit_material_type" name="material_type" class="form-control" required>
-                            </select>
+    <?php if (!empty($existing_product_types)) { $___t = array_unique($existing_product_types); sort($___t); foreach ($___t as $t): ?>
+        <option value="<?php echo htmlspecialchars($t); ?>">
+            <?php echo htmlspecialchars($t); ?>
+        </option>
+    <?php endforeach; } ?>
+</select>
                     </div>
                     <div class="form-group">
                         <label for="edit_material_name">ชื่อวัสดุ:</label>
@@ -106,7 +111,12 @@
                     <div class="form-group">
                         <label for="edit_option_category">หมวดหมู่:</label>
                         <select id="edit_option_category" name="option_category" class="form-control" required>
-                           </select>
+    <?php if (!empty($option_categories)) { foreach ($option_categories as $cat): ?>
+        <option value="<?php echo htmlspecialchars($cat); ?>">
+            <?php echo htmlspecialchars($cat); ?>
+        </option>
+    <?php endforeach; } ?>
+</select>
                     </div>
                     <div class="btn-group">
                         <button type="submit">บันทึกการเปลี่ยนแปลง</button>
