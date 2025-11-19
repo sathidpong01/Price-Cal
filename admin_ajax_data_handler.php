@@ -1,161 +1,235 @@
 <?php
+// admin_ajax_data_handler.php — patched (JSON hardening + prepared statements + numeric casting)
+
+if (function_exists('ob_get_level')) { while (ob_get_level()) { @ob_end_clean(); } }
+@ini_set('display_errors','0');
+@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 header('Content-Type: application/json; charset=utf-8');
-require_once 'includes/db_connect.php';
 
-// Initialize response structure
-$response = ['success' => false, 'data' => null, 'error' => 'Invalid request', 'message' => ''];
+require_once __DIR__ . '/includes/db_connect.php';
+@include_once __DIR__ . '/includes/api_helpers.php';
 
-$method = $_SERVER["REQUEST_METHOD"];
-
-// --- Handle GET requests for fetching data for modals ---
-if ($method === "GET" && isset($_GET['action']) && isset($_GET['id'])) {
-    $action = $_GET['action'];
-    $id = intval($_GET['id']);
-    $table = '';
-    $id_col = '';
-
-    if ($action === 'get_rule_data') { $table = 'price_rules'; $id_col = 'rule_id'; }
-    elseif ($action === 'get_material_data') { $table = 'materials'; $id_col = 'material_id'; }
-    elseif ($action === 'get_option_data') { $table = 'options'; $id_col = 'option_id'; }
-    elseif ($action === 'get_stock_data') { $table = 'stock'; $id_col = 'stock_id'; }
-
-    if ($id > 0 && !empty($table)) {
-        $stmt = $conn->prepare("SELECT * FROM {$table} WHERE {$id_col} = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result->num_rows === 1) {
-            $response['success'] = true;
-            $response['data'] = $result->fetch_assoc();
-            $response['error'] = '';
-        } else {
-            $response['error'] = 'ไม่พบข้อมูล';
-        }
-        $stmt->close();
-    }
+if (!function_exists('json_start')) {
+  function json_start(){ header('Content-Type: application/json; charset=utf-8'); }
 }
-// --- Handle POST requests for creating, updating, deleting data ---
-elseif ($method === "POST" && isset($_POST['action'])) {
-    $action = $_POST['action'];
-
-    switch ($action) {
-        // --- UPDATE ACTIONS ---
-        case 'update_stock_quantity':
-            $stock_id = filter_input(INPUT_POST, 'stock_id', FILTER_VALIDATE_INT);
-            $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
-            if ($stock_id && $quantity !== false && $quantity >= 0) {
-                $stmt = $conn->prepare("UPDATE stock SET quantity = ? WHERE stock_id = ?");
-                $stmt->bind_param("ii", $quantity, $stock_id);
-                if ($stmt->execute()) {
-                    $response = [
-                        'success' => true,
-                        'message' => 'อัปเดตจำนวนสต็อกเรียบร้อย!',
-                        'data' => ['stock_id' => $stock_id, 'quantity' => $quantity]
-                    ];
-                } else { $response['error'] = "Execute ล้มเหลว: " . $stmt->error; }
-                $stmt->close();
-            } else { $response['error'] = 'ข้อมูล ID หรือ Quantity ไม่ถูกต้อง'; }
-            break;
-
-        case 'update_stock':
-            $id = filter_input(INPUT_POST, 'stock_id', FILTER_VALIDATE_INT);
-            if ($id) {
-                $stmt = $conn->prepare("UPDATE stock SET product_name = ?, product_type = ?, quantity = ?, unit = ? WHERE stock_id = ?");
-                $stmt->bind_param("ssisi", $_POST['product_name'], $_POST['product_type'], $_POST['quantity'], $_POST['unit'], $id);
-                if ($stmt->execute()) {
-                    $response = ['success' => true, 'message' => "อัปเดตสินค้าเรียบร้อย!", 'data' => $_POST];
-                } else { $response['error'] = 'Update failed: '.$stmt->error; }
-                $stmt->close();
-            } else { $response['error'] = 'ข้อมูลไม่ครบถ้วน'; }
-            break;
-
-        case 'update_rule':
-            $id = filter_input(INPUT_POST, 'rule_id', FILTER_VALIDATE_INT);
-            if ($id) {
-                $stmt = $conn->prepare("UPDATE price_rules SET rule_name = ?, rule_value = ?, rule_unit = ? WHERE rule_id = ?");
-                $stmt->bind_param("sdsi", $_POST['rule_name'], $_POST['rule_value'], $_POST['rule_unit'], $id);
-                if ($stmt->execute()) {
-                    $response = ['success' => true, 'message' => "อัปเดตกฎราคาเรียบร้อย!", 'data' => $_POST];
-                } else { $response['error'] = 'Update failed: '.$stmt->error; }
-                $stmt->close();
-            } else { $response['error'] = 'ข้อมูลไม่ครบถ้วน'; }
-            break;
-
-        case 'update_material':
-            $id = filter_input(INPUT_POST, 'material_id', FILTER_VALIDATE_INT);
-            if ($id) {
-                $stmt = $conn->prepare("UPDATE materials SET product_type = ?, material_name = ?, price_per_unit = ?, unit = ? WHERE material_id = ?");
-                $stmt->bind_param("ssdsi", $_POST['material_type'], $_POST['material_name'], $_POST['material_price'], $_POST['material_unit'], $id);
-                if ($stmt->execute()) {
-                    $response = ['success' => true, 'message' => "อัปเดตวัสดุเรียบร้อย!", 'data' => array_merge($_POST, ['price_per_unit' => $_POST['material_price']])];
-                } else { $response['error'] = 'Update failed: '.$stmt->error; }
-                $stmt->close();
-            } else { $response['error'] = 'ข้อมูลไม่ครบถ้วน'; }
-            break;
-
-        case 'update_option':
-            $id = filter_input(INPUT_POST, 'option_id', FILTER_VALIDATE_INT);
-            if ($id) {
-                $stmt = $conn->prepare("UPDATE options SET option_name = ?, option_price = ?, category = ? WHERE option_id = ?");
-                $stmt->bind_param("sdsi", $_POST['option_name'], $_POST['option_price'], $_POST['option_category'], $id);
-                if ($stmt->execute()) {
-                    $response = ['success' => true, 'message' => "อัปเดตออปชันเรียบร้อย!", 'data' => array_merge($_POST, ['category' => $_POST['option_category']])];
-                } else { $response['error'] = 'Update failed: '.$stmt->error; }
-                $stmt->close();
-            } else { $response['error'] = 'ข้อมูลไม่ครบถ้วน'; }
-            break;
-
-        // --- DELETE ACTIONS ---
-        case 'delete_rule':
-        case 'delete_material':
-        case 'delete_option':
-        case 'delete_stock':
-            $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-            $type = str_replace('delete_', '', $action);
-            $table = ''; $id_col = '';
-            
-            if ($type === 'rule') { $table = 'price_rules'; $id_col = 'rule_id'; }
-            elseif ($type === 'material') { $table = 'materials'; $id_col = 'material_id'; }
-            elseif ($type === 'option') { $table = 'options'; $id_col = 'option_id'; }
-            elseif ($type === 'stock') { $table = 'stock'; $id_col = 'stock_id'; }
-
-            if ($id && !empty($table)) {
-                $stmt = $conn->prepare("DELETE FROM {$table} WHERE {$id_col} = ?");
-                $stmt->bind_param("i", $id);
-                if ($stmt->execute()) {
-                    $response = ['success' => true, 'message' => "ลบข้อมูลเรียบร้อยแล้ว!"];
-                } else { $response['error'] = 'Delete failed: '.$stmt->error; }
-                $stmt->close();
-            } else { $response['error'] = 'Invalid ID for deletion.'; }
-            break;
-
-        // --- DISPLAY STATUS ACTION ---
-        case 'update_display_status':
-            $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-            $type = $_POST['type'] ?? '';
-            $visible = filter_input(INPUT_POST, 'visible', FILTER_VALIDATE_INT);
-            $table = ''; $id_col = '';
-
-            if ($type === 'rule') { $table = 'price_rules'; $id_col = 'rule_id'; }
-            elseif ($type === 'material') { $table = 'materials'; $id_col = 'material_id'; }
-            elseif ($type === 'option') { $table = 'options'; $id_col = 'option_id'; }
-
-            if ($id && !empty($table) && $visible !== null) {
-                $stmt = $conn->prepare("UPDATE {$table} SET display_in_calculator = ? WHERE {$id_col} = ?");
-                $stmt->bind_param("ii", $visible, $id);
-                if ($stmt->execute()) {
-                    $response['success'] = true;
-                } else { $response['error'] = 'Update failed: '.$stmt->error; }
-                $stmt->close();
-            } else { $response['error'] = 'Invalid data for display status update.'; }
-            break;
-        
-        default:
-            $response['error'] = "Action (POST) ไม่รู้จัก: " . htmlspecialchars($action);
-            break;
-    }
+if (!function_exists('json_ok')) {
+  function json_ok($data=null, $message=null, $code=200){
+    json_start();
+    if ($code !== 200) http_response_code($code);
+    echo json_encode(['success'=>true,'message'=>$message,'data'=>$data], JSON_UNESCAPED_UNICODE);
+    exit;
+  }
+}
+if (!function_exists('json_err')) {
+  function json_err($message='เกิดข้อผิดพลาด', $code=400){
+    json_start();
+    http_response_code($code);
+    echo json_encode(['success'=>false,'error'=>$message], JSON_UNESCAPED_UNICODE);
+    exit;
+  }
 }
 
-$conn->close();
-echo json_encode($response);
-exit;
+// Helpers
+function parse_num($s, $default=0.0){
+  if ($s === null) return (float)$default;
+  $s = str_replace([',',' '], '', (string)$s);
+  return is_numeric($s) ? (float)$s : (float)$default;
+}
+function get_row($conn, $table, $id_col, $id, $cols='*'){
+  $sql = "SELECT $cols FROM $table WHERE $id_col=? LIMIT 1";
+  $st = $conn->prepare($sql); if(!$st) json_err('Prepare failed: '.$conn->error,500);
+  $st->bind_param('i', $id); $st->execute();
+  $res = $st->get_result(); $row = $res ? $res->fetch_assoc() : null;
+  $st->close(); return $row ?: null;
+}
+function cast_fields(&$row, $floats=[], $ints=[]){
+  foreach ($floats as $k) if (isset($row[$k])) $row[$k] = (float)$row[$k];
+  foreach ($ints as $k)   if (isset($row[$k])) $row[$k] = (int)$row[$k];
+}
+
+function table_id_for_type($type){
+  switch ($type) {
+    case 'rule':     return ['price_rules','rule_id'];
+    case 'material': return ['materials','material_id'];
+    case 'option':   return ['options','option_id'];
+    case 'stock':    return ['stock','stock_id'];
+    default:         return [null,null];
+  }
+}
+
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+// ---------------- GET ----------------
+if ($method === 'GET') {
+  if ($action === 'get_price_rule') $action = 'get_rule_data';
+  if ($action === 'get_material')   $action = 'get_material_data';
+  if ($action === 'get_option')     $action = 'get_option_data';
+  if ($action === 'get_stock')      $action = 'get_stock_data';
+
+  $id = intval($_GET['id'] ?? 0);
+  if ($id <= 0) json_err('รหัสไม่ถูกต้อง', 422);
+
+  if ($action === 'get_rule_data') {
+    $row = get_row($conn,'price_rules','rule_id',$id,'rule_id, rule_name, rule_value, rule_unit, display_in_calculator');
+    if (!$row) json_err('ไม่พบกฎราคา',404);
+    cast_fields($row, ['rule_value'], ['rule_id','display_in_calculator']);
+    json_ok($row);
+  }
+  if ($action === 'get_material_data') {
+    // พยายามเลือกคอลัมน์เท่าที่มี
+    $row = get_row($conn,'materials','material_id',$id,'material_id, product_type, product_type_id, material_name, price_per_unit, unit, display_in_calculator');
+    if (!$row) json_err('ไม่พบวัสดุ',404);
+    cast_fields($row, ['price_per_unit'], ['material_id','product_type_id','display_in_calculator']);
+    json_ok($row);
+  }
+  if ($action === 'get_option_data') {
+    $row = get_row($conn,'options','option_id',$id,'option_id, option_name, option_price, category, category_id, display_in_calculator');
+    if (!$row) json_err('ไม่พบออปชัน',404);
+    cast_fields($row, ['option_price'], ['option_id','category_id','display_in_calculator']);
+    json_ok($row);
+  }
+  if ($action === 'get_stock_data') {
+    $row = get_row($conn,'stock','stock_id',$id,'stock_id, product_name, product_type, quantity, unit');
+    if (!$row) json_err('ไม่พบสต็อก',404);
+    cast_fields($row, [], ['stock_id','quantity']);
+    json_ok($row);
+  }
+
+  json_err('Action (GET) ไม่รู้จัก: '.htmlspecialchars($action), 400);
+}
+
+// ---------------- POST ----------------
+
+// UPDATE: rule (รองรับชื่อเก่า update_rule)
+if ($action === 'update_price_rule' || $action === 'update_rule') {
+  $id   = intval($_POST['rule_id'] ?? 0);
+  $name = trim($_POST['rule_name'] ?? '');
+  $val  = parse_num($_POST['rule_value'] ?? '0');
+  $unit = trim($_POST['rule_unit'] ?? '');
+  if ($id<=0 || $name==='' || $unit==='') json_err('ข้อมูลไม่ครบถ้วน', 422);
+
+  $st = $conn->prepare("UPDATE price_rules SET rule_name=?, rule_value=?, rule_unit=? WHERE rule_id=?");
+  if(!$st) json_err('Prepare failed: '.$conn->error,500);
+  $st->bind_param('sdsi', $name, $val, $unit, $id);
+  $ok = $st->execute(); $err = $st->error; $st->close();
+  if (!$ok) json_err('Update failed: '.$err, 500);
+
+  $row = get_row($conn,'price_rules','rule_id',$id,'rule_id, rule_name, rule_value, rule_unit, display_in_calculator');
+  cast_fields($row, ['rule_value'], ['rule_id','display_in_calculator']);
+  json_ok($row, 'อัปเดตกฎราคาเรียบร้อย!');
+}
+
+// UPDATE: material
+if ($action === 'update_material') {
+  $id    = intval($_POST['material_id'] ?? 0);
+  $type  = trim($_POST['material_type'] ?? '');
+  $name  = trim($_POST['material_name'] ?? '');
+  $price = parse_num($_POST['material_price'] ?? '0');
+  $unit  = trim($_POST['material_unit'] ?? '');
+  if ($id<=0 || $name==='' || $unit==='') json_err('ข้อมูลไม่ครบถ้วน', 422);
+
+  $st = $conn->prepare("UPDATE materials SET product_type=?, material_name=?, price_per_unit=?, unit=? WHERE material_id=?");
+  if(!$st) json_err('Prepare failed: '.$conn->error,500);
+  $st->bind_param('ssdsi', $type, $name, $price, $unit, $id);
+  $ok = $st->execute(); $err = $st->error; $st->close();
+  if (!$ok) json_err('Update failed: '.$err, 500);
+
+  $row = get_row($conn,'materials','material_id',$id,'material_id, product_type, product_type_id, material_name, price_per_unit, unit, display_in_calculator');
+  cast_fields($row, ['price_per_unit'], ['material_id','product_type_id','display_in_calculator']);
+  json_ok($row, 'อัปเดตวัสดุเรียบร้อย!');
+}
+
+// UPDATE: option
+if ($action === 'update_option') {
+  $id    = intval($_POST['option_id'] ?? 0);
+  $name  = trim($_POST['option_name'] ?? '');
+  $price = parse_num($_POST['option_price'] ?? '0');
+  $cat   = trim($_POST['option_category'] ?? '');
+  if ($id<=0 || $name==='') json_err('ข้อมูลไม่ครบถ้วน', 422);
+
+  $st = $conn->prepare("UPDATE options SET option_name=?, option_price=?, category=? WHERE option_id=?");
+  if(!$st) json_err('Prepare failed: '.$conn->error,500);
+  $st->bind_param('sdsi', $name, $price, $cat, $id);
+  $ok = $st->execute(); $err = $st->error; $st->close();
+  if (!$ok) json_err('Update failed: '.$err, 500);
+
+  $row = get_row($conn,'options','option_id',$id,'option_id, option_name, option_price, category, category_id, display_in_calculator');
+  cast_fields($row, ['option_price'], ['option_id','category_id','display_in_calculator']);
+  json_ok($row, 'อัปเดตออปชันเรียบร้อย!');
+}
+
+// UPDATE: stock qty
+if ($action === 'update_stock_quantity') {
+  $id  = intval($_POST['stock_id'] ?? 0);
+  $qty = intval($_POST['quantity'] ?? -1);
+  if ($id<=0 || $qty<0) json_err('ข้อมูล ID หรือ Quantity ไม่ถูกต้อง', 422);
+
+  $st = $conn->prepare("UPDATE stock SET quantity=? WHERE stock_id=?");
+  if(!$st) json_err('Prepare failed: '.$conn->error,500);
+  $st->bind_param('ii', $qty, $id);
+  $ok = $st->execute(); $err=$st->error; $st->close();
+  if (!$ok) json_err('Update failed: '.$err,500);
+
+  $row = ['stock_id'=>$id,'quantity'=>$qty];
+  cast_fields($row, [], ['stock_id','quantity']);
+  json_ok($row, 'อัปเดตจำนวนสต็อกเรียบร้อย!');
+}
+
+// UPDATE: stock full
+if ($action === 'update_stock') {
+  $id   = intval($_POST['stock_id'] ?? 0);
+  $name = trim($_POST['product_name'] ?? '');
+  $type = trim($_POST['product_type'] ?? '');
+  $qty  = intval($_POST['quantity'] ?? 0);
+  $unit = trim($_POST['unit'] ?? '');
+  if ($id<=0 || $name==='' || $unit==='') json_err('ข้อมูลไม่ครบถ้วน', 422);
+
+  $st = $conn->prepare("UPDATE stock SET product_name=?, product_type=?, quantity=?, unit=? WHERE stock_id=?");
+  if(!$st) json_err('Prepare failed: '.$conn->error,500);
+  $st->bind_param('ssisi', $name, $type, $qty, $unit, $id);
+  $ok = $st->execute(); $err=$st->error; $st->close();
+  if (!$ok) json_err('Update failed: '.$err,500);
+
+  $row = get_row($conn,'stock','stock_id',$id,'stock_id, product_name, product_type, quantity, unit');
+  cast_fields($row, [], ['stock_id','quantity']);
+  json_ok($row, 'อัปเดตสินค้าเรียบร้อย!');
+}
+
+// TOGGLE display for rule
+if ($action === 'toggle_rule_display' || $action === 'toggle_price_rule_display') {
+  $id = intval($_POST['rule_id'] ?? 0);
+  $display = isset($_POST['display']) ? intval($_POST['display']) : null;
+  if ($id<=0 || $display===null) json_err('ข้อมูลไม่ครบถ้วน', 422);
+
+  $st = $conn->prepare("UPDATE price_rules SET display_in_calculator=? WHERE rule_id=?");
+  if(!$st) json_err('Prepare failed: '.$conn->error,500);
+  $st->bind_param('ii', $display, $id);
+  $ok = $st->execute(); $err=$st->error; $st->close();
+  if (!$ok) json_err('Update failed: '.$err,500);
+
+  $row = ['rule_id'=>$id,'display_in_calculator'=>$display];
+  cast_fields($row, [], ['rule_id','display_in_calculator']);
+  json_ok($row, 'อัปเดตการแสดงผลแล้ว');
+}
+
+// DELETE (physical)
+if ($action === 'delete_rule' || $action === 'delete_material' || $action === 'delete_option' || $action === 'delete_stock') {
+  $id = intval($_POST['id'] ?? 0);
+  if ($id<=0) json_err('รหัสไม่ถูกต้อง', 422);
+  $type = str_replace('delete_', '', $action);
+  list($table, $id_col) = table_id_for_type($type);
+  if (!$table) json_err('ประเภทไม่ถูกต้อง', 400);
+
+  $st = $conn->prepare("DELETE FROM $table WHERE $id_col=?");
+  if(!$st) json_err('Prepare failed: '.$conn->error,500);
+  $st->bind_param('i', $id);
+  $ok = $st->execute(); $err=$st->error; $st->close();
+  if (!$ok) json_err('Delete failed: '.$err,500);
+
+  $row = ['id'=>$id,'type'=>$type];
+  cast_fields($row, [], ['id']);
+  json_ok($row, 'ลบเรียบร้อย');
+}
+
+json_err('Action (POST) ไม่รู้จัก: '.htmlspecialchars($action), 400);

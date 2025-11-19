@@ -1,12 +1,9 @@
 <?php
-// --- ตั้งค่าการเชื่อมต่อ ---
-$db_host = "localhost"; // หรือ 127.0.0.1
-$db_user = "root";      // ชื่อผู้ใช้ที่เราเข้าระบบ phpMyAdmin
-$db_pass = "Supergodball2540-"; // *** แก้ไขตรงนี้! ใส่รหัสผ่าน MariaDB ที่คุณตั้งไว้ ***
-$db_name = "price_calculator"; // ชื่อฐานข้อมูลที่เราสร้าง
+// --- เรียกใช้ไฟล์ Config ---
+require_once __DIR__ . '/../config.php';
 
 // --- เริ่มการเชื่อมต่อ ---
-$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
 // --- ตรวจสอบการเชื่อมต่อ ---
 if ($conn->connect_error) {

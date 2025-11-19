@@ -218,10 +218,29 @@ $conn->close();
             <div class="message error"><?php echo rtrim($error, "<br>"); ?></div>
             <?php endif; ?>
         </div>
-        <div class="main-layout-grid">
+        <!-- Tabs Navigation -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="switchTab('materials_section')">
+                <svg class="tab-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                จัดการวัสดุ
+            </button>
+            <button class="tab-btn" onclick="switchTab('options_section')">
+                <svg class="tab-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+                จัดการออปชัน
+            </button>
+            <button class="tab-btn" onclick="switchTab('rules_section')">
+                <svg class="tab-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                จัดการกฎราคา
+            </button>
+            <button class="tab-btn stock-tab-btn" onclick="switchTab('stock_section')">
+                <svg class="tab-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zM7 19c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zM7 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+                จัดการสต็อก
+            </button>
+        </div>
 
-            <div class="main-admin-content">
-                <div class="admin-section" id="rules_section">
+        <div class="admin-content-container">
+
+                <div class="admin-section tab-content" id="rules_section">
                     <h2>จัดการกฎราคา</h2>
                     <div class="content-wrapper">
                         <div class="form-container">
@@ -318,7 +337,7 @@ $conn->close();
                         </div>
                     </div>
                 </div>
-                <div class="admin-section" id="materials_section">
+                <div class="admin-section tab-content" id="materials_section">
                     <h2>จัดการวัสดุ</h2>
                     <div class="content-wrapper">
                         <div class="form-container">
@@ -429,7 +448,7 @@ $conn->close();
                         </div>
                     </div>
                 </div>
-                <div class="admin-section" id="options_section">
+                <div class="admin-section tab-content" id="options_section">
                     <h2>จัดการออปชันเสริม</h2>
                     <div class="content-wrapper">
                         <div class="form-container">
@@ -533,113 +552,112 @@ $conn->close();
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="admin-section" id="stock_section">
+            <div class="admin-section tab-content" id="stock_section">
                 <h2>จัดการสต็อกสินค้า</h2>
-
-                <div class="form-container" style="margin-bottom: 20px;">
-                    <form action="admin.php#stock_section" method="post">
-                        <div class="form-group">
-                            <label for="add_stock_product_name">ชื่อสินค้า:</label>
-                            <input type="text" id="add_stock_product_name" name="add_stock_product_name"
-                                class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_stock_product_type">ประเภทสินค้า:</label>
-                            <input type="text" id="add_stock_product_type" name="add_stock_product_type"
-                                class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_stock_quantity">จำนวน:</label>
-                            <input type="number" step="1" id="add_stock_quantity" name="add_stock_quantity"
-                                class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="add_stock_unit">หน่วย:</label>
-                            <input type="text" id="add_stock_unit" name="add_stock_unit" class="form-control" required>
-                        </div>
-                        <div class="btn-group">
-                            <button type="submit" name="add_stock_item">เพิ่มสินค้าในสต็อก</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="table-container">
-                    <div class="filter-section">
-                        <div class="search-section">
-                            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
-                                <g>
-                                    <path
-                                        d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z">
-                                    </path>
-                                </g>
-                            </svg>
-                            <input type="text" id="stockSearch" class="search-box"
-                                placeholder="ค้นหาชื่อสินค้า, หน่วย...">
-                        </div>
-                        <div>
-                            <label for="stockTypeFilter">หมวดหมู่:</label>
-                            <select id="stockTypeFilter" class="form-control">
-                                <option value="">ทั้งหมด</option>
-                                <?php
-                                // CHANGED/ADDED: ดึง Product Types ที่มีอยู่จาก $stock_list
-                                $product_types_in_stock = [];
-                                if (!empty($stock_list)) {
-                                    foreach ($stock_list as $item) {
-                                        $product_types_in_stock[] = $item['product_type'];
-                                    }
-                                }
-                                $unique_product_types = array_unique($product_types_in_stock);
-                                sort($unique_product_types); // เรียงตามตัวอักษร (ถ้าต้องการ)
-                                foreach ($unique_product_types as $type):
-                                ?>
-                                <option value="<?php echo htmlspecialchars($type); ?>">
-                                    <?php echo htmlspecialchars($type); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                <div class="content-wrapper">
+                    <div class="form-container">
+                        <form action="admin.php#stock_section" method="post">
+                            <div class="form-group">
+                                <label for="add_stock_product_name">ชื่อสินค้า:</label>
+                                <input type="text" id="add_stock_product_name" name="add_stock_product_name"
+                                    class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="add_stock_product_type">ประเภทสินค้า:</label>
+                                <input type="text" id="add_stock_product_type" name="add_stock_product_type"
+                                    class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="add_stock_quantity">จำนวน:</label>
+                                <input type="number" step="1" id="add_stock_quantity" name="add_stock_quantity"
+                                    class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="add_stock_unit">หน่วย:</label>
+                                <input type="text" id="add_stock_unit" name="add_stock_unit" class="form-control" required>
+                            </div>
+                            <div class="btn-group">
+                                <button type="submit" name="add_stock_item">เพิ่มสินค้าในสต็อก</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="table-responsive">
-                        <table id="stockManagementTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>ประเภท</th>
-                                    <th>ชื่อสินค้า</th>
-                                    <th>จำนวน</th>
-                                    <th>หน่วย</th>
-                                    <th>จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($stock_list)): ?>
-                                <tr>
-                                    <td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลสต็อก</td>
-                                </tr>
-                                <?php else: ?>
-                                <?php foreach ($stock_list as $item): ?>
-                                <tr id="stock-row-<?php echo $item['stock_id']; ?>">
-                                    <td><?php echo htmlspecialchars($item['stock_id']); ?></td>
-                                    <td><?php echo htmlspecialchars($item['product_type']); ?></td>
-                                    <td><?php echo htmlspecialchars($item['product_name']); ?></td>
-                                    <td>
-                                        <input type="number" class="stock-quantity-input form-control"
-                                            style="width: 80px; text-align: right;"
-                                            value="<?php echo $item['quantity']; ?>"
-                                            data-initial-value="<?php echo $item['quantity']; ?>">
-                                    </td>
-                                    <td><?php echo htmlspecialchars($item['unit']); ?></td>
-                                    <td class="table-actions">
-                                        <button type="button" class="btn-stock-save"
-                                            onclick="handleStockUpdate(<?php echo $item['stock_id']; ?>, this)">✓</button>
-                                        <button type="button" class="btn-delete"
-                                            onclick="handleDeleteClick('stock', <?php echo $item['stock_id']; ?>, '<?php echo htmlspecialchars(addslashes($item['product_name'])); ?>')"><svg
-                                                viewBox="0 0 16 16" fill="currentColor">
-                                                <path
-                                                    d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5z" />
-                                                <path fill-rule="evenodd"
-                                                    d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
-                                            </svg></button>
+
+                    <div class="table-container">
+                        <div class="filter-section">
+                            <div class="search-section">
+                                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
+                                    <g>
+                                        <path
+                                            d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z">
+                                        </path>
+                                    </g>
+                                </svg>
+                                <input type="text" id="stockSearch" class="search-box"
+                                    placeholder="ค้นหาชื่อสินค้า, หน่วย...">
+                            </div>
+                            <div>
+                                <label for="stockTypeFilter">หมวดหมู่:</label>
+                                <select id="stockTypeFilter" class="form-control">
+                                    <option value="">ทั้งหมด</option>
+                                    <?php
+                                    // CHANGED/ADDED: ดึง Product Types ที่มีอยู่จาก $stock_list
+                                    $product_types_in_stock = [];
+                                    if (!empty($stock_list)) {
+                                        foreach ($stock_list as $item) {
+                                            $product_types_in_stock[] = $item['product_type'];
+                                        }
+                                    }
+                                    $unique_product_types = array_unique($product_types_in_stock);
+                                    sort($unique_product_types); // เรียงตามตัวอักษร (ถ้าต้องการ)
+                                    foreach ($unique_product_types as $type):
+                                    ?>
+                                    <option value="<?php echo htmlspecialchars($type); ?>">
+                                        <?php echo htmlspecialchars($type); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="stockManagementTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>ประเภท</th>
+                                        <th>ชื่อสินค้า</th>
+                                        <th>จำนวน</th>
+                                        <th>หน่วย</th>
+                                        <th>จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($stock_list)): ?>
+                                    <tr>
+                                        <td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลสต็อก</td>
+                                    </tr>
+                                    <?php else: ?>
+                                    <?php foreach ($stock_list as $item): ?>
+                                    <tr id="stock-row-<?php echo $item['stock_id']; ?>">
+                                        <td><?php echo htmlspecialchars($item['stock_id']); ?></td>
+                                        <td><?php echo htmlspecialchars($item['product_type']); ?></td>
+                                        <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                        <td>
+                                            <input type="number" class="stock-quantity-input form-control"
+                                                style="width: 80px; text-align: right;"
+                                                value="<?php echo $item['quantity']; ?>"
+                                                data-initial-value="<?php echo $item['quantity']; ?>">
+                                        </td>
+                                        <td><?php echo htmlspecialchars($item['unit']); ?></td>
+                                        <td class="table-actions">
+                                            <button type="button" class="btn-stock-save"
+                                                onclick="handleStockUpdate(<?php echo $item['stock_id']; ?>, this)">✓</button>
+                                            <button type="button" class="btn-delete"
+                                                onclick="handleDeleteClick('stock', <?php echo $item['stock_id']; ?>, '<?php echo htmlspecialchars(addslashes($item['product_name'])); ?>')"><svg
+                                                    viewBox="0 0 16 16" fill="currentColor">
+                                                    <path
+                                                        d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5z" />
+                                                    <path fill-rule="evenodd"
+                                                        d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                                                </svg></button>
                                         <button type="button" class="btn-edit"
                                             onclick="openEditModal('stock', <?php echo $item['stock_id']; ?>)">
                                             <svg class="icon-edit" viewBox="0 0 512 512" width="16" height="16">
@@ -659,6 +677,94 @@ $conn->close();
         </div> <?php include 'includes/modals.php'; ?>
     </div>
     <script src="js/admin.js" defer></script>
+
+<script>
+// --- Tab Switching Logic ---
+function switchTab(tabId) {
+    // 1. Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    
+    // 2. Remove active class from all buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    // 3. Show selected tab content
+    const target = document.getElementById(tabId);
+    if (target) {
+        target.style.display = 'block';
+        // Trigger resize if needed (for charts or grids)
+        window.dispatchEvent(new Event('resize'));
+    }
+    
+    // 4. Add active class to clicked button
+    // Find button with matching onclick or data-tab
+    const btn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+    if (btn) btn.classList.add('active');
+
+    // 5. Update URL hash without scrolling
+    history.replaceState(null, null, '#' + tabId);
+    
+    // 6. Save to localStorage
+    localStorage.setItem('activeAdminTab', tabId);
+}
+
+// --- Initialize Tab on Load ---
+document.addEventListener('DOMContentLoaded', function() {
+    const hash = window.location.hash.substring(1);
+    const saved = localStorage.getItem('activeAdminTab');
+    const defaultTab = 'materials_section'; // Default tab
+    
+    let tabToOpen = defaultTab;
+    if (hash && document.getElementById(hash)) {
+        tabToOpen = hash;
+    } else if (saved && document.getElementById(saved)) {
+        tabToOpen = saved;
+    }
+    
+    switchTab(tabToOpen);
+});
+
+// --- Global fallback to ensure openEditModal exists (in case js/admin.js didn't run) ---
+if (typeof window.openEditModal !== 'function') {
+  window.openEditModal = function(type, id){
+    try{
+      var modalId = 'edit' + type.charAt(0).toUpperCase() + type.slice(1) + 'Modal';
+      var formId  = 'edit' + type.charAt(0).toUpperCase() + type.slice(1) + 'Form';
+      var url     = 'admin_ajax_data_handler.php?action=get_' + type + '_data&id=' + encodeURIComponent(id);
+      var modal = document.getElementById(modalId);
+      var form  = document.getElementById(formId);
+      if (!modal || !form) { alert('ไม่พบโมดอลหรือฟอร์ม: ' + modalId); return; }
+      fetch(url).then(r => r.json()).then(function(data){
+        if (!data || !data.success || !data.data) throw new Error(data && data.error ? data.error : 'โหลดข้อมูลไม่สำเร็จ');
+        var item = data.data;
+        form.reset();
+        if (form.elements[type+'_id']) form.elements[type+'_id'].value = id;
+        Object.keys(item).forEach(function(k){
+          if (form.elements[k]) form.elements[k].value = item[k];
+        });
+        if (type === 'material') {
+          if (form.elements['material_price'] && item['price_per_unit'] != null) form.elements['material_price'].value = item['price_per_unit'];
+          if (form.elements['material_type'] && item['product_type']) form.elements['material_type'].value = item['product_type'];
+        }
+        if (type === 'option') {
+          if (form.elements['option_category'] && item['category']) form.elements['option_category'].value = item['category'];
+        }
+        modal.style.display = 'flex';
+        var first = form.querySelector('input,select,textarea'); if (first) first.focus();
+      }).catch(function(err){
+        alert('โหลดข้อมูลไม่สำเร็จ: ' + err.message);
+      });
+    }catch(e){ alert('เกิดข้อผิดพลาด: ' + e.message); }
+  };
+}
+// also ensure handleDeleteClick exists
+if (typeof window.handleDeleteClick !== 'function') {
+  window.handleDeleteClick = function(type, id, name) {
+    if (!confirm('ต้องการลบ "' + (name||'รายการ') + '" ใช่หรือไม่?')) return;
+    var key = {rule:'delete_rule_id', material:'delete_material_id', option:'delete_option_id', stock:'delete_stock_id'}[type] || 'delete_id';
+    var url = new URL(window.location.href); url.searchParams.set(key, id); window.location.href = url.toString();
+  };
+}
+</script>
 </body>
 
 </html>

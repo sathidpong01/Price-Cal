@@ -6,8 +6,9 @@
  // เรียกใช้ไฟล์เชื่อมต่อและไฟล์ดึงข้อมูล
  include 'includes/db_connect.php';
  include 'includes/data_fetcher.php';
+ include 'includes/calculation_helpers.php'; // [NEW] เรียกใช้ Helper
 
- // --- เพิ่มฟังก์ชันปัดเศษกลับเข้ามา ---
+ // --- ฟังก์ชันปัดเศษ ---
 function customRound($number) {
     return floor(($number + 6) / 10) * 10;
 }
@@ -34,10 +35,10 @@ function customRound($number) {
  $vinyl_materials = $all_materials['ผ้าไวนิล'];
  $sticker_materials = $all_materials['สติ๊กเกอร์'];
 
-// --- 4. เตรียมตัวแปรสำหรับตอบกลับ ---
+// --- เตรียมตัวแปรสำหรับตอบกลับ ---
 $response = ['success' => false, 'error' => '', 'results' => null, 'calculator_type' => 'unknown'];
 
-// --- 5. ตรวจสอบและเริ่มคำนวณ ---
+// --- ตรวจสอบและเริ่มคำนวณ ---
 if (isset($_POST['calculator_type'])) {
     $calculator_type = $_POST['calculator_type'];
     $response['calculator_type'] = $calculator_type;
@@ -49,10 +50,7 @@ if (isset($_POST['calculator_type'])) {
             $st_height = $_POST['st_height'] ?? '0';
             $st_quantity = isset($_POST['st_quantity']) && is_numeric($_POST['st_quantity']) && $_POST['st_quantity'] > 0 ? intval($_POST['st_quantity']) : 1;
             $st_selected_material_id = $_POST['st_material_type'] ?? '';
-            
-            // !!!!! FIXED HERE !!!!!
             $st_selected_sheet_id = $_POST['st_sheet_material'] ?? 'none';
-            
             $st_selected_options = isset($_POST['st_options']) ? (is_array($_POST['st_options']) ? $_POST['st_options'] : []) : [];
             $st_travel_type = $_POST['st_travel_type'] ?? 'none';
             $st_distance_km = $_POST['st_distance_km'] ?? '0';
@@ -62,35 +60,40 @@ if (isset($_POST['calculator_type'])) {
             } else {
                 $area_sqm = ($st_width / 100) * ($st_height / 100);
         
-                // --- หาาราคาของสติ๊กเกอร์ที่เลือก ---
-                $base_sticker_price_per_sqm = 0;
-                $selected_sticker_material_name = '';
-                foreach ($sticker_materials as $st_mat) {
-                    if ($st_mat['material_id'] == $st_selected_material_id) {
-                        $base_sticker_price_per_sqm = $st_mat['price_per_unit'];
-                        $selected_sticker_material_name = $st_mat['material_name'];
-                        break;
-                    }
-                }
-        
-                if ($base_sticker_price_per_sqm <= 0) {
+                // 1. หาวัสดุสติ๊กเกอร์
+                $stickerMat = findMaterial($st_selected_material_id, $sticker_materials);
+                
+                if (!$stickerMat) {
                     $response['error'] = "ไม่พบราคาของชนิดสติ๊กเกอร์ที่เลือก";
                 } else {
+                    $base_sticker_price_per_sqm = $stickerMat['price_per_unit'];
+                    $selected_sticker_material_name = $stickerMat['material_name'];
                     $sticker_only_price = $base_sticker_price_per_sqm * $area_sqm;
-                    $sheet_price = 0; $selected_sheet_name = '';
+
+                    // 2. หาวัสดุแผ่นรองหลัง
+                    $sheet_price = 0; 
+                    $selected_sheet_name = '';
                     if ($st_selected_sheet_id != 'none') {
-                        $sheet_ppu = 0;
-                        foreach ($sheet_list_for_sticker as $sh) { if ($sh['material_id'] == $st_selected_sheet_id) { $sheet_ppu = $sh['price_per_unit']; $selected_sheet_name = $sh['material_name']; break; } }
-                        if ($sheet_ppu > 0) { $sheet_price = $sheet_ppu * $area_sqm; }
+                        $sheetMat = findMaterial($st_selected_sheet_id, $sheet_list_for_sticker);
+                        if ($sheetMat) {
+                            $sheet_price = $sheetMat['price_per_unit'] * $area_sqm;
+                            $selected_sheet_name = $sheetMat['material_name'];
+                        }
                     }
-                    $st_options_price_total = 0; $st_selected_options_details = [];
-                    foreach ($options_list as $opt) { if (in_array($opt['option_id'], $st_selected_options)) { $st_options_price_total += $opt['option_price']; $st_selected_options_details[] = ['name' => $opt['option_name'], 'price' => $opt['option_price']]; } }
-                    $st_travel_cost = 0; $st_travel_description = 'ไม่รวมค่าเดินทาง';
-                    if ($st_travel_type == 'in_city') { $st_travel_cost = $travel_cost_in_city; $st_travel_description = 'ในเมือง'; }
-                    elseif ($st_travel_type == 'out_city') { if (is_numeric($st_distance_km) && $st_distance_km > 0) { $st_travel_cost = $st_distance_km * $travel_cost_per_km; $st_travel_description = "นอกเมือง ({$st_distance_km} กม.)"; } }
+
+                    // 3. คำนวณ Options (ใช้ Helper)
+                    $optionsResult = calculateOptionsPrice($st_selected_options, $options_list);
+                    $st_options_price_total = $optionsResult['total_price'];
+                    $st_selected_options_details = $optionsResult['details'];
+
+                    // 4. คำนวณค่าเดินทาง (ใช้ Helper)
+                    $travelResult = calculateTravelCost($st_travel_type, $st_distance_km, $travel_cost_in_city, $travel_cost_per_km);
+                    $st_travel_cost = $travelResult['cost'];
+                    $st_travel_description = $travelResult['description'];
 
                     $price_per_sheet = customRound($sticker_only_price + $sheet_price + $st_options_price_total + $st_travel_cost);
                     $st_total_price = $price_per_sheet * $st_quantity;
+                    
                     $response['success'] = true;
                     $response['results'] = [
                         'width' => $st_width,
@@ -110,65 +113,116 @@ if (isset($_POST['calculator_type'])) {
                 }
             }
         }
-        // ... (โค้ดส่วนที่เหลือเหมือนเดิม) ...
         // ========================== LETTER ==========================
         elseif ($calculator_type == 'letter') {
-            $lt_height = $_POST['letter_height'] ?? '0'; $lt_quantity = $_POST['letter_quantity'] ?? '0';
+            $lt_height = $_POST['letter_height'] ?? '0'; 
+            $lt_quantity = $_POST['letter_quantity'] ?? '0';
             $lt_selected_material_id = $_POST['material'] ?? '';
             $lt_selected_options = isset($_POST['lt_options']) ? (is_array($_POST['lt_options']) ? $_POST['lt_options'] : []) : [];
-            $lt_travel_type = $_POST['travel_type'] ?? 'none'; $lt_distance_km = $_POST['distance_km'] ?? '0';
+            $lt_travel_type = $_POST['travel_type'] ?? 'none'; 
+            $lt_distance_km = $_POST['distance_km'] ?? '0';
 
             if (!is_numeric($lt_height) || !is_numeric($lt_quantity) || empty($lt_selected_material_id) || $lt_height <= 0 || $lt_quantity <= 0) {
                 $response['error'] = "กรุณากรอก ความสูง (>0), จำนวน (>0) และเลือกวัสดุ";
             } else {
-                $material_price_per_unit = 0; $selected_material_name = ''; $selected_material_unit = '';
-                foreach ($materials_for_letter as $mat) { if ($mat['material_id'] == $lt_selected_material_id) { $material_price_per_unit = $mat['price_per_unit']; $selected_material_name = $mat['material_name']; $selected_material_unit = $mat['unit']; break; } }
-                $base_price = 0;
-                if ($material_price_per_unit > 0) { $base_price = $lt_height * $lt_quantity * $material_price_per_unit; } else { $response['error'] = "ไม่พบราคาวัสดุ"; }
+                // 1. หาวัสดุ
+                $letterMat = findMaterial($lt_selected_material_id, $materials_for_letter);
+                
+                if (!$letterMat) {
+                     $response['error'] = "ไม่พบราคาวัสดุ"; 
+                } else {
+                    $material_price_per_unit = $letterMat['price_per_unit'];
+                    $selected_material_name = $letterMat['material_name'];
+                    $selected_material_unit = $letterMat['unit'];
+                    $base_price = $lt_height * $lt_quantity * $material_price_per_unit;
 
-                if (empty($response['error'])) {
-                    $lt_options_price_total = 0; $lt_selected_options_details = [];
-                    foreach ($options_list as $opt) { if (in_array($opt['option_id'], $lt_selected_options)) { $lt_options_price_total += $opt['option_price']; $lt_selected_options_details[] = ['name' => $opt['option_name'], 'price' => $opt['option_price']]; } }
-                    $lt_travel_cost = 0; $lt_travel_description = 'ไม่รวมค่าเดินทาง';
-                    if ($lt_travel_type == 'in_city') { $lt_travel_cost = $travel_cost_in_city; $lt_travel_description = 'ในเมือง'; }
-                    elseif ($lt_travel_type == 'out_city') { if (is_numeric($lt_distance_km) && $lt_distance_km > 0) { $lt_travel_cost = $lt_distance_km * $travel_cost_per_km; $lt_travel_description = "นอกเมือง ({$lt_distance_km} กม.)"; } }
+                    // 2. คำนวณ Options (ใช้ Helper)
+                    $optionsResult = calculateOptionsPrice($lt_selected_options, $options_list);
+                    
+                    // 3. คำนวณค่าเดินทาง (ใช้ Helper)
+                    $travelResult = calculateTravelCost($lt_travel_type, $lt_distance_km, $travel_cost_in_city, $travel_cost_per_km);
 
-                    $lt_total_price = customRound($base_price + $lt_options_price_total + $lt_travel_cost);
+                    $lt_total_price = customRound($base_price + $optionsResult['total_price'] + $travelResult['cost']);
+                    
                     $response['success'] = true;
-                    $response['results'] = [ 'height' => $lt_height, 'quantity' => $lt_quantity, 'material_name' => $selected_material_name, 'material_price_pu' => $material_price_per_unit, 'material_unit' => $selected_material_unit, 'base_price' => $base_price, 'options' => $lt_selected_options_details, 'travel_desc' => $lt_travel_description, 'travel_price' => $lt_travel_cost, 'total_price' => $lt_total_price ];
+                    $response['results'] = [ 
+                        'height' => $lt_height, 
+                        'quantity' => $lt_quantity, 
+                        'material_name' => $selected_material_name, 
+                        'material_price_pu' => $material_price_per_unit, 
+                        'material_unit' => $selected_material_unit, 
+                        'base_price' => $base_price, 
+                        'options' => $optionsResult['details'], 
+                        'travel_desc' => $travelResult['description'], 
+                        'travel_price' => $travelResult['cost'], 
+                        'total_price' => $lt_total_price 
+                    ];
                 }
             }
         }
         // ========================== LIGHTBOX ==========================
         elseif ($calculator_type == 'lightbox') {
-            $lb_width = $_POST['lb_width'] ?? '0'; $lb_height = $_POST['lb_height'] ?? '0';
+            $lb_width = $_POST['lb_width'] ?? '0'; 
+            $lb_height = $_POST['lb_height'] ?? '0';
             $lb_selected_id = $_POST['lightbox_type'] ?? '';
             $lb_selected_options = isset($_POST['lb_options']) ? (is_array($_POST['lb_options']) ? $_POST['lb_options'] : []) : [];
-            $lb_travel_type = $_POST['lb_travel_type'] ?? 'none'; $lb_distance_km = $_POST['lb_distance_km'] ?? '0';
+            $lb_travel_type = $_POST['lb_travel_type'] ?? 'none'; 
+            $lb_distance_km = $_POST['lb_distance_km'] ?? '0';
 
-            $lightbox_price_per_sqm = 0; $selected_lightbox_name = '';
-            foreach ($lightbox_materials as $lb) { if ($lb['material_id'] == $lb_selected_id) { $lightbox_price_per_sqm = $lb['price_per_unit']; $selected_lightbox_name = $lb['material_name']; break; } }
+            // 1. หาวัสดุ
+            $lightboxMat = findMaterial($lb_selected_id, $lightbox_materials);
+            $lightbox_price_per_sqm = $lightboxMat ? $lightboxMat['price_per_unit'] : 0;
+            $selected_lightbox_name = $lightboxMat ? $lightboxMat['material_name'] : '';
 
             if (!is_numeric($lb_width) || !is_numeric($lb_height) || empty($lb_selected_id) || $lightbox_price_per_sqm <= 0 || $lb_width <= 0 || $lb_height <= 0) {
                 $response['error'] = "กรุณากรอก กว้าง (>0), ยาว (>0) และเลือกประเภทกล่องไฟ";
             } else {
-                $area_sqm = 0; $width_m = $lb_width / 100; $height_m = $lb_height / 100; $shape = '';
-                if (strpos($selected_lightbox_name, 'สี่เหลี่ยม') !== false) { $area_sqm = $width_m * $height_m; $shape = 'สี่เหลี่ยม'; }
-                elseif (strpos($selected_lightbox_name, 'วงกลม') !== false) { $diameter_m = $width_m; $radius_m = $diameter_m / 2; $area_sqm = M_PI * pow($radius_m, 2); $shape = 'วงกลม'; if ($lb_width != $lb_height && $response['error'] == '') { $response['error'] = "แนะนำ: วงกลม ควรใส่ กว้าง = ยาว."; } }
-                else { $response['error'] = "ไม่สามารถระบุรูปทรงได้"; }
+                $area_sqm = 0; 
+                $width_m = $lb_width / 100; 
+                $height_m = $lb_height / 100; 
+                $shape = '';
+                
+                if (strpos($selected_lightbox_name, 'สี่เหลี่ยม') !== false) { 
+                    $area_sqm = $width_m * $height_m; 
+                    $shape = 'สี่เหลี่ยม'; 
+                } elseif (strpos($selected_lightbox_name, 'วงกลม') !== false) { 
+                    $diameter_m = $width_m; 
+                    $radius_m = $diameter_m / 2; 
+                    $area_sqm = M_PI * pow($radius_m, 2); 
+                    $shape = 'วงกลม'; 
+                    if ($lb_width != $lb_height && $response['error'] == '') { 
+                        $response['error'] = "แนะนำ: วงกลม ควรใส่ กว้าง = ยาว."; 
+                    } 
+                } else { 
+                    $response['error'] = "ไม่สามารถระบุรูปทรงได้"; 
+                }
 
                 if (empty($response['error']) || (strpos($response['error'],"แนะนำ:") === 0 && $area_sqm > 0) ) {
                     if(strpos($response['error'],"แนะนำ:") === 0) $response['warning'] = $response['error'];
+                    
                     $base_price = $area_sqm * $lightbox_price_per_sqm;
-                    $lb_options_price_total = 0; $lb_selected_options_details = [];
-                    foreach ($options_list as $opt) { if (in_array($opt['option_id'], $lb_selected_options)) { $lb_options_price_total += $opt['option_price']; $lb_selected_options_details[] = ['name' => $opt['option_name'], 'price' => $opt['option_price']]; } }
-                    $lb_travel_cost = 0; $lb_travel_description = 'ไม่รวมค่าเดินทาง';
-                    if ($lb_travel_type == 'in_city') { $lb_travel_cost = $travel_cost_in_city; $lb_travel_description = 'ในเมือง'; }
-                    elseif ($lb_travel_type == 'out_city') { if (is_numeric($lb_distance_km) && $lb_distance_km > 0) { $lb_travel_cost = $lb_distance_km * $travel_cost_per_km; $lb_travel_description = "นอกเมือง ({$lb_distance_km} กม.)"; } }
+                    
+                    // 2. คำนวณ Options (ใช้ Helper)
+                    $optionsResult = calculateOptionsPrice($lb_selected_options, $options_list);
+                    
+                    // 3. คำนวณค่าเดินทาง (ใช้ Helper)
+                    $travelResult = calculateTravelCost($lb_travel_type, $lb_distance_km, $travel_cost_in_city, $travel_cost_per_km);
 
-                    $lb_total_price = customRound($base_price + $lb_options_price_total + $lb_travel_cost);
+                    $lb_total_price = customRound($base_price + $optionsResult['total_price'] + $travelResult['cost']);
+                    
                     $response['success'] = true;
-                    $response['results'] = [ 'area' => $area_sqm, 'shape' => $shape, 'width' => $lb_width, 'height' => $lb_height, 'type_name' => $selected_lightbox_name, 'base_price' => $base_price, 'options' => $lb_selected_options_details, 'travel_desc' => $lb_travel_description, 'travel_price' => $lb_travel_cost, 'total_price' => $lb_total_price ];
+                    $response['results'] = [ 
+                        'area' => $area_sqm, 
+                        'shape' => $shape, 
+                        'width' => $lb_width, 
+                        'height' => $lb_height, 
+                        'type_name' => $selected_lightbox_name, 
+                        'base_price' => $base_price, 
+                        'options' => $optionsResult['details'], 
+                        'travel_desc' => $travelResult['description'], 
+                        'travel_price' => $travelResult['cost'], 
+                        'total_price' => $lb_total_price 
+                    ];
                      if(isset($response['warning'])) $response['error'] = $response['warning'];
                      else $response['error'] = '';
                 } elseif ($area_sqm <=0 && empty($response['error'])) {
@@ -178,8 +232,6 @@ if (isset($_POST['calculator_type'])) {
         }
         // ========================== VINYL ==========================
         elseif ($calculator_type == 'vinyl') {
-            $response['calculator_type'] = 'vinyl';
-
             $vn_width = $_POST['vn_width'] ?? '0';
             $vn_height = $_POST['vn_height'] ?? '0';
             $vn_quantity = isset($_POST['vn_quantity']) && is_numeric($_POST['vn_quantity']) && $_POST['vn_quantity'] > 0 ? intval($_POST['vn_quantity']) : 1;
@@ -192,49 +244,24 @@ if (isset($_POST['calculator_type'])) {
                 $response['error'] = "กรุณากรอก กว้าง x สูง ให้ถูกต้อง";
             } else {
                 $area_sqm = ($vn_width / 100) * ($vn_height / 100);
-                $base_vinyl_price_per_sqm = 0;
-                $selected_vinyl_material_name = '';
-
-                if (!empty($vn_selected_material_id)) {
-                    foreach ($vinyl_materials as $vn_mat) {
-                        if ($vn_mat['material_id'] == $vn_selected_material_id) {
-                            $base_vinyl_price_per_sqm = $vn_mat['price_per_unit'];
-                            $selected_vinyl_material_name = $vn_mat['material_name'];
-                            break;
-                        }
-                    }
-                    if(empty($selected_vinyl_material_name)){ // ถ้า ID ที่ส่งมา ไม่มีใน list
-                         $response['error'] = "ไม่พบชนิดผ้าไวนิลที่เลือก";
-                    }
+                
+                // 1. หาวัสดุ
+                $vinylMat = findMaterial($vn_selected_material_id, $vinyl_materials);
+                
+                if (!$vinylMat) {
+                    $response['error'] = "ไม่พบชนิดผ้าไวนิลที่เลือก";
                 } else {
-                    $response['error'] = "กรุณาเลือกชนิดผ้าไวนิล"; // หรือจะบังคับเลือก
-                }
-
-                if (empty($response['error'])) {
+                    $base_vinyl_price_per_sqm = $vinylMat['price_per_unit'];
+                    $selected_vinyl_material_name = $vinylMat['material_name'];
                     $vinyl_material_cost = $base_vinyl_price_per_sqm * $area_sqm;
 
-                    $vn_options_price_total = 0;
-                    $vn_selected_options_details = [];
-                    foreach ($options_list as $opt) {
-                        if (in_array($opt['option_id'], $vn_selected_options)) {
-                            $vn_options_price_total += $opt['option_price'];
-                            $vn_selected_options_details[] = ['name' => $opt['option_name'], 'price' => $opt['option_price']];
-                        }
-                    }
+                    // 2. คำนวณ Options (ใช้ Helper)
+                    $optionsResult = calculateOptionsPrice($vn_selected_options, $options_list);
 
-                    $vn_travel_cost = 0;
-                    $vn_travel_description = 'ไม่รวมค่าเดินทาง';
-                    if ($vn_travel_type == 'in_city') {
-                        $vn_travel_cost = $travel_cost_in_city;
-                        $vn_travel_description = 'ในเมือง';
-                    } elseif ($vn_travel_type == 'out_city') {
-                        if (is_numeric($vn_distance_km) && $vn_distance_km > 0) {
-                            $vn_travel_cost = $vn_distance_km * $travel_cost_per_km;
-                            $vn_travel_description = "นอกเมือง ({$vn_distance_km} กม.)";
-                        }
-                    }
+                    // 3. คำนวณค่าเดินทาง (ใช้ Helper)
+                    $travelResult = calculateTravelCost($vn_travel_type, $vn_distance_km, $travel_cost_in_city, $travel_cost_per_km);
 
-                    $price_per_piece = customRound($vinyl_material_cost + $vn_options_price_total + $vn_travel_cost);
+                    $price_per_piece = customRound($vinyl_material_cost + $optionsResult['total_price'] + $travelResult['cost']);
                     $vn_total_price = $price_per_piece * $vn_quantity;
 
                     $response['success'] = true;
@@ -246,9 +273,9 @@ if (isset($_POST['calculator_type'])) {
                         'vinyl_material_name' => $selected_vinyl_material_name,
                         'vinyl_material_price_sqm' => $base_vinyl_price_per_sqm,
                         'vinyl_base_price' => $vinyl_material_cost,
-                        'options' => $vn_selected_options_details,
-                        'travel_desc' => $vn_travel_description,
-                        'travel_price' => $vn_travel_cost,
+                        'options' => $optionsResult['details'],
+                        'travel_desc' => $travelResult['description'],
+                        'travel_price' => $travelResult['cost'],
                         'price_per_piece' => $price_per_piece,
                         'total_price' => $vn_total_price
                     ];
@@ -265,9 +292,8 @@ if (isset($_POST['calculator_type'])) {
     $response['error'] = 'ไม่ได้ระบุประเภทการคำนวณ';
 }
 
-// --- 6. ปิดการเชื่อมต่อ และส่งผลกลับ ---
+// --- ปิดการเชื่อมต่อ และส่งผลกลับ ---
 $conn->close();
 echo json_encode($response);
 exit;
-
 ?>
