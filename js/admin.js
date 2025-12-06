@@ -1,476 +1,538 @@
-// js/admin.js (เวอร์ชันล่าสุด)
-
-function formatNumber(num) {
-    try {
-        let parsedNum = parseFloat(num);
-        if (isNaN(parsedNum)) return '0.00';
-        return parsedNum.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    } catch(e) { return '0.00'; }
-}
-
-function htmlspecialchars(str) {
-    if (typeof str !== 'string') return '';
-    return str.replace(/[&<>"']/g, function (match) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[match];
-    });
-}
-
-function updateTableRow(type, data) {
-    // console.log("[DEBUG] Updating table row:", type, data);
-    let rowId = '';
-    let idField = '';
-
-    if (type === 'rule') { idField = 'rule_id'; }
-    else if (type === 'material') { idField = 'material_id'; }
-    else if (type === 'option') { idField = 'option_id'; }
-    else { console.error("Unknown type for updateTableRow:", type); return; }
-
-    if (!data || !data[idField]) {
-         console.error("Invalid data or missing ID provided to updateTableRow:", data);
-         return;
-    }
-
-    rowId = `${type}-row-${data[idField]}`;
-    const row = document.getElementById(rowId);
-    if (!row) {
-        console.error("Row not found:", rowId);
-        return;
-    }
-
-    row.querySelectorAll('td[data-field]').forEach(cell => {
-        const field = cell.getAttribute('data-field');
-        let newValue = '';
-
-        if (type === 'rule') {
-            if (field === 'name') newValue = data.rule_name;
-            else if (field === 'value') newValue = formatNumber(data.rule_value);
-            else if (field === 'unit') newValue = data.rule_unit;
-        } else if (type === 'material') {
-            if (field === 'type') newValue = data.product_type;
-            else if (field === 'name') newValue = data.material_name;
-            else if (field === 'price') newValue = formatNumber(data.price_per_unit);
-            else if (field === 'unit') newValue = data.unit;
-        } else if (type === 'option') {
-            if (field === 'name') newValue = data.option_name;
-            else if (field === 'price') newValue = formatNumber(data.option_price);
-        }
-        cell.textContent = htmlspecialchars(newValue);
-    });
-
-    row.style.transition = 'background-color 0.2s ease-out';
-    row.style.backgroundColor = '#d4edda'; // สีเขียวอ่อน (Success)
-    setTimeout(() => {
-        row.style.backgroundColor = '';
-        row.style.transition = '';
-    }, 2000);
-}
-
-function confirmDelete(type, nameOrId) {
-    return confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ ${type} '${nameOrId}' ? การกระทำนี้ไม่สามารถย้อนกลับได้!`);
-}
-
-function handleDeleteClick(type, id, name) {
-    if (confirmDelete(type, name)) {
-        performAjaxDelete(type, id);
-    }
-}
-
-function performAjaxDelete(type, id) {
-    const formData = new FormData();
-    formData.append('action', `delete_${type}`);
-    formData.append('id', id);
-
-    fetch('admin_ajax_data_handler.php', { method: 'POST', body: formData })
-    .then(response => {
-        if (!response.ok) { // ตรวจสอบ HTTP status code ก่อน
-            return response.text().then(text => { throw new Error(`Server error: ${response.status} - ${text}`) });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            displayGlobalMessage('success', data.message);
-            const rowId = `${type}-row-${id}`;
-            const row = document.getElementById(rowId);
-            
-            if (row) {
-                const table = row.closest('table');
-                const tableId = table ? table.id : null;
-
-                row.style.transition = 'background-color 0.3s ease-out, opacity 0.5s ease-in 0.3s';
-                row.style.backgroundColor = '#f8d7da'; // สีแดงอ่อน
-
-                setTimeout(() => {
-                    row.style.opacity = '0';
-                    setTimeout(() => {
-                        if (tableId) {
-                            const state = paginatedTables[tableId];
-                            if (state) {
-                                state.originalRows = state.originalRows.filter(r => r.id !== rowId);
-                            }
-                        }
-                        row.remove();
-                        if (tableId) {
-                            repaginate(tableId);
-                        }
-                    }, 500); 
-                }, 300); 
-            }
-        } else {
-            displayGlobalMessage('error', data.error || 'เกิดข้อผิดพลาดในการลบ');
-        }
-    })
-    .catch(error => {
-        console.error('Error during AJAX delete:', error);
-        displayGlobalMessage('error', 'เกิดข้อผิดพลาด: ' + error.message);
-    });
-}
-
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.style.display = "none";
-}
-
-function openEditModal(type, id) {
-    // console.log(`[DEBUG] 1. Attempting to open modal for type: ${type}, id: ${id}`);
-    let modalId = ''; let formId = '';
-    let url = `admin_ajax_data_handler.php?action=get_${type}_data&id=${id}`;
-
-    if (type === 'rule') { modalId = 'editRuleModal'; formId = 'editRuleForm'; }
-    else if (type === 'material') { modalId = 'editMaterialModal'; formId = 'editMaterialForm'; }
-    else if (type === 'option') { modalId = 'editOptionModal'; formId = 'editOptionForm'; }
-    else { console.error('[DEBUG] Unknown modal type:', type); return; }
-
-    const modal = document.getElementById(modalId);
-    const form = document.getElementById(formId);
-    if (!modal || !form) { console.error('[DEBUG] Modal or Form not found! Modal ID:', modalId, 'Form ID:', formId); return; }
-
-    // console.log(`[DEBUG] 2. Fetching data from: ${url}`);
-    fetch(url)
-        .then(response => {
-            // console.log('[DEBUG] 3. Fetch response status:', response.status);
-            if (!response.ok) { throw new Error('Network response was not ok ' + response.statusText); }
-            return response.json();
-        })
-        .then(data => {
-            // console.log('[DEBUG] 4. Fetch data received:', data);
-            if (data.success && data.data) {
-                const itemData = data.data;
-                if (type === 'rule') {
-                    form.elements['rule_id'].value = itemData.rule_id;
-                    form.elements['rule_name'].value = itemData.rule_name;
-                    form.elements['rule_value'].value = parseFloat(itemData.rule_value).toFixed(2);
-                    form.elements['rule_unit'].value = itemData.rule_unit;
-                } else if (type === 'material') {
-                    form.elements['material_id'].value = itemData.material_id;
-                    form.elements['material_type'].value = itemData.product_type;
-                    form.elements['material_name'].value = itemData.material_name;
-                    form.elements['material_price'].value = parseFloat(itemData.price_per_unit).toFixed(2);
-                    form.elements['material_unit'].value = itemData.unit;
-                } else if (type === 'option') {
-                    form.elements['option_id'].value = itemData.option_id;
-                    form.elements['option_name'].value = itemData.option_name;
-                    form.elements['option_price'].value = parseFloat(itemData.option_price).toFixed(2);
-                }
-                // console.log(`[DEBUG] 5. Setting modal display to "block" for:`, modalId);
-                modal.style.display = "block";
-                const firstInput = form.querySelector('input[type="text"], input[type="number"], select');
-                if (firstInput) firstInput.focus();
-            } else {
-                // console.error('[DEBUG] 5b. Fetch successful but data error:', data.error);
-                displayGlobalMessage('error', 'ไม่สามารถดึงข้อมูลได้: ' + (data.error || 'ไม่ทราบสาเหตุ'));
-            }
-        })
-        .catch(error => {
-            // console.error('[DEBUG] 6. Error fetching data for modal:', error);
-            displayGlobalMessage('error', 'เกิดข้อผิดพลาดในการดึงข้อมูล: ' + error.message);
-        });
-}
-
-function submitModalForm(formElement, url, sectionToReload, modalId) {
-    const formData = new FormData(formElement);
-    const type = modalId.replace('edit', '').replace('Modal', '').toLowerCase();
-    fetch(url, { method: 'POST', body: formData })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(`Server error: ${response.status} - ${text}`) });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            closeModal(modalId);
-            displayGlobalMessage('success', data.message || 'บันทึกข้อมูลเรียบร้อย!');
-            if (data.data) {
-                updateTableRow(type, data.data);
-            } else {
-                console.warn("No data returned after update, page might need manual refresh if table structure depends on it.");
-            }
-        } else {
-            displayGlobalMessage('error', 'เกิดข้อผิดพลาด: ' + (data.error || 'ไม่สามารถบันทึกข้อมูลได้'), modalId);
-        }
-    })
-    .catch(error => {
-        console.error('Error submitting modal form:', error);
-        displayGlobalMessage('error', 'เกิดข้อผิดพลาดในการส่งข้อมูล: ' + error.message);
-    });
-}
-
-function displayGlobalMessage(type, text, modalIdToKeepOpen = null) {
-    const messagesDiv = document.getElementById('globalMessages');
-    if (!messagesDiv) return;
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${type}`;
-    messageElement.innerHTML = text; // text is already htmlspecialchars from PHP or safe string from JS
-    messagesDiv.innerHTML = '';
-    messagesDiv.appendChild(messageElement);
-    if (type === 'success' || !modalIdToKeepOpen) {
-         setTimeout(() => {
-             if(messageElement && messagesDiv.contains(messageElement)) messageElement.style.display = 'none';
-         }, 5000);
-    }
-}
-
-let paginatedTables = {};
-<<<<<<< HEAD
-function initPagination(tableId, rowsPerPage) { /* ... โค้ดเดิม ... */ }
-function showPage(tableId, page) { /* ... โค้ดเดิม ... */ }
-function updatePaginationControls(tableId) { /* ... โค้ดเดิม ... */ }
-function repaginate(tableId) { /* ... โค้ดเดิม ... */ }
-function filterTable(inputId, tableId, ...columnIndices) {
-    const input = document.getElementById(inputId);
-    const table = document.getElementById(tableId);
-    const filter = input.value.toLowerCase();
-    const rows = table.getElementsByTagName('tr');
-
-    // Loop through all table rows except header
-    for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        let found = false;
-
-        // Check each specified column
-        for (const colIndex of columnIndices) {
-            const cell = row.getElementsByTagName('td')[colIndex];
-            if (cell) {
-                const text = cell.textContent || cell.innerText;
-                if (text.toLowerCase().indexOf(filter) > -1) {
-                    found = true;
-                    break;
-                }
-            }
-        }
-
-        // Show/hide row based on search result
-        row.style.display = found ? '' : 'none';
-    }
-
-    // Repaginate the table after filtering
-    repaginate(tableId);
-}
-=======
->>>>>>> parent of 9c2f45d (เพิ่มหมวดหมู่ออฟชั่น)
-
-function initPagination(tableId, rowsPerPage) {
-    // console.log(`[DEBUG] Initializing pagination for ${tableId}`);
-    const table = document.getElementById(tableId);
-    if (!table) { /*console.error("Table not found:", tableId);*/ return; }
-    const tbody = table.getElementsByTagName('tbody')[0];
-    if (!tbody) { /*console.error("Tbody not found:", tableId);*/ return; }
-
-    const allRowsInTbody = Array.from(tbody.getElementsByTagName('tr'));
-
-    paginatedTables[tableId] = {
-        originalRows: allRowsInTbody.filter(row => row.getElementsByTagName('td').length > 1), // Filter out "no data" rows
-        rowsPerPage: parseInt(rowsPerPage, 10) || 5,
-        currentPage: 1,
-        paginationControls: null
-    };
-    repaginate(tableId);
-}
-
-function showPage(tableId, page) {
-    const state = paginatedTables[tableId];
-    if (!state || !state.originalRows) return;
-
-    state.currentPage = page;
-    const visibleRows = state.originalRows.filter(row => !row.classList.contains('filtered-out-by-search'));
-
-    state.originalRows.forEach(row => {
-        if (!row.classList.contains('filtered-out-by-search')) {
-             row.style.display = 'none';
-        }
-    });
-
-    const start = (page - 1) * state.rowsPerPage;
-    const end = start + state.rowsPerPage;
-
-    visibleRows.forEach((row, index) => {
-        if (index >= start && index < end) {
-            row.style.display = "";
-        }
-    });
-    updatePaginationControls(tableId);
-}
-
-function updatePaginationControls(tableId) {
-    const state = paginatedTables[tableId];
-    if (!state || !state.originalRows) return;
-
-    if (!state.paginationControls) {
-         let paginationDiv = document.getElementById(tableId + 'PaginationContainer');
-         if (!paginationDiv) {
-             paginationDiv = document.createElement("div");
-             paginationDiv.className = "pagination";
-             paginationDiv.id = tableId + 'PaginationContainer';
-             const tableElement = document.getElementById(tableId); // Renamed to avoid conflict with 'table' variable from outer scope
-             if (tableElement && tableElement.parentNode.classList.contains('table-responsive')) {
-                 tableElement.parentNode.insertAdjacentElement('afterend', paginationDiv);
-             } else if (tableElement) {
-                 tableElement.insertAdjacentElement('afterend', paginationDiv);
-             }
-         }
-         state.paginationControls = paginationDiv;
-    }
-
-    const visibleRows = state.originalRows.filter(row => !row.classList.contains('filtered-out-by-search'));
-    const totalPages = Math.ceil(visibleRows.length / state.rowsPerPage);
-
-    state.paginationControls.innerHTML = '';
-
-    if (totalPages <= 1 && visibleRows.length <= state.rowsPerPage) { // Hide if only one page and not exceeding rows per page
-        state.paginationControls.style.display = 'none';
-        return;
-    }
-    state.paginationControls.style.display = 'flex';
-
-    let prevBtn = document.createElement("button");
-    prevBtn.innerHTML = "&laquo; ก่อนหน้า";
-    prevBtn.type = "button";
-    prevBtn.disabled = state.currentPage === 1;
-    prevBtn.onclick = function() { if (state.currentPage > 1) { showPage(tableId, state.currentPage - 1); } };
-    state.paginationControls.appendChild(prevBtn);
-
-    const maxPageButtons = 5; let startPage, endPage;
-    if (totalPages <= maxPageButtons) { startPage = 1; endPage = totalPages; }
-    else {
-        let sideButtons = Math.floor((maxPageButtons - 3) / 2); // e.g., 1 for 5 buttons total (1 ... current ... 1)
-        if (state.currentPage <= sideButtons + 1) { // current is near the start
-            startPage = 1; endPage = maxPageButtons -1; // Show 1, 2, 3, ..., n
-        } else if (state.currentPage >= totalPages - sideButtons) { // current is near the end
-            startPage = totalPages - maxPageButtons + 2; endPage = totalPages; // Show 1, ..., n-2, n-1, n
-        } else { // current is in the middle
-            startPage = state.currentPage - sideButtons; endPage = state.currentPage + sideButtons; // Show 1, ..., x-1, x, x+1, ..., n
-        }
-    }
-
-    if (startPage > 1) {
-        let firstPageBtn = document.createElement("button"); firstPageBtn.innerHTML = 1; firstPageBtn.type = "button"; firstPageBtn.onclick = function() { showPage(tableId, 1); }; state.paginationControls.appendChild(firstPageBtn);
-        if (startPage > 2) { let ellipsis = document.createElement("span"); ellipsis.innerHTML = "&hellip;"; ellipsis.style.padding = "8px 12px"; state.paginationControls.appendChild(ellipsis); }
-    }
-    for (let i = startPage; i <= endPage; i++) {
-        if (i > totalPages) continue; // Make sure not to create buttons beyond totalPages
-        let pageBtn = document.createElement("button"); pageBtn.innerHTML = i; pageBtn.type = "button";
-        if (i === state.currentPage) { pageBtn.classList.add("active"); }
-        pageBtn.onclick = function() { showPage(tableId, i); }; state.paginationControls.appendChild(pageBtn);
-    }
-    if (endPage < totalPages) {
-        if (endPage < totalPages - 1) { let ellipsis = document.createElement("span"); ellipsis.innerHTML = "&hellip;"; ellipsis.style.padding = "8px 12px"; state.paginationControls.appendChild(ellipsis); }
-        let lastPageBtn = document.createElement("button"); lastPageBtn.innerHTML = totalPages; lastPageBtn.type = "button"; lastPageBtn.onclick = function() { showPage(tableId, totalPages); }; state.paginationControls.appendChild(lastPageBtn);
-    }
-
-    let nextBtn = document.createElement("button"); nextBtn.innerHTML = "ถัดไป &raquo;"; nextBtn.type = "button";
-    nextBtn.disabled = state.currentPage === totalPages || totalPages === 0;
-    nextBtn.onclick = function() { if (state.currentPage < totalPages) { showPage(tableId, state.currentPage + 1); } };
-    state.paginationControls.appendChild(nextBtn);
-}
-
-
-function repaginate(tableId) {
-    const state = paginatedTables[tableId];
-    if (!state || !state.originalRows) { /* console.log("Repaginate called, but no state or originalRows for", tableId); */ return; }
-    
-    // Re-filter originalRows from DOM in case rows were added by PHP (not AJAX) then JS loaded
-    // This is less ideal than fully managing rows via JS originalRows
-    const table = document.getElementById(tableId);
-    if (table) {
-        const tbody = table.getElementsByTagName('tbody')[0];
-        if (tbody) {
-            const currentDomRows = Array.from(tbody.getElementsByTagName('tr'));
-            // A simple check, could be more robust. If counts differ significantly, might re-init.
-            if (currentDomRows.filter(row => row.getElementsByTagName('td').length > 1).length !== state.originalRows.length && state.originalRows.length === 0) {
-                 // console.log(`Repaginating ${tableId}: DOM rows differ from state, re-initializing originalRows.`);
-                 state.originalRows = currentDomRows.filter(row => row.getElementsByTagName('td').length > 1);
-            }
-        }
-    }
-    filterTable(document.getElementById(tableId.replace('Table','Search'))?.id || `${tableId}Search`, tableId, ...(tableId === 'materialsTable' ? [1,2] : [1]));
-    showPage(tableId, state.currentPage > Math.ceil(state.originalRows.filter(row => !row.classList.contains('filtered-out-by-search')).length / state.rowsPerPage) ? 1 : state.currentPage);
-}
-
-function filterTable(inputId, tableId, ...columnIndices) {
-    const inputElement = document.getElementById(inputId); // Renamed to avoid conflict
-    if (!inputElement) { /* console.log("Filter input not found:", inputId); */ return; }
-    let filter = inputElement.value.toUpperCase();
-
-    const state = paginatedTables[tableId];
-    if(!state || !state.originalRows) { /* console.error(`Pagination not initialized for table ${tableId}`); */ return; }
-
-    state.originalRows.forEach(row => {
-        let found = false;
-        if (row.getElementsByTagName("td").length === 0 || row.textContent.trim().includes("ยังไม่มีข้อมูล")) {
-             row.style.display = 'none'; row.classList.add('filtered-out-by-search'); return;
-        }
-        for (let colIndex of columnIndices) {
-            let td = row.getElementsByTagName("td")[colIndex];
-            if (td) { let txtValue = td.textContent || td.innerText; if (txtValue.toUpperCase().indexOf(filter) > -1) { found = true; break; } }
-        }
-        if (found) { row.style.display = ''; row.classList.remove('filtered-out-by-search'); } // Display will be handled by showPage
-        else { row.style.display = 'none'; row.classList.add('filtered-out-by-search'); }
-    });
-    // After filtering, reset to page 1 and update controls
-    state.currentPage = 1;
-    showPage(tableId, 1);
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-    // console.log("[DEBUG] DOM Loaded. Setting up listeners.");
 
-    document.getElementById('editRuleForm')?.addEventListener('submit', function(e) { e.preventDefault(); submitModalForm(this, 'admin_ajax_data_handler.php', 'rules_section', 'editRuleModal'); });
-    document.getElementById('editMaterialForm')?.addEventListener('submit', function(e) { e.preventDefault(); submitModalForm(this, 'admin_ajax_data_handler.php', 'materials_section', 'editMaterialModal'); });
-    document.getElementById('editOptionForm')?.addEventListener('submit', function(e) { e.preventDefault(); submitModalForm(this, 'admin_ajax_data_handler.php', 'options_section', 'editOptionModal'); });
+    // --- 1. Global Variables & State ---
+    const paginatedTables = {}; // Object to hold state for each paginated table
 
-    window.onclick = function(event) {
-        document.querySelectorAll('.modal').forEach(modal => {
-             if (event.target == modal) {
-                modal.style.display = "none";
+    // --- 2. Helper Functions ---
+    function formatNumber(num) {
+        try {
+            let parsedNum = parseFloat(num);
+            if (isNaN(parsedNum)) return '0.00';
+            return parsedNum.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } catch (e) { return '0.00'; }
+    }
+
+    function htmlspecialchars(str) {
+        if (typeof str !== 'string') return '';
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return str.replace(/[&<>"']/g, m => map[m]);
+    }
+    
+    // --- 3. Sidebar Navigation ---
+    const sidebarLinks = document.querySelectorAll('.sidebar-menu .sidebar-link');
+    const contentPanels = document.querySelectorAll('.main-admin-content .admin-section');
+
+    function showContentPanel(panelIdToShow) {
+        contentPanels.forEach(panel => {
+            panel.style.display = (panel.id === panelIdToShow) ? 'block' : 'none';
+        });
+    }
+
+    function setActiveLink(linkToActivate) {
+        sidebarLinks.forEach(link => link.classList.remove('active'));
+        if (linkToActivate) linkToActivate.classList.add('active');
+    }
+
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(event) {
+            const targetPanelId = this.getAttribute('href').substring(1);
+            if (document.getElementById(targetPanelId)) {
+                showContentPanel(targetPanelId);
+                setActiveLink(this);
+            }
+        });
+    });
+
+    function activateSectionFromHash() {
+        const hash = window.location.hash || '#rules_section'; // Default to #rules_section if no hash
+        const link = document.querySelector(`.sidebar-link[href="${hash}"]`);
+        if (link) {
+            link.click();
+            return true;
+        }
+        return false;
+    }
+
+    // --- 4. Modal and Form Handling (UPDATED SECTION) ---
+    
+    // Helper function to populate the "current data" display in modals
+    function populateCurrentDataDisplay(type, data) {
+        // --- START: CORRECTED CODE ---
+        // Correct the field names to match the database columns returned by the AJAX handler.
+        const fields = {
+            rule: ['rule_name', 'rule_value', 'rule_unit'],
+            material: ['product_type', 'material_name', 'price_per_unit', 'unit'],
+            option: ['option_name', 'option_price', 'category'],
+            stock: ['product_type', 'product_name', 'quantity', 'unit']
+        };
+        // --- END: CORRECTED CODE ---
+    
+        if (!fields[type]) return;
+    
+        fields[type].forEach(fieldKey => {
+            // Create a simpler key for the HTML element ID, e.g., 'rule_name' becomes 'name'
+            const elementKey = fieldKey.replace('rule_', '').replace('material_', '').replace('option_', '').replace('price_per_unit', 'price');
+            const element = document.getElementById(`current_${type}_${elementKey}`);
+    
+            if (element) {
+                let value = data[fieldKey] || '';
+                // Use the same formatting as the table for consistency
+                if (fieldKey.includes('price') || fieldKey.includes('value')) {
+                    value = formatNumber(value);
+                }
+                element.textContent = value;
             }
         });
     }
-     window.onkeydown = function(event) {
-        if (event.key === "Escape") {
-             document.querySelectorAll('.modal').forEach(modal => {
-                modal.style.display = "none";
+
+    window.openEditModal = function(type, id) {
+        const modalId = `edit${type.charAt(0).toUpperCase() + type.slice(1)}Modal`;
+        const formId = `edit${type.charAt(0).toUpperCase() + type.slice(1)}Form`;
+        const url = `admin_ajax_data_handler.php?action=get_${type}_data&id=${id}`;
+
+        const modal = document.getElementById(modalId);
+        const form = document.getElementById(formId);
+        if (!modal || !form) return;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    form.reset(); // Reset form before populating
+                    const itemData = data.data;
+
+                    // --- NEW: Populate the "current data" display ---
+                    populateCurrentDataDisplay(type, itemData);
+
+                    // --- Populate the form fields for editing ---
+                    form.elements[`${type}_id`].value = id;
+                    
+                    for (const key in itemData) {
+                        if (form.elements[key]) {
+                            form.elements[key].value = itemData[key];
+                        } else if (form.elements[`edit_${type}_${key}`]) {
+                            form.elements[`edit_${type}_${key}`].value = itemData[key];
+                        }
+                    }
+                    // Handle specific cases where form name differs from db column
+                    if (type === 'material') { form.elements['material_price'].value = itemData['price_per_unit']; if (form.elements['material_type']) form.elements['material_type'].value = itemData['product_type'] || form.elements['material_type'].value; }
+                    if (type === 'option') form.elements['option_category'].value = itemData['category'];
+                    // --- ADDED: Handle stock-specific fields ---
+                    if (type === 'stock') {
+                        form.elements['product_name'].value = itemData['product_name'];
+                        form.elements['product_type'].value = itemData['product_type'];
+                        form.elements['quantity'].value = itemData['quantity'];
+                        form.elements['unit'].value = itemData['unit'];
+                    }
+
+                    modal.style.display = "flex"; // Use flex for better centering as per modals.css
+                    form.querySelector('input, select')?.focus();
+                } else {
+                    displayGlobalMessage('error', 'ไม่สามารถดึงข้อมูลได้: ' + (data.error || 'ไม่ทราบสาเหตุ'));
+                }
+            })
+            .catch(error => displayGlobalMessage('error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message));
+    };
+
+    window.closeModal = function(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.style.display = "none";
+    };
+
+    function submitModalForm(formElement) {
+        const formData = new FormData(formElement);
+        const modalId = formElement.closest('.modal').id;
+        const itemType = formData.get('action').replace('update_', '');
+
+        fetch('admin_ajax_data_handler.php', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal(modalId);
+                    displayGlobalMessage('success', data.message || 'บันทึกข้อมูลเรียบร้อย!');
+                    if (data.data) {
+                        updateTableRow(itemType, data.data);
+                    }
+                } else {
+                    displayGlobalMessage('error', 'เกิดข้อผิดพลาด: ' + (data.error || 'ไม่สามารถบันทึกข้อมูลได้'), modalId);
+                }
             });
+    }
+
+    document.querySelectorAll('.modal form').forEach(form => {
+        form.addEventListener('submit', function(e) { e.preventDefault(); submitModalForm(this); });
+    });
+
+    // --- 5. Dynamic Table Row Update & Deletion (UPDATED SECTION) ---
+    function updateTableRow(type, data) {
+        const idField = `${type}_id`;
+        const rowId = `${type}-row-${data[idField]}`;
+        const row = document.getElementById(rowId);
+        if (!row) return;
+
+        // Update data-fields
+        row.querySelectorAll('td[data-field]').forEach(cell => {
+            const field = cell.getAttribute('data-field');
+            
+            // Handle name mapping differences
+            let dataKey = field;
+            if (type === 'material' && field === 'price') dataKey = 'price_per_unit';
+            if (type === 'option' && field === 'category') dataKey = 'option_category';
+            // --- ADDED: Handle stock-specific fields ---
+            if (type === 'stock') {
+                // Map table cell `data-field` to the data object key
+                const stockFieldMap = {
+                    'product_type': 'product_type',
+                    'product_name': 'product_name',
+                    'quantity': 'quantity',
+                    'unit': 'unit'
+                };
+                if (stockFieldMap[field]) {
+                     dataKey = stockFieldMap[field];
+                }
+            }
+            
+            let newValue = data[dataKey] || '';
+            
+            if (['value', 'price', 'price_per_unit', 'option_price'].includes(field)) {
+                 newValue = formatNumber(newValue);
+            }
+            
+            cell.textContent = htmlspecialchars(String(newValue));
+        });
+        
+        row.style.backgroundColor = '#d4edda';
+        setTimeout(() => { row.style.backgroundColor = ''; }, 2000);
+    }
+
+    window.handleDeleteClick = function(type, id, name) {
+        if (confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ '${name}'? การกระทำนี้ไม่สามารถย้อนกลับได้`)) {
+            const formData = new FormData();
+            formData.append('action', `delete_${type}`);
+            formData.append('id', id);
+
+            fetch('admin_ajax_data_handler.php', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayGlobalMessage('success', data.message);
+                        const row = document.getElementById(`${type}-row-${id}`);
+                        if (row) {
+                            row.style.opacity = '0';
+                            setTimeout(() => {
+                                row.remove();
+                                // Re-filter and re-paginate after deletion
+                                applyCombinedFilters(); 
+                            }, 500);
+                        }
+                    } else {
+                        displayGlobalMessage('error', data.error);
+                    }
+                });
+        }
+    };
+    
+    // --- 6. Stock Specific Logic ---
+    window.handleStockUpdate = function(stockId, buttonElement) {
+        const row = buttonElement.closest('tr');
+        const input = row.querySelector('.stock-quantity-input');
+        const newQuantity = input.value;
+
+        const formData = new FormData();
+        formData.append('action', 'update_stock_quantity');
+        formData.append('stock_id', stockId);
+        formData.append('quantity', newQuantity);
+
+        fetch('admin_ajax_data_handler.php', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayGlobalMessage('success', data.message || 'อัปเดตสต็อกเรียบร้อย!');
+                    input.setAttribute('data-initial-value', newQuantity);
+                    row.classList.remove('changed');
+                    buttonElement.style.visibility = 'hidden';
+                    buttonElement.style.opacity = '0';
+                } else {
+                    displayGlobalMessage('error', data.error || 'เกิดข้อผิดพลาด');
+                }
+            });
+    };
+
+    function setupStockControls() {
+        document.querySelectorAll('.stock-quantity-input').forEach(input => {
+            const row = input.closest('tr');
+            const saveButton = row.querySelector('.btn-stock-save');
+            if(row && saveButton){
+                input.addEventListener('input', () => {
+                    const isChanged = input.value !== input.getAttribute('data-initial-value');
+                    row.classList.toggle('changed', isChanged);
+                    saveButton.style.visibility = isChanged ? 'visible' : 'hidden';
+                    saveButton.style.opacity = isChanged ? '1' : '0';
+                });
+            }
+        });
+    }
+
+    // --- 7. Display Toggles ---
+    document.querySelectorAll('.rule-display-toggle, .material-display-toggle, .option-display-toggle').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const type = this.className.split(' ')[1].replace('-display-toggle', '');
+            const id = this.dataset[`${type}Id`];
+            const visible = this.checked ? 1 : 0;
+            
+            fetch('admin_ajax_data_handler.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `action=update_display_status&type=${type}&id=${id}&visible=${visible}`
+            }).then(res => res.json()).then(data => {
+                if(!data.success) {
+                    displayGlobalMessage('error', data.error || 'Update failed');
+                    this.checked = !this.checked; // Revert on failure
+                }
+            });
+        });
+    });
+
+    // --- 8. Pagination & Filtering Logic ---
+    const tableSearchConfigs = {
+        'rulesTable': { individualInputId: 'ruleSearch', searchCols: [1, 3] },
+        'materialsTable': { individualInputId: 'materialSearch', searchCols: [1, 2, 4] },
+        'optionsTable': { individualInputId: 'optionSearch', searchCols: [1, 3] },
+        'stockManagementTable': {
+            individualInputId: 'stockSearch',
+            searchCols: [2, 4],
+            typeFilterDropdownId: 'stockTypeFilter',
+            typeColumnIndex: 1
         }
     };
 
-    const rowsPerPageRules = 5;
-    const rowsPerPageMaterials = 10; // Changed from 5 to 10 as per admin_backup.php
-    const rowsPerPageOptions = 5;
+    function initPagination(tableId, rowsPerPage) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        if (!tbody) return;
 
-    if (document.getElementById('rulesTable')) initPagination('rulesTable', rowsPerPageRules);
-    if (document.getElementById('materialsTable')) initPagination('materialsTable', rowsPerPageMaterials);
-    if (document.getElementById('optionsTable')) initPagination('optionsTable', rowsPerPageOptions);
+        paginatedTables[tableId] = {
+            rowsPerPage: rowsPerPage,
+            currentPage: 1,
+            originalRows: Array.from(tbody.querySelectorAll('tr')),
+            filteredRows: Array.from(tbody.querySelectorAll('tr'))
+        };
+    }
 
-    document.getElementById('ruleSearch')?.addEventListener('keyup', (event) => filterTable(event.target.id, 'rulesTable', 1));
-    document.getElementById('materialSearch')?.addEventListener('keyup', (event) => filterTable(event.target.id, 'materialsTable', 1, 2));
-    document.getElementById('optionSearch')?.addEventListener('keyup', (event) => filterTable(event.target.id, 'optionsTable', 1));
+    function showPage(tableId, page) {
+        const state = paginatedTables[tableId];
+        if (!state) return;
 
-     setTimeout(() => {
-        const globalMessages = document.getElementById('globalMessages');
-        if(globalMessages) {
-            const successMsg = globalMessages.querySelector('.message.success');
-            if (successMsg) successMsg.style.display = 'none';
+        const rows = state.filteredRows;
+        const totalRows = rows.length;
+        const rowsPerPage = state.rowsPerPage;
+        const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+        state.currentPage = Math.max(1, Math.min(page, totalPages));
+
+        state.originalRows.forEach(row => row.style.display = 'none');
+        const startIndex = (state.currentPage - 1) * rowsPerPage;
+        const endIndex = startIndex + rowsPerPage;
+        rows.slice(startIndex, endIndex).forEach(row => row.style.display = '');
+        
+        updatePaginationControls(tableId);
+        updateNoDataRowVisibility(tableId);
+    }
+
+    function updatePaginationControls(tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const state = paginatedTables[tableId];
+        if (!state) return;
+        
+        const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage) || 1;
+        
+        let pagDiv = table.closest('.table-responsive').querySelector('.pagination');
+        if (!pagDiv) {
+            pagDiv = document.createElement('div');
+            pagDiv.className = 'pagination';
+            table.closest('.table-responsive').appendChild(pagDiv);
         }
-    }, 5000);
+        pagDiv.innerHTML = '';
+        if (totalPages <= 1) { pagDiv.style.display = 'none'; return; }
+        
+        pagDiv.style.display = 'flex';
+        
+        const createButton = (text, pageNum, isActive = false, isDisabled = false) => {
+            const btn = document.createElement('button');
+            btn.className = 'pagination-btn' + (isActive ? ' active' : '');
+            btn.textContent = text;
+            btn.onclick = () => showPage(tableId, pageNum);
+            btn.disabled = isDisabled;
+            return btn;
+        };
+
+        pagDiv.appendChild(createButton('<', state.currentPage - 1, false, state.currentPage === 1));
+        
+        // Simplified page number display
+        let pagesToShow = [1, state.currentPage, totalPages].filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b);
+        if (state.currentPage > 2) pagesToShow.splice(1, 0, '...');
+        if (state.currentPage < totalPages - 1) pagesToShow.splice(pagesToShow.length - 1, 0, '...');
+        
+        pagesToShow.forEach(p => {
+            if(p === '...') {
+                const span = document.createElement('span');
+                span.textContent = '...';
+                span.className = 'pagination-ellipsis';
+                pagDiv.appendChild(span);
+            } else {
+                 pagDiv.appendChild(createButton(p, p, p === state.currentPage));
+            }
+        });
+        
+        pagDiv.appendChild(createButton('>', state.currentPage + 1, false, state.currentPage === totalPages));
+    }
+
+    function applyCombinedFilters() {
+        const globalSearchTerm = document.getElementById('globalSearch')?.value.toUpperCase() || '';
+        for (const tableId in tableSearchConfigs) {
+            const config = tableSearchConfigs[tableId];
+            const state = paginatedTables[tableId];
+            if (!state) continue;
+
+            const individualSearchTerm = document.getElementById(config.individualInputId)?.value.toUpperCase() || '';
+            const typeFilterValue = document.getElementById(config.typeFilterDropdownId)?.value.toUpperCase() || '';
+            
+            state.filteredRows = state.originalRows.filter(row => {
+                if (row.cells.length < 2) return false; // Skip no-data rows
+
+                const matchesIndividual = !individualSearchTerm || config.searchCols.some(colIdx => 
+                    row.cells[colIdx]?.textContent.toUpperCase().includes(individualSearchTerm)
+                );
+
+                const matchesGlobal = !globalSearchTerm || Array.from(row.cells).some(cell => 
+                    cell.textContent.toUpperCase().includes(globalSearchTerm)
+                );
+                
+                const matchesType = !typeFilterValue || (row.cells[config.typeColumnIndex]?.textContent.toUpperCase() === typeFilterValue);
+
+                return matchesIndividual && matchesGlobal && matchesType;
+            });
+            showPage(tableId, 1);
+        }
+    }
+
+    function updateNoDataRowVisibility(tableId) {
+        const table = document.getElementById(tableId);
+        const tbody = table?.querySelector("tbody");
+        if(!tbody) return;
+        const state = paginatedTables[tableId];
+
+        let noDataRow = tbody.querySelector('tr.no-data-row');
+        const hasVisibleData = state && state.filteredRows.length > 0;
+        
+        if (!hasVisibleData) {
+            if (!noDataRow) {
+                noDataRow = tbody.insertRow();
+                noDataRow.className = 'no-data-row';
+                const cell = noDataRow.insertCell();
+                cell.colSpan = table.querySelector('thead th')?.length || 5;
+                cell.textContent = "ไม่มีข้อมูลที่ตรงกับเงื่อนไข";
+                cell.style.textAlign = "center";
+            }
+            noDataRow.style.display = '';
+        } else if (noDataRow) {
+            noDataRow.style.display = 'none';
+        }
+    }
+    
+    // --- 9. Global Message & Initialization ---
+    function displayGlobalMessage(type, text) {
+        const container = document.getElementById('globalMessages');
+        if (!container) return;
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        message.textContent = text;
+        container.innerHTML = '';
+        container.appendChild(message);
+        setTimeout(() => {
+            message.style.opacity = '0';
+            setTimeout(() => message.remove(), 500);
+        }, 5000);
+    }
+    
+    // Setup event listeners for all search inputs
+    document.getElementById('globalSearch')?.addEventListener('keyup', applyCombinedFilters);
+    for (const tableId in tableSearchConfigs) {
+        const config = tableSearchConfigs[tableId];
+        document.getElementById(config.individualInputId)?.addEventListener('keyup', applyCombinedFilters);
+        document.getElementById(config.typeFilterDropdownId)?.addEventListener('change', applyCombinedFilters);
+    }
+
+    // Initialize all components
+    initPagination('rulesTable', 5);
+    initPagination('materialsTable', 5);
+    initPagination('optionsTable', 5);
+    initPagination('stockManagementTable', 20);
+    setupStockControls();
+    activateSectionFromHash(); // Activate section based on URL hash
+    applyCombinedFilters(); // Apply initial filter state
 });
+
+// Helper: unique & cleaned array (de-dupe, non-empty, non-numeric)
+function uniqueClean(list){
+  const s=new Set();
+  return (list||[]).map(v=>(v??'').toString().trim()).filter(v=>v && !/^\d+(\.\d+)?$/.test(v) && !s.has(v) && (s.add(v),1));
+}
+
+const editOptionForm = document.getElementById('editOptionForm');
+if (editOptionForm) {
+  editOptionForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    const fd = new FormData(editOptionForm);
+    fetch('admin_ajax_data_handler.php', { method:'POST', body: fd })
+      .then(r=>r.json())
+      .then(res => {
+        if(!res || !res.success){ alert(res && res.error || 'บันทึกไม่สำเร็จ'); return; }
+        
+        // --- Update table row using server data (fallback to form fields) ---
+        try {
+          const fd = new FormData(editOptionForm);
+          const id = fd.get('optionId_id') || fd.get('material_id') || fd.get('option_id');
+          const row = findRowById('optionsTable', id, 'optionId');
+          const d = (res && res.data) ? res.data : {};
+          
+if (row && row.children) {
+  const name  = (d.option_name != null ? d.option_name : (document.getElementById('edit_option_name')?.value || ''));
+  const price = (d.option_price != null ? d.option_price : (document.getElementById('edit_option_price')?.value || ''));
+  const cat   = (d.category != null ? d.category : (document.getElementById('edit_option_category')?.value || ''));
+  row.children[1].textContent = name || '-';
+  row.children[2].textContent = (typeof formatNumber==='function'?formatNumber(price):price);
+  row.children[3].textContent = cat  || '-';
+}
+
+        } catch (e) {}
+        // Update the options table row (assume columns: [ID, ชื่อ, ราคา, หมวดหมู่, ...])
+        try {
+          const id = fd.get('option_id');
+          const row = document.querySelector(`tr[data-option-id="${id}"]`);
+          const priceVal = document.getElementById('edit_option_price').value;
+          if (row && row.children) {
+            row.children[1].textContent = document.getElementById('edit_option_name').value;
+            row.children[2].textContent = (typeof formatNumber==='function'?formatNumber(priceVal):priceVal);
+            row.children[3].textContent = document.getElementById('edit_option_category').value;
+          }
+        } catch(e) {}
+        if (typeof closeModal==='function') closeModal('editOptionModal');
+        alert(res.message || 'อัปเดตสำเร็จ');
+      })
+      .catch(()=> alert('เกิดข้อผิดพลาดระหว่างเชื่อมต่อเซิร์ฟเวอร์'));
+  });
+}
+
+
+// === Helper: find table row by ID (works with data-* or first cell) ===
+function findRowById(tableId, id, datasetKey) {
+  const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+  for (const tr of rows) {
+    if (datasetKey && tr.dataset && tr.dataset[datasetKey] && String(tr.dataset[datasetKey]) === String(id)) return tr;
+    const firstCell = tr.children && tr.children[0];
+    if (firstCell && (firstCell.textContent||'').trim() === String(id)) return tr;
+  }
+  return null;
+}

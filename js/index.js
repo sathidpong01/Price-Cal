@@ -1,76 +1,236 @@
-// js/index.js (เวอร์ชันล่าสุด)
+// js/index.js (Optimized with AppConfig)
 
-// --- ตัวแปรสำหรับเก็บผลลัพธ์ล่าสุด ---
+/**
+ * Application Configuration & Constants
+ * รวมค่าคงที่และการตั้งค่าต่างๆ ไว้ที่เดียวเพื่อให้แก้ไขง่าย
+ */
+const AppConfig = {
+    debounceDelay: 400,
+    letterCalculation: {
+        widthRatio: 0.8, // อัตราส่วนความกว้างต่อความสูง
+        inchToCm: 2.54   // 1 นิ้ว = 2.54 ซม.
+    },
+    thaiVowels: "่้๊๋ัิีึืุู็์ะ", // สระและวรรณยุกต์ไทยที่นับเป็น 0.5 ตัวอักษร
+    selectors: {
+        forms: ["stickerForm", "letterForm", "lightboxForm", "vinylForm"],
+        results: {
+            sticker: "sticker_result",
+            letter: "letter_result",
+            lightbox: "lightbox_result",
+            vinyl: "vinyl_result"
+        }
+    }
+};
+
+/**
+ * Debounce Function
+ * ลดการเรียกฟังก์ชันซ้ำๆ ขณะพิมพ์
+ */
+function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+/**
+ * Helper: Count Characters for Pricing
+ * นับจำนวนตัวอักษร (สระ/วรรณยุกต์ไทยนับ 0.5)
+ */
+function countCharacters(text) {
+    if (!text) return 0;
+    const cleanedText = text.trim().replace(/\s+/g, " ");
+    if (!cleanedText) return 0;
+    
+    let totalCount = 0;
+    for (let char of cleanedText) {
+        if (char === " ") continue;
+        if (AppConfig.thaiVowels.includes(char)) {
+            totalCount += 0.5;
+        } else {
+            totalCount += 1;
+        }
+    }
+    return totalCount;
+}
+
+/**
+ * Helper: HTML Special Chars
+ * ป้องกัน XSS
+ */
+function htmlspecialchars(str) {
+    if (typeof str !== "string") return "";
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return str.replace(/[&<>"']/g, m => map[m]);
+}
+
+/**
+ * Helper: Format Number
+ * จัดรูปแบบตัวเลขเป็นทศนิยม 2 ตำแหน่ง
+ */
+function formatNumber(num) {
+    const n = parseFloat(num);
+    return isNaN(n) ? "0.00" : n.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// เก็บผลลัพธ์ล่าสุดเพื่อใช้ในการ Copy
 let currentResults = {
     sticker: null,
     letter: null,
     lightbox: null,
-    vinyl: null // เพิ่มสำหรับผ้าไวนิล
+    vinyl: null,
 };
 
-function htmlspecialchars(str) {
-    if (typeof str !== 'string') return '';
-    return str.replace(/[&<>"']/g, function (match) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[match];
-    });
-}
+/**
+ * Display Results
+ * แสดงผลลัพธ์การคำนวณในหน้าเว็บ
+ */
+function displayResults(calculatorType, data, error) {
+    const resultDivId = `${calculatorType}_result`;
+    const resultDiv = document.getElementById(resultDivId);
+    if (!resultDiv) return;
 
-function formatNumber(num) {
-    try {
-        let parsedNum = parseFloat(num);
-        if (isNaN(parsedNum)) return '0.00';
-        return parsedNum.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    } catch(e) { return '0.00'; }
-}
+    resultDiv.innerHTML = "";
+    resultDiv.className = "";
+    currentResults[calculatorType] = null;
 
-function fallbackCopyTextToClipboard(text, buttonElement) {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            showCopyFeedback(buttonElement);
-        } else {
-            console.error('Fallback: Unable to copy');
-            alert('ไม่สามารถคัดลอกราคาได้ (Fallback)');
+    if (error) {
+        resultDiv.innerHTML = `<p class="error">${htmlspecialchars(error)}</p>`;
+        resultDiv.className = "result-details";
+        return;
+    }
+
+    if (data && data.success && data.results) {
+        const r = data.results;
+        currentResults[calculatorType] = r;
+        resultDiv.className = `result-details ${calculatorType}`;
+        
+        const titles = {
+            sticker: 'สติ๊กเกอร์',
+            letter: 'ตัวอักษร',
+            lightbox: 'กล่องไฟ',
+            vinyl: 'ผ้าไวนิล'
+        };
+        const title = titles[calculatorType] || '';
+
+        let html = `<h3>รายละเอียดราคา (${htmlspecialchars(title)}):</h3><ul style="list-style: none; padding: 0;">`;
+
+        // --- Logic การแสดงผลแยกตามประเภท ---
+        if (calculatorType === "sticker") {
+            html += `<li>ขนาด: <strong>${htmlspecialchars(String(r.width))} x ${htmlspecialchars(String(r.height))}</strong> ซม.</li>`;
+            html += `<li>วัสดุ: <strong>${htmlspecialchars(r.sticker_material_name)}</strong></li>`;
+            html += `<li class="sub-item-detail">ค่าสติ๊กเกอร์: <span class="sub-item-price">${formatNumber(r.sticker_price)} บาท</span></li>`;
+            if (r.sheet_price > 0) {
+                html += `<li class="sub-item-detail">ค่าวัสดุแผ่น (${htmlspecialchars(r.sheet_name)}): <span class="sub-item-price">${formatNumber(r.sheet_price)} บาท</span></li>`;
+            }
+        } else if (calculatorType === "letter") {
+            // ใช้ค่าคงที่จาก AppConfig ในการคำนวณขนาดประมาณการ
+            const text = document.getElementById('letter_text').value;
+            const heightInches = parseFloat(r.height);
+            const charCount = countCharacters(text);
+            
+            const widthInches = (charCount * heightInches * AppConfig.letterCalculation.widthRatio).toFixed(1);
+            const widthCm = (widthInches * AppConfig.letterCalculation.inchToCm).toFixed(1);
+            const heightCm = (heightInches * AppConfig.letterCalculation.inchToCm).toFixed(1);
+            
+            html += `<li>ข้อมูล: <strong>${htmlspecialchars(String(r.quantity))}</strong> ตัว</li>`;
+            html += `<li>ขนาดโดยประมาณ: <strong>${widthCm} x ${heightCm}</strong> ซม.</li>`;
+            html += `<li>วัสดุ: <strong>${htmlspecialchars(r.material_name)}</strong> (${formatNumber(r.material_price_pu)} ${htmlspecialchars(r.material_unit)})</li>`;
+            html += `<li class="sub-item-detail">ค่าวัสดุ: <span class="sub-item-price">${formatNumber(r.base_price)} บาท</span></li>`;
+
+        } else if (calculatorType === "lightbox") {
+            html += `<li>รูปทรง: <strong>${htmlspecialchars(r.shape)}</strong> (${htmlspecialchars(r.type_name)})</li>`;
+            html += `<li>ขนาด: <strong>${htmlspecialchars(String(r.width))} x ${htmlspecialchars(String(r.height))}</strong> ซม.</li>`;
+            html += `<li class="sub-item-detail">ค่ากล่องไฟ: <span class="sub-item-price">${formatNumber(r.base_price)} บาท</span></li>`;
+
+        } else if (calculatorType === "vinyl") {
+            html += `<li>ขนาด: <strong>${htmlspecialchars(String(r.width))} x ${htmlspecialchars(String(r.height))}</strong> ซม.</li>`;
+            if (r.vinyl_material_name) {
+                html += `<li>ชนิดผ้า: <strong>${htmlspecialchars(r.vinyl_material_name)}</strong></li>`;
+            }
+            html += `<li class="sub-item-detail">ค่าผ้าไวนิล: <span class="sub-item-price">${formatNumber(r.vinyl_base_price)} บาท</span></li>`;
         }
-    } catch (err) {
-        console.error('Fallback: Error during copy', err);
-        alert('เกิดข้อผิดพลาดในการคัดลอก (Fallback)');
+
+        // --- แสดง Options เสริม ---
+        if (r.options && r.options.length > 0) {
+            let optHtml = '<li>ค่าออปชันเสริม: <ul style="list-style: none; padding-left: 20px;">';
+            r.options.forEach(opt => {
+                optHtml += `<li>- ${htmlspecialchars(opt.name)}: ${formatNumber(opt.price)} บาท</li>`;
+            });
+            optHtml += `</ul></li>`;
+            html += optHtml;
+        }
+
+        // --- แสดงค่าเดินทาง ---
+        if (r.travel_price > 0) {
+            html += `<li>ค่าเดินทาง (${htmlspecialchars(r.travel_desc)}): <strong>${formatNumber(r.travel_price)}</strong> บาท</li>`;
+        }
+
+        // --- ปุ่ม Copy และราคารวม ---
+        const copyButton = `<button type="button" class="btn-action btn-copy" data-type="${calculatorType}">คัดลอก</button>`;
+        html += `<li class="total-price"><strong>ราคารวมโดยประมาณ:</strong><strong class="price-value">${formatNumber(r.total_price)} บาท</strong> ${copyButton}</li>`;
+        html += "</ul>";
+        
+        resultDiv.innerHTML = html;
+
+    } else if (data && data.error) {
+        // ซ่อน Error ถ้าเป็นแค่คำเตือน "กรุณากรอก..."
+        if (data.error.includes("กรุณา")) {
+            resultDiv.innerHTML = "";
+        } else {
+            resultDiv.innerHTML = `<p class="error">${htmlspecialchars(data.error)}</p>`;
+            resultDiv.className = "result-details";
+        }
     }
-    document.body.removeChild(textArea);
 }
 
-function showCopyFeedback(buttonElement) {
-    const originalText = buttonElement.textContent;
-    buttonElement.textContent = 'คัดลอกแล้ว!';
-    buttonElement.classList.add('copied');
-    setTimeout(() => {
-        buttonElement.textContent = originalText;
-        buttonElement.classList.remove('copied');
-    }, 1500);
-}
+/**
+ * Handle Form Calculation
+ * ส่งข้อมูลไปยัง Server เพื่อคำนวณ
+ */
+function handleFormCalculation(formId, calculatorType) {
+    const form = document.getElementById(formId);
+    if (!form) return;
 
-function copyTextToClipboard(text, buttonElement) {
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => {
-            showCopyFeedback(buttonElement);
-        }).catch(err => {
-            console.error('Clipboard API failed, trying fallback:', err);
-            fallbackCopyTextToClipboard(text, buttonElement);
+    const formData = new FormData(form);
+    formData.append("calculator_type", calculatorType);
+
+    const resultDivId = `${calculatorType}_result`;
+    const resultDiv = document.getElementById(resultDivId);
+    
+    // Simple Client-side Validation
+    let requiredFieldsFilled = true;
+    if (calculatorType === 'sticker') {
+        if (!formData.get('st_width') || !formData.get('st_height') || !formData.get('st_material_type')) requiredFieldsFilled = false;
+    } else if (calculatorType === 'letter') {
+        const qty = parseFloat(formData.get('letter_quantity'));
+        if (!formData.get('letter_height') || !formData.get('letter_quantity') || !formData.get('material') || qty <= 0) requiredFieldsFilled = false;
+    }
+    
+    if (!requiredFieldsFilled) {
+        if(resultDiv) resultDiv.innerHTML = "";
+        return;
+    }
+
+    if (resultDiv) {
+        resultDiv.innerHTML = '<div class="spinner-container"><div class="spinner"></div><p>กำลังคำนวณ...</p></div>';
+        resultDiv.className = "result-details";
+    }
+
+    fetch("calculate_ajax.php", { method: "POST", body: formData })
+        .then(response => response.json())
+        .then(data => { displayResults(calculatorType, data, null); })
+        .catch(error => {
+            console.error("Error:", error);
+            displayResults(calculatorType, null, "เกิดข้อผิดพลาดในการเชื่อมต่อ");
         });
-    } else {
-        console.warn('Clipboard API not available or not secure, using fallback.');
-        fallbackCopyTextToClipboard(text, buttonElement);
-    }
 }
 
+/**
+ * Build Copy Text
+ * สร้างข้อความสำหรับ Copy to Clipboard
+ */
 function buildCopyText(type) {
     const r = currentResults[type];
     if (!r) return "ไม่มีข้อมูลสำหรับคัดลอก";
@@ -80,34 +240,30 @@ function buildCopyText(type) {
 
     if (r.options && r.options.length > 0) {
         optionsText += "ออปชันเสริม:\n";
-        r.options.forEach(opt => {
+        r.options.forEach((opt) => {
             optionsText += `- ${htmlspecialchars(opt.name)} (${formatNumber(opt.price)} บาท)\n`;
         });
     }
 
-    if (type === 'sticker') {
+    if (type === "sticker") {
         text += `ประเภท: สติ๊กเกอร์\n`;
         text += `ขนาด: ${htmlspecialchars(String(r.width))} x ${htmlspecialchars(String(r.height))} ซม.\n`;
         text += `จำนวน: ${r.quantity} แผ่น\n`;
-        if (r.sheet_name) {
-            text += `วัสดุแผ่น: ${htmlspecialchars(r.sheet_name)}\n`;
-        }
-    } else if (type === 'letter') {
+        if (r.sheet_name) text += `วัสดุแผ่น: ${htmlspecialchars(r.sheet_name)}\n`;
+    } else if (type === "letter") {
         text += `ประเภท: ตัวอักษร\n`;
         text += `ขนาด: สูง ${htmlspecialchars(String(r.height))} นิ้ว\n`;
         text += `จำนวน: ${r.quantity} ตัว\n`;
         text += `วัสดุ: ${htmlspecialchars(r.material_name)}\n`;
-    } else if (type === 'lightbox') {
+    } else if (type === "lightbox") {
         text += `ประเภท: กล่องไฟ (${htmlspecialchars(r.type_name)})\n`;
         text += `รูปทรง: ${htmlspecialchars(r.shape)}\n`;
         text += `ขนาด: ${htmlspecialchars(String(r.width))} x ${htmlspecialchars(String(r.height))} ซม.\n`;
-    } else if (type === 'vinyl') { // เพิ่มสำหรับผ้าไวนิล
+    } else if (type === "vinyl") {
         text += `ประเภท: ผ้าไวนิล\n`;
         text += `ขนาด: ${htmlspecialchars(String(r.width))} x ${htmlspecialchars(String(r.height))} ซม.\n`;
         text += `จำนวน: ${r.quantity} ผืน\n`;
-        if (r.vinyl_material_name) {
-            text += `ชนิดผ้า: ${htmlspecialchars(r.vinyl_material_name)}\n`;
-        }
+        if (r.vinyl_material_name) text += `ชนิดผ้า: ${htmlspecialchars(r.vinyl_material_name)}\n`;
     }
 
     text += optionsText;
@@ -120,215 +276,189 @@ function buildCopyText(type) {
     return text;
 }
 
-function clearForm(formId, resultId) {
-    const form = document.getElementById(formId);
-    const resultDiv = document.getElementById(resultId);
-    if (form) {
-        form.reset();
-        const travelSelect = form.querySelector('select[id$="_travel_type"]'); // ใช้ $ เพื่อจับคู่ travel_type ที่ลงท้าย
-        if(travelSelect) travelSelect.dispatchEvent(new Event('change'));
-
-        // เคลียร์ค่า input ที่อาจจะไม่ reset ด้วย form.reset() (ถ้ามี)
-        const distanceInput = form.querySelector('input[id$="_distance_km"]');
-        if (distanceInput) distanceInput.value = '';
-
+/**
+ * Clipboard Functions
+ */
+function fallbackCopyTextToClipboard(text, buttonElement) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed"; // Avoid scrolling to bottom
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        const successful = document.execCommand("copy");
+        if (successful) showCopyFeedback(buttonElement);
+    } catch (err) {
+        console.error("Fallback: Error during copy", err);
     }
-    if (resultDiv) {
-        resultDiv.innerHTML = '';
-        resultDiv.className = '';
-    }
-    const calculatorType = formId.replace('Form','').toLowerCase();
-    currentResults[calculatorType] = null; // เคลียร์ข้อมูลที่เก็บไว้ด้วย
+    document.body.removeChild(textArea);
 }
 
-function displayResults(calculatorType, data, error) {
-    let resultDivId = '';
-    let resultClass = '';
-    let title = '';
-
-    if (calculatorType === 'sticker') { resultDivId = 'sticker_result'; resultClass = 'sticker'; title = 'สติ๊กเกอร์'; }
-    else if (calculatorType === 'letter') { resultDivId = 'letter_result'; resultClass = 'letter'; title = 'ตัวอักษร'; }
-    else if (calculatorType === 'lightbox') { resultDivId = 'lightbox_result'; resultClass = 'lightbox'; title = 'กล่องไฟ'; }
-    else if (calculatorType === 'vinyl') { resultDivId = 'vinyl_result'; resultClass = 'vinyl'; title = 'ผ้าไวนิล'; } // เพิ่ม
-    else { return; }
-
-    const resultDiv = document.getElementById(resultDivId);
-    if (!resultDiv) return;
-    resultDiv.innerHTML = '';
-    resultDiv.className = '';
-    currentResults[calculatorType] = null;
-
-    if (error) {
-        resultDiv.innerHTML = `<p class="error">${htmlspecialchars(error)}</p>`;
-        resultDiv.className = 'result-details';
-        return;
-    }
-
-    if (data && data.success && data.results) {
-        const r = data.results;
-        currentResults[calculatorType] = r;
-        resultDiv.className = `result-details ${resultClass}`; // เพิ่ม class ตามประเภท
-        let html = `<h3>รายละเอียดราคา (${htmlspecialchars(title)}):</h3><ul style="list-style: none; padding: 0;">`;
-
-        if(calculatorType === 'sticker'){
-            html += `<li>ขนาด: <strong>${htmlspecialchars(String(r.width))} x ${htmlspecialchars(String(r.height))}</strong> ซม.</li>`;
-            html += `<li>พื้นที่คำนวณ: <strong>${formatNumber(r.area)}</strong> ตร.ม.</li>`;
-            html += `<li>จำนวน: <strong>${r.quantity}</strong> แผ่น</li>`;
-            html += `<li>ราคาต่อแผ่น: <strong class="main-item-price">${formatNumber(r.price_per_sheet)}</strong> บาท</li>`;
-            html += `<li class="sub-item-detail">ค่าสติ๊กเกอร์: <span class="sub-item-price">${formatNumber(r.sticker_price)} บาท</span></li>`;
-            if (r.sheet_price > 0) {
-                html += `<li class="sub-item-detail">ค่าวัสดุแผ่น (${htmlspecialchars(r.sheet_name)}): <span class="sub-item-price">${formatNumber(r.sheet_price)} บาท</span></li>`;
-            }
-        } else if(calculatorType === 'letter'){
-            html += `<li>ข้อมูล: <strong>${htmlspecialchars(String(r.quantity))}</strong> ตัว, สูง <strong>${htmlspecialchars(String(r.height))}</strong> นิ้ว</li>`;
-            html += `<li>วัสดุ: <strong>${htmlspecialchars(r.material_name)}</strong> (${formatNumber(r.material_price_pu)} ${htmlspecialchars(r.material_unit)})</li>`;
-            html += `<li>ค่าวัสดุ: <strong class="main-item-price">${formatNumber(r.base_price)}</strong> บาท</li>`;
-        } else if(calculatorType === 'lightbox'){
-            html += `<li>รูปทรง: <strong>${htmlspecialchars(r.shape)}</strong> (${htmlspecialchars(r.type_name)})</li>`;
-            html += `<li>ขนาด: <strong>${htmlspecialchars(String(r.width))} x ${htmlspecialchars(String(r.height))}</strong> ซม.</li>`;
-            html += `<li>พื้นที่คำนวณ: <strong>${formatNumber(r.area)}</strong> ตร.ม.</li>`;
-            html += `<li>ค่ากล่องไฟ: <strong class="main-item-price">${formatNumber(r.base_price)}</strong> บาท</li>`;
-        } else if(calculatorType === 'vinyl'){
-            html += `<li>ขนาด: <strong>${htmlspecialchars(String(r.width))} x ${htmlspecialchars(String(r.height))}</strong> ซม.</li>`;
-            html += `<li>พื้นที่คำนวณ: <strong>${formatNumber(r.area)}</strong> ตร.ม.</li>`;
-            html += `<li>จำนวน: <strong>${r.quantity}</strong> ผืน</li>`;
-            if (r.vinyl_material_name) {
-                 html += `<li>ชนิดผ้า: <strong>${htmlspecialchars(r.vinyl_material_name)}</strong> (${formatNumber(r.vinyl_material_price_sqm)} บาท/ตร.ม.)</li>`;
-            }
-            html += `<li>ค่าผ้าไวนิล: <strong class="main-item-price">${formatNumber(r.vinyl_base_price)}</strong> บาท</li>`;
-        }
-
-        if (r.options && r.options.length > 0) {
-            html += '<li>ค่าออปชันเสริม: <ul style="list-style: none; padding-left: 20px;">';
-            let optTotal = 0; r.options.forEach(opt => { html += `<li>- ${htmlspecialchars(opt.name)}: ${formatNumber(opt.price)} บาท</li>`; optTotal += parseFloat(opt.price); });
-            html += `<li>&nbsp;&nbsp;<strong>รวมค่าออปชัน: ${formatNumber(optTotal)} บาท</strong></li></ul></li>`;
-        }
-        if (r.travel_price > 0) { html += `<li>ค่าเดินทาง (${htmlspecialchars(r.travel_desc)}): <strong>${formatNumber(r.travel_price)}</strong> บาท</li>`; }
-        if (data.warning && data.warning !== "") { html += `<li><em style="color:orange;">คำแนะนำ: ${htmlspecialchars(data.warning)}</em></li>`;}
-
-        const copyButton = `<button type="button" class="btn-action btn-copy" data-type="${calculatorType}">คัดลอก</button>`;
-        const totalPrice = parseFloat(r.total_price);
-
-        let quantityUnit = 'ชิ้น';
-        if (calculatorType === 'sticker') quantityUnit = 'แผ่น';
-        else if (calculatorType === 'vinyl') quantityUnit = 'ผืน';
-        else if (calculatorType === 'letter') quantityUnit = 'ตัว';
-
-
-        if (['sticker', 'vinyl'].includes(calculatorType)) {
-             html += `<li class="total-price"><strong>ราคารวมโดยประมาณ (${r.quantity} ${quantityUnit}):</strong><strong class="price-value">${formatNumber(totalPrice)} บาท</strong> ${copyButton}</li>`;
-        } else if (calculatorType === 'letter' && r.quantity > 1) {
-             html += `<li class="total-price"><strong>ราคารวมโดยประมาณ (${r.quantity} ${quantityUnit}):</strong><strong class="price-value">${formatNumber(totalPrice)} บาท</strong> ${copyButton}</li>`;
-        }
-         else {
-            html += `<li class="total-price"><strong>ราคารวมโดยประมาณ:</strong><strong class="price-value">${formatNumber(totalPrice)} บาท</strong> ${copyButton}</li>`;
-        }
-        html += '</ul>';
-        resultDiv.innerHTML = html;
-    } else if (data && data.error) {
-         if (data.error !== "กรุณากรอก กว้าง x สูง ให้ถูกต้อง" &&
-            data.error !== "กรุณากรอก ความสูง (>0), จำนวน (>0) และเลือกวัสดุ" &&
-            data.error !== "กรุณากรอก กว้าง (>0), ยาว (>0) และเลือกประเภทกล่องไฟ" &&
-            data.error !== "กรุณากรอก กว้าง x สูง ให้ถูกต้อง (และเลือกชนิดผ้า ถ้ามี)" && // เพิ่มสำหรับ vinyl
-            data.error !== "ขนาดไม่ถูกต้อง (ต้อง > 0)" ) {
-                resultDiv.innerHTML = `<p class="error">${htmlspecialchars(data.error)}</p>`;
-                resultDiv.className = 'result-details';
-        }
-    }
+function showCopyFeedback(buttonElement) {
+    const originalText = buttonElement.textContent;
+    buttonElement.textContent = "คัดลอกแล้ว!";
+    buttonElement.classList.add("copied");
+    setTimeout(() => {
+        buttonElement.textContent = originalText;
+        buttonElement.classList.remove("copied");
+    }, 1500);
 }
 
-function handleFormCalculation(formId, calculatorType) {
-    console.log('handleFormCalculation called', formId, calculatorType);
-    const form = document.getElementById(formId);
-    if (!form) return;
-    const formData = new FormData(form);
-    formData.append('calculator_type', calculatorType);
-    let requiredFieldsFilled = true;
-
-    if(calculatorType === 'sticker'){
-        if(!formData.get('st_width') || !formData.get('st_height') || parseFloat(formData.get('st_width')) <= 0 || parseFloat(formData.get('st_height')) <= 0 ) requiredFieldsFilled = false;
-    } else if (calculatorType === 'letter') {
-        if(!formData.get('letter_height') || !formData.get('letter_quantity') || !formData.get('material') || parseFloat(formData.get('letter_height')) <= 0 || parseFloat(formData.get('letter_quantity')) <= 0) requiredFieldsFilled = false;
-    } else if (calculatorType === 'lightbox') {
-         if(!formData.get('lb_width') || !formData.get('lb_height') || !formData.get('lightbox_type') || parseFloat(formData.get('lb_width')) <= 0 || parseFloat(formData.get('lb_height')) <= 0) requiredFieldsFilled = false;
-    } else if (calculatorType === 'vinyl') { // เพิ่ม
-         if(!formData.get('vn_width') || !formData.get('vn_height') /* || !formData.get('vn_material_type') */ || parseFloat(formData.get('vn_width')) <= 0 || parseFloat(formData.get('vn_height')) <= 0) requiredFieldsFilled = false;
-    }
-
-    const resultDivId = calculatorType === 'sticker' ? 'sticker_result' :
-                        (calculatorType === 'letter' ? 'letter_result' :
-                        (calculatorType === 'lightbox' ? 'lightbox_result' :
-                        (calculatorType === 'vinyl' ? 'vinyl_result' : ''))); // เพิ่ม
-
-    const resultDiv = document.getElementById(resultDivId);
-    if (!requiredFieldsFilled) {
-        if (resultDiv) {
-            resultDiv.innerHTML = '';
-            resultDiv.className = '';
-        }
-        return;
-    }
-    if(resultDiv) {
-        resultDiv.innerHTML = '<div class="spinner-container"><div class="spinner"></div><p>กำลังคำนวณ...</p></div>';
-        resultDiv.className = 'result-details';
-    }
-    console.log('fetching calculate_ajax.php', Object.fromEntries(formData.entries()));
-    fetch('calculate_ajax.php', { method: 'POST', body: formData })
-    .then(response => { if (!response.ok) { throw new Error('Network error: ' + response.statusText + ' - ' + response.url); } return response.json(); })
-    .then(data => { displayResults(calculatorType, data, null); })
-    .catch(error => { console.error('Error:', error); displayResults(calculatorType, null, 'เกิดข้อผิดพลาดในการเชื่อมต่อ หรือการคำนวณ'); });
-}
-
-function setupTravelDropdown(selectId, sectionId, formIdToRecalculate, calcTypeToRecalculate) {
-    var selectElement = document.getElementById(selectId);
-    var sectionElement = document.getElementById(sectionId);
-    if (selectElement && sectionElement) {
-        selectElement.addEventListener('change', function() {
-            sectionElement.style.display = (this.value === 'out_city') ? 'block' : 'none';
-            handleFormCalculation(formIdToRecalculate, calcTypeToRecalculate);
+function copyTextToClipboard(text, buttonElement) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showCopyFeedback(buttonElement);
+        }).catch(() => {
+            fallbackCopyTextToClipboard(text, buttonElement);
         });
-        sectionElement.style.display = (selectElement.value === 'out_city') ? 'block' : 'none';
+    } else {
+        fallbackCopyTextToClipboard(text, buttonElement);
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    ['stickerForm', 'letterForm', 'lightboxForm', 'vinylForm'].forEach(formId => { // เพิ่ม 'vinylForm'
+/**
+ * DOM Content Loaded - Event Bindings
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // 1. Bind Calculation Events
+    const debouncedCalculation = debounce(handleFormCalculation, AppConfig.debounceDelay);
+
+    AppConfig.selectors.forms.forEach((formId) => {
         const form = document.getElementById(formId);
         if (form) {
-            const calculatorType = formId.replace('Form', '').toLowerCase();
-            form.querySelectorAll('input[type="text"], select').forEach(element => {
-                element.addEventListener('change', () => handleFormCalculation(formId, calculatorType));
-                element.addEventListener('keyup', () => handleFormCalculation(formId, calculatorType));
+            const calculatorType = formId.replace("Form", "").toLowerCase();
+
+            // Input Text/Number -> Debounce
+            form.querySelectorAll('input[type="text"], input[type="number"]').forEach((element) => {
+                element.addEventListener("keyup", () => debouncedCalculation(formId, calculatorType));
             });
-            form.querySelectorAll('input[type="checkbox"]').forEach(element => {
-                 element.addEventListener('change', () => handleFormCalculation(formId, calculatorType));
+
+            // Select/Checkbox/Radio -> Instant
+            form.querySelectorAll('select, input[type="checkbox"], input[type="radio"]').forEach((element) => {
+                element.addEventListener("change", () => handleFormCalculation(formId, calculatorType));
             });
         }
     });
 
-    setupTravelDropdown('st_travel_type', 'st_distance_section', 'stickerForm', 'sticker');
-    setupTravelDropdown('travel_type', 'lt_distance_section', 'letterForm', 'letter');
-    setupTravelDropdown('lb_travel_type', 'lb_distance_section', 'lightboxForm', 'lightbox');
-    setupTravelDropdown('vn_travel_type', 'vn_distance_section', 'vinylForm', 'vinyl'); // เพิ่ม
+    // 2. Setup Travel Dropdowns
+    const travelConfigs = [
+        { select: "st_travel_type", section: "st_distance_section" },
+        { select: "vn_travel_type", section: "vn_distance_section" },
+        { select: "travel_type", section: "lt_distance_section" },
+        { select: "lb_travel_type", section: "lb_distance_section" }
+    ];
+    travelConfigs.forEach(cfg => {
+        const select = document.getElementById(cfg.select);
+        const section = document.getElementById(cfg.section);
+        if (select && section) {
+            select.addEventListener("change", function() {
+                section.style.display = this.value === 'out_city' ? 'block' : 'none';
+            });
+        }
+    });
 
-    document.getElementById('st_distance_km')?.addEventListener('keyup', () => handleFormCalculation('stickerForm', 'sticker'));
-    document.getElementById('distance_km')?.addEventListener('keyup', () => handleFormCalculation('letterForm', 'letter'));
-    document.getElementById('lb_distance_km')?.addEventListener('keyup', () => handleFormCalculation('lightboxForm', 'lightbox'));
-    document.getElementById('vn_distance_km')?.addEventListener('keyup', () => handleFormCalculation('vinylForm', 'vinyl')); // เพิ่ม
+    // 3. Setup Letter Form Specifics
+    if (document.getElementById('letterForm')) {
+        const inputTypeText = document.getElementById("letter_input_type_text");
+        const inputTypeCount = document.getElementById("letter_input_type_count");
+        const letterTextInputGroup = document.getElementById("letter_text_input_group");
+        const letterTextarea = document.getElementById("letter_text");
+        const letterQuantityInput = document.getElementById("letter_quantity");
 
-    document.querySelector('.container').addEventListener('click', function(event) {
-        if (event.target.classList.contains('btn-copy')) {
-            const button = event.target;
-            const type = button.getAttribute('data-type');
-            if (type && currentResults[type]) {
-                const textToCopy = buildCopyText(type);
-                copyTextToClipboard(textToCopy, button);
+        function updateQuantityMethod() {
+            if (inputTypeText.checked) {
+                letterTextInputGroup.style.display = "";
+                letterQuantityInput.readOnly = true;
+                letterTextarea.dispatchEvent(new Event('input'));
             } else {
-                console.error("ไม่พบข้อมูลสำหรับคัดลอก:", type);
-                alert("ไม่พบข้อมูลสำหรับคัดลอก");
+                letterTextInputGroup.style.display = "none";
+                letterQuantityInput.readOnly = false;
             }
         }
-    });
+        
+        inputTypeText.addEventListener("change", updateQuantityMethod);
+        inputTypeCount.addEventListener("change", updateQuantityMethod);
+        letterTextarea.addEventListener("input", function() {
+            if (inputTypeText.checked) {
+                letterQuantityInput.value = countCharacters(this.value);
+            }
+        });
+        
+        updateQuantityMethod();
+    }
 
-    document.getElementById('stickerForm');
+    // 4. Stock Table Filtering
+    function filterIndexStockTable() {
+        const searchInput = document.getElementById("indexStockSearch");
+        const typeFilter = document.getElementById("indexStockTypeFilter");
+        const table = document.getElementById("stockDisplayTable");
+        
+        if (!searchInput || !typeFilter || !table) return;
+
+        const searchTerm = searchInput.value.toUpperCase();
+        const selectedType = typeFilter.value.toUpperCase();
+        const tbody = table.querySelector("tbody");
+        const rows = tbody.querySelectorAll("tr");
+        let hasVisibleRows = false;
+
+        let noDataRow = tbody.querySelector(".no-data-row");
+        if (noDataRow) noDataRow.style.display = "none";
+
+        rows.forEach(row => {
+            if (row.classList.contains('no-data-row') || row.cells.length < 4) return;
+
+            const typeText = row.cells[0].textContent.toUpperCase();
+            const nameText = row.cells[1].textContent.toUpperCase();
+
+            const typeMatch = (selectedType === "" || typeText === selectedType);
+            const searchMatch = (searchTerm === "" || nameText.includes(searchTerm));
+
+            if (typeMatch && searchMatch) {
+                row.style.display = "";
+                hasVisibleRows = true;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        if (!hasVisibleRows) {
+            if (!noDataRow) {
+                noDataRow = tbody.insertRow();
+                noDataRow.classList.add('no-data-row');
+                const cell = noDataRow.insertCell();
+                cell.colSpan = 4;
+                cell.textContent = "ไม่มีข้อมูลที่ตรงกับเงื่อนไข";
+                cell.style.textAlign = "center";
+                cell.style.padding = "15px";
+                cell.style.color = "#777";
+            }
+            noDataRow.style.display = "";
+        }
+    }
+
+    const stockSearchInput = document.getElementById("indexStockSearch");
+    const stockTypeFilter = document.getElementById("indexStockTypeFilter");
+
+    if (stockSearchInput) {
+        stockSearchInput.addEventListener("keyup", debounce(filterIndexStockTable, 300));
+    }
+    if (stockTypeFilter) {
+        stockTypeFilter.addEventListener("change", filterIndexStockTable);
+    }
+
+    // 5. Copy Button Delegation
+    const container = document.querySelector(".container");
+    if (container) {
+        container.addEventListener("click", function(event) {
+            if (event.target.classList.contains("btn-copy")) {
+                const button = event.target;
+                const type = button.getAttribute("data-type");
+                if (type && currentResults[type]) {
+                    copyTextToClipboard(buildCopyText(type), button);
+                }
+            }
+        });
+    }
 });
